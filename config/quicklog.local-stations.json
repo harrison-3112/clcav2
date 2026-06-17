@@ -1,0 +1,210 @@
+{
+  "enabled": true,
+  "message": {
+    "en": "Log file dont exist on local folder",
+    "cn": "本地文件夹中不存在该日志文件"
+  },
+  "models": {
+    "VO0301": {
+      "allowedStations": [
+        "DIP_PCBA Test0101",
+        "DIP_PCBA Test0102",
+        "DIP_PCBA Test0201",
+        "DIP_PCBA Test0202",
+        "DIP_PCBA Test0301",
+        "DIP_PCBA Test0302",
+        "DIP_PCBA Test0303",
+        "FATP_PCBA_0101",
+        "FATP_PCBA_0201",
+        "FATP_PCBA_0301",
+        "FATP_PCBA_0401",
+        "FATP_LeakTest0101",
+        "FATP_LeakTest0201",
+        "FATP_LeakTest0301",
+        "FT01",
+        "FATP_FT_01",
+        "FATP_FT_0101",
+        "FATP_FT_0102",
+        "FATP_FT_0103",
+        "FATP_FT_0104",
+        "FT02",
+        "FATP_FT_02",
+        "FATP_FT_0201",
+        "FATP_FT_0202",
+        "FATP_FT_0203",
+        "FATP_FT_0204",
+        "FT03",
+        "FATP_FT_03",
+        "FATP_FT_0301",
+        "FATP_FT_0302",
+        "FATP_FT_0303",
+        "FATP_FT_0304",
+        "FT04",
+        "FATP_FT_04",
+        "FATP_FT_0401",
+        "FATP_FT_0402",
+        "FATP_FT_0403",
+        "FATP_FT_0404",
+        "FT05",
+        "FATP_FT_05",
+        "FATP_FT_0501",
+        "FATP_FT_0502",
+        "FATP_FT_0503",
+        "FATP_FT_0504",
+        "FT06",
+        "FATP_FT_06",
+        "FATP_FT_0601",
+        "FATP_FT_0602",
+        "FATP_FT_0603",
+        "FATP_FT_0604",
+        "FT_Check",
+        "FT_CHECK",
+        "FATP_CHECK",
+        "FATP_CHECK01",
+        "FATP_CHECK02",
+        "FATP_CHECK03",
+        "LeakTest 01",
+        "LeakTest 02",
+        "LeakTest 03",
+        "FATP_LeakTest01",
+        "FATP_LeakTest02",
+        "FATP_LeakTest03"
+      ],
+      "aliases": {
+        "DIP_PCBA Test0101": "FPC01",
+        "DIP_PCBA Test0101": "FPC02",
+        "DIP_PCBA Test0101": "FPC03",
+        "DIP_PCBA Test0101": "FPC04",
+        "FATP_PCBA_0401": "FPC04",
+        "DIP_PCBA Test0101": "PCBA01",
+        "DIP_PCBA Test0102": "PCBA01",
+        "DIP_PCBA Test0201": "PCBA02",
+        "DIP_PCBA Test0202": "PCBA02",
+        "DIP_PCBA Test0301": "PCBA03",
+        "DIP_PCBA Test0302": "PCBA03",
+        "DIP_PCBA Test0303": "PCBA03",
+        "DIP_PCBA_01": "PCBA01",
+        "DIP_PCBA_02": "PCBA02",
+        "DIP_PCBA_03": "PCBA03",
+        "LeakTest 01": "FATP_LeakTest0101",
+        "LeakTest 02": "FATP_LeakTest0201",
+        "LeakTest 03": "FATP_LeakTest0301",
+        "FATP_LeakTest01": "FATP_LeakTest0101",
+        "FATP_LeakTest02": "FATP_LeakTest0201",
+        "FATP_LeakTest03": "FATP_LeakTest0301",
+        "FT01": [
+          "FATP_FT_0101",
+          "FATP_FT_0102",
+          "FATP_FT_0103"
+        ],
+        "FATP_FT_01": [
+          "FATP_FT_0101",
+          "FATP_FT_0102",
+          "FATP_FT_0103"
+        ],
+        "FATP_FT_0101": "FATP_FT_0101",
+        "FATP_FT_0102": "FATP_FT_0102",
+        "FATP_FT_0103": "FATP_FT_0103",
+        "FATP_FT_0104": "FATP_FT_0104",
+        "FT02": [
+          "FATP_FT_0201",
+          "FATP_FT_0202",
+          "FATP_FT_0203"
+        ],
+        "FATP_FT_02": [
+          "FATP_FT_0201",
+          "FATP_FT_0202",
+          "FATP_FT_0203"
+        ],
+        "FATP_FT_0201": "FATP_FT_0201",
+        "FATP_FT_0202": "FATP_FT_0202",
+        "FATP_FT_0203": "FATP_FT_0203",
+        "FATP_FT_0204": "FATP_FT_0204",
+        "FT03": [
+          "FATP_FT_0301",
+          "FATP_FT_0302",
+          "FATP_FT_0303"
+        ],
+        "FATP_FT_03": [
+          "FATP_FT_0301",
+          "FATP_FT_0302",
+          "FATP_FT_0303"
+        ],
+        "FATP_FT_0301": "FATP_FT_0301",
+        "FATP_FT_0302": "FATP_FT_0302",
+        "FATP_FT_0303": "FATP_FT_0303",
+        "FATP_FT_0304": "FATP_FT_0304",
+        "FT04": [
+          "FATP_FT_0401",
+          "FATP_FT_0402",
+          "FATP_FT_0403"
+        ],
+        "FATP_FT_04": [
+          "FATP_FT_0401",
+          "FATP_FT_0402",
+          "FATP_FT_0403"
+        ],
+        "FATP_FT_0401": "FATP_FT_0401",
+        "FATP_FT_0402": "FATP_FT_0402",
+        "FATP_FT_0403": "FATP_FT_0403",
+        "FATP_FT_0404": "FATP_FT_0404",
+        "FT05": [
+          "FATP_FT_0501",
+          "FATP_FT_0502",
+          "FATP_FT_0503"
+        ],
+        "FATP_FT_05": [
+          "FATP_FT_0501",
+          "FATP_FT_0502",
+          "FATP_FT_0503"
+        ],
+        "FATP_FT_0501": "FATP_FT_0501",
+        "FATP_FT_0502": "FATP_FT_0502",
+        "FATP_FT_0503": "FATP_FT_0503",
+        "FATP_FT_0504": "FATP_FT_0504",
+        "FT06": [
+          "FATP_FT_0601",
+          "FATP_FT_0602",
+          "FATP_FT_0603"
+        ],
+        "FATP_FT_06": [
+          "FATP_FT_0601",
+          "FATP_FT_0602",
+          "FATP_FT_0603"
+        ],
+        "FATP_FT_0601": "FATP_FT_0601",
+        "FATP_FT_0602": "FATP_FT_0602",
+        "FATP_FT_0603": "FATP_FT_0603",
+        "FATP_FT_0604": "FATP_FT_0604",
+        "FT_Check": [
+          "FATP_CHECK01",
+          "FATP_CHECK02",
+          "FATP_CHECK03"
+        ],
+        "FT_CHECK": [
+          "FATP_CHECK01",
+          "FATP_CHECK02",
+          "FATP_CHECK03"
+        ],
+        "FATP_CHECK": [
+          "FATP_CHECK01",
+          "FATP_CHECK02",
+          "FATP_CHECK03"
+        ],
+        "FATP_CHECK01": "FATP_CHECK01",
+        "FATP_CHECK02": "FATP_CHECK02",
+        "FATP_CHECK03": "FATP_CHECK03",
+        "REPAIR": null,
+        "REPAIR01": null,
+        "DIP_REPAIR": null,
+        "DIP_REPAIR01": null
+      }
+    },
+    "EO0302": {
+      "inheritFrom": "VO0301"
+    },
+    "EO0303": {
+      "inheritFrom": "VO0301"
+    }
+  }
+}

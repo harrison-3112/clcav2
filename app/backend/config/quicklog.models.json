@@ -1,0 +1,108 @@
+{
+  "models": [
+    "VO0301"
+  ],
+  "mesTrace": {
+    "apiUrl": "http://10.24.97.22/MES_API/api/MESApi/ApiAll",
+    "apiTimeoutMs": 15000,
+    "logRoot": "C:\\MODEL",
+    "logIndexTtlMs": 300000,
+    "logScanMaxDirs": 12000,
+    "logTimeBeforeMs": 300000,
+    "csvMappers": {
+      "default": {
+        "ProductSN": [
+          "ProdcutSN",
+          "SN",
+          "ProductSn",
+          "PRODUCTSN"
+        ],
+        "RunMode": [
+          "Mode",
+          "MODE",
+          "TestMode"
+        ],
+        "EndTime": [
+          "Time",
+          "ENDTIME"
+        ],
+        "Result": [
+          "RESULT",
+          "Status",
+          "PassOrFail",
+          "Result",
+          "result"
+        ],
+        "Failitem": [
+          "FailItem",
+          "FailItemName",
+          "Errorcode"
+        ]
+      }
+    },
+    "stationRules": {},
+    "modelFolderRules": {
+      "splitByUnderscore": true
+    },
+    "modelAliases": {
+      "VO0301_SLA": "VO0301",
+      "VO0301_SAS": "VO0301"
+    },
+    "stationAliases": {
+      "DIP_PCBA Test02": [
+        "PCBA02"
+      ],
+      "DIP_PCBA Test03": [
+        "PCBA03"
+      ],
+      "FATP_PCBA_01": [
+        "FPC01"
+      ],
+      "FATP_CHECK": [
+        "FT_Check"
+      ]
+    },
+    "stationFallbacks": {
+      "DIP_PCBA_01": [
+        "FPC01",
+        "FPC02",
+        "FPC03"
+      ]
+    }
+  },
+  "stationsList": [
+    "DIP_PCBA Test02",
+    "DIP_PCBA Test03",
+    "DIP_PCBA_01",
+    "LASER",
+    "FATP_AOI_01",
+    "FATP_AOI_02",
+    "ASSY_01",
+    "ASSY_02",
+    "CHECK",
+    "FATP_FT_01",
+    "FATP_FT_02",
+    "FATP_FT_03",
+    "FATP_FT_04",
+    "FATP_FT_05",
+    "FATP_FT_06",
+    "FATP_FT_07",
+    "Leak Test",
+    "Leak Test02",
+    "Leak Test03",
+    "QC-FT01",
+    "FATP_PACKING_02",
+    "Packing_OQC",
+    "AOI_B",
+    "DIP_Test_ADD_FW",
+    "SMT_BOT_AOI",
+    "SMT_TOP_AOI",
+    "SMT_BOT_INPUT",
+    "SMT_BOT_MOUNT",
+    "SMT_TOP_MOUNT",
+    "SMT_TOP_INPUT",
+    "FATP_PCBA_04",
+    "FATP_PCBA_03",
+    "FATP_PCBA_02"
+  ]
+}

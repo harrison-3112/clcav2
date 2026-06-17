@@ -1,0 +1,40 @@
+{
+  "modules": {
+    "clca": {
+      "enabled": true,
+      "title": {
+        "en": "CLCA Gen",
+        "cn": "CLCA Gen"
+      },
+      "menuTitle": {
+        "en": "CLCA Generator",
+        "cn": "CLCA 生成器"
+      },
+      "endpoint": "/api/generate"
+    },
+    "mesdaily": {
+      "enabled": true,
+      "title": {
+        "en": "MES Daily",
+        "cn": "MES 每日"
+      },
+      "menuTitle": {
+        "en": "MES Daily Report",
+        "cn": "MES 每日报表"
+      },
+      "endpoint": "/api/generate/mesdaily"
+    },
+    "quicklog": {
+      "enabled": true,
+      "title": {
+        "en": "QuickLog",
+        "cn": "QuickLog"
+      },
+      "menuTitle": {
+        "en": "QuickLog",
+        "cn": "QuickLog"
+      },
+      "endpoint": "/api/quicklog/search"
+    }
+  }
+}

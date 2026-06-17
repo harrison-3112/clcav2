@@ -1,0 +1,23 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 5000
+  },
+  "upload": {
+    "maxFileSizeMb": 50,
+    "tempFolderName": "clca_generator_uploads"
+  },
+  "ui": {
+    "defaultLanguage": "en",
+    "defaultTheme": "system"
+  },
+  "quicklog": {
+    "openLogCacheMax": 500,
+    "logTimeToleranceSeconds": 5,
+    "returnCheckedPathsOnFail": true,
+    "deriveLogPathFromSourceFile": true
+  },
+  "browseSave": {
+    "timeoutMs": 12000
+  }
+}

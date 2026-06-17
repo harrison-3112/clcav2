@@ -1,0 +1,10 @@
+{
+  "level": "info",
+  "writeFile": true,
+  "folder": "logs",
+  "includeRequestTiming": true,
+  "includeQuickLogCheckedPaths": true,
+  "includeConfigLoadWarnings": true,
+  "maxFileSizeMb": 10,
+  "maxFiles": 10
+}

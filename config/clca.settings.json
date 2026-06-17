@@ -1,0 +1,17 @@
+{
+  "defaultOutputName": "CLCA_Report.xlsx",
+  "merge": {
+    "requireMergeForMultipleFiles": true,
+    "defaultMergeEnabled": false
+  },
+  "csnMapping": {
+    "defaultEnabled": false
+  },
+  "stationRules": {
+    "Leak Test01": {
+      "leaveSnCodeBlank": true,
+      "leaveDescriptionBlank": true,
+      "disableCustomerSnMapping": true
+    }
+  }
+}
