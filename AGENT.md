@@ -114,7 +114,7 @@ Trình bao C# Desktop Host được biên dịch trực tiếp từ mã nguồn 
 2. Kiểm tra xem trình biên dịch C# (`csc.exe`) của .NET Framework đã được đăng ký trong PATH hoặc sử dụng đường dẫn đầy đủ của nó (ví dụ: `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe`).
 3. Chạy lệnh biên dịch sau tại thư mục gốc:
    ```powershell
-   csc.exe /target:winexe /out:"CloudMetrics.exe" /win32icon:"ui new\clca_icon_multi.ico" /reference:Microsoft.Web.WebView2.Core.dll /reference:Microsoft.Web.WebView2.WinForms.dll /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /win32manifest:desktop-host\app.manifest desktop-host\ClcaDesktopHost.cs
+   csc.exe /target:winexe /out:"CloudMetrics.exe" /win32icon:"ui\clca_icon_multi.ico" /reference:Microsoft.Web.WebView2.Core.dll /reference:Microsoft.Web.WebView2.WinForms.dll /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /win32manifest:desktop-host\app.manifest desktop-host\ClcaDesktopHost.cs
    ```
 4. Khi chạy tệp thực thi `CloudMetrics.exe`, **bắt buộc** phải giữ các file sau ở cùng thư mục:
    - `Microsoft.Web.WebView2.Core.dll`

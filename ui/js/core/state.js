@@ -64,6 +64,8 @@ let activePreset = null;
 
 const selectedStationsByModule = Object.fromEntries(Object.keys(MODULES).map((key) => [key, new Set()]));
 
+const stateByModule = Object.fromEntries(Object.keys(MODULES).map((key) => [key, { files: {}, output: '', mergeAll: false, useCsnMapping: false, mergeSheetPrefixes: {} }]));
+
 
 let allStations = [];
 
@@ -104,25 +106,4 @@ const STATUS_COLORS = {
 };
 
 
-const sidebarBrand = document.getElementById('sidebar-brand');
-if (sidebarBrand) sidebarBrand.addEventListener('click', backToLanding);
-if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', openSidebar);
-if (btnSidebarClose) btnSidebarClose.addEventListener('click', closeSidebar);
-if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
-if (btnSidebarToggleLg) {
-    btnSidebarToggleLg.addEventListener('click', () => {
-        const hidden = workspaceSidebar.classList.contains('-translate-x-full');
-        if (hidden) { workspaceSidebar.classList.remove('-translate-x-full'); }
-        else { workspaceSidebar.classList.add('-translate-x-full'); }
-    });
-}
-
-// Close sidebar on resize to large (sidebar becomes pinned via CSS)
-window.addEventListener('resize', () => {
-    if (window.innerWidth >= 1024) {
-        sidebarBackdrop.classList.add('hidden', 'opacity-0');
-        sidebarBackdrop.classList.remove('opacity-100');
-    }
-});
-
-// Landing theme toggle
+// UI initialization moved to main.js DOMContentLoaded

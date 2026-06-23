@@ -112,7 +112,7 @@ Toàn bộ các file cấu hình định dạng JSON của hệ thống được
 1. Mở cửa sổ **Developer PowerShell / Command Prompt** của Windows.
 2. Chạy lệnh biên dịch sau tại thư mục gốc của dự án:
    ```powershell
-   csc.exe /target:winexe /out:"CloudMetrics.exe" /win32icon:"ui new\clca_icon_multi.ico" /reference:Microsoft.Web.WebView2.Core.dll /reference:Microsoft.Web.WebView2.WinForms.dll /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /win32manifest:desktop-host\app.manifest desktop-host\ClcaDesktopHost.cs
+    csc.exe /target:winexe /out:"CloudMetrics.exe" /win32icon:"ui\clca_icon_multi.ico" /reference:Microsoft.Web.WebView2.Core.dll /reference:Microsoft.Web.WebView2.WinForms.dll /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /win32manifest:desktop-host\app.manifest desktop-host\ClcaDesktopHost.cs
    ```
 3. Sau khi biên dịch thành công, file `CloudMetrics.exe` sẽ được tạo ra tại thư mục gốc.
 

@@ -166,3 +166,22 @@ function getClcaSheetPrefixesPayload(files = getClcaDataFiles()) {
     const prefixes = ensureClcaSheetPrefixState();
     return normalizeUploadFileList(files).map((file) => ({ fileName: file.name, prefix: String(prefixes[file.name] || '').trim() }));
 }
+
+async function precheckOneClcaFile(file) {
+    const key = getClcaFileKey(file);
+    if (!key) return;
+    clcaPrecheckByKey[key] = { loading: true };
+    renderClcaMergeRenamePanel();
+    const form = new FormData();
+    form.append('data', file);
+    form.append('selected_stations', JSON.stringify(Array.from(selectedStationsByModule.clca || [])));
+    try {
+        const response = await fetchRetry('/api/clca/precheck', { method: 'POST', body: form }, 1);
+        const data = await response.json();
+        if (!response.ok || !data.success) throw createBackendError(data, 'CLCA pre-check failed.');
+        clcaPrecheckByKey[key] = data;
+    } catch (err) {
+        clcaPrecheckByKey[key] = { ok: false, error: String(err.message || err) };
+    }
+    renderClcaMergeRenamePanel();
+}

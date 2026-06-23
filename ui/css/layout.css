@@ -1,0 +1,77 @@
+/* ---- Glass panel (landing cards) — enhanced frosted glass ---- */
+        .glass-panel {
+            backdrop-filter: blur(8px) saturate(1.4);
+            -webkit-backdrop-filter: blur(8px) saturate(1.4);
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+            transition: box-shadow 0.3s ease, border-color 0.2s ease;
+        }
+        /* Light mode glass panel adjustments */
+        html:not(.dark) .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(0, 118, 182, 0.12);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+        /* ---- Landing glass nav — enhanced ---- */
+        .landing-glass-nav {
+            backdrop-filter: blur(20px) saturate(1.5);
+            -webkit-backdrop-filter: blur(20px) saturate(1.5);
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 118, 182, 0.1);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255,255,255,0.7);
+        }
+        .dark .landing-glass-nav {
+            background: rgba(10, 20, 40, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+        }
+        /* ---- Scanline sweep ---- */
+        .scanline-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+            pointer-events: none;
+            z-index: 20;
+        }
+        /* ---- Card inner glow ---- */
+        .card-inner-glow {
+            box-shadow: inset 0 0 30px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        /* ---- Cards container group hover blur ---- */
+        .cards-container > * {
+            transition: opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease;
+        }
+        .cards-container:has(.module-choice-card:hover) > *:not(:hover) {
+            opacity: 0.5;
+            filter: blur(1px);
+        }
+        .cards-container:has(.module-choice-card:hover) > *:hover {
+            opacity: 1;
+            filter: blur(0px);
+            transform: scale(1.03);
+        }
+        /* ---- CLCA card hover glow ---- */
+        .card-clca:hover .glass-panel {
+            box-shadow: 0 0 40px rgba(0, 118, 182, 0.25), 0 0 80px rgba(34, 211, 238, 0.08), inset 0 0 30px rgba(0, 118, 182, 0.06);
+            border-color: rgba(56, 189, 248, 0.5);
+            backdrop-filter: blur(35px) saturate(1.8);
+        }
+        html:not(.dark) .card-clca:hover .glass-panel {
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: 0 0 40px rgba(0, 118, 182, 0.18), 0 12px 40px rgba(0,0,0,0.08);
+        }
+
+        /* ---- Landing title gradient — Aurora style ---- */
+        .landing-title-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(135deg, #0076B6 0%, #22D3EE 35%, #8B5CF6 70%, #C084FC 100%);
+            filter: drop-shadow(0 2px 4px rgba(0, 118, 182, 0.15));
+        }
+        .dark .landing-title-gradient {
+            background-image: linear-gradient(135deg, #22D3EE 0%, #38BDF8 25%, #818CF8 55%, #C084FC 80%, #E879F9 100%);
+            filter: drop-shadow(0 0 30px rgba(56, 189, 248, 0.3)) drop-shadow(0 0 60px rgba(139, 92, 246, 0.15));
+        }

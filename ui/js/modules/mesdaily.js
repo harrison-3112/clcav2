@@ -142,7 +142,7 @@ function updateMesOutputNameFromRange() {
 function getMesStatePayload() {
     const controls = getMesRangeControls();
     const requirements = readMesRequirementRows()
-        .filter(({ wo, pdline, fileName }) => wo || pdline || fileName);
+        .filter(({ wo, fileName }) => wo || fileName);
 
     return {
         dateFrom: String(controls.dateFrom?.value || '').trim(),
@@ -199,6 +199,19 @@ function ensureMesTimeRange(forceReset = false) {
 
 function initMesTimePickers() {
     const controls = getMesRangeControls();
+    
+    if (controls.hourFrom && controls.hourFrom.dataset.bound !== 'true') {
+        controls.hourFrom.dataset.bound = 'true';
+        controls.hourFrom.addEventListener('input', () => { syncMesTimeRangeFromStart(); updateStatus(); });
+        controls.hourFrom.addEventListener('blur', () => { setMesHourValue(controls.hourFrom, controls.hourFrom.value); syncMesTimeRangeFromStart(); updateStatus(); });
+    }
+    
+    if (controls.hourTo && controls.hourTo.dataset.bound !== 'true') {
+        controls.hourTo.dataset.bound = 'true';
+        controls.hourTo.addEventListener('input', () => { syncMesHiddenRange(); updateStatus(); });
+        controls.hourTo.addEventListener('blur', () => { setMesHourValue(controls.hourTo, controls.hourTo.value); syncMesHiddenRange(); updateStatus(); });
+    }
+
     if (!controls.dateFrom || !controls.dateTo) return;
 
     if (typeof window.AirDatepicker === 'function') {
@@ -252,21 +265,20 @@ function getMesRequirementRows() {
 function readMesRequirementRows() {
     return getMesRequirementRows().map((row) => ({
         wo: String(row.querySelector('.mes-requirement-wo')?.value || '').trim(),
-        pdline: String(row.querySelector('.mes-requirement-pdline')?.value || '').trim(),
         fileName: String(row.querySelector('.mes-requirement-filename')?.value || '').trim(),
     }));
 }
 
 
 function hasIncompleteMesRequirements(entries = readMesRequirementRows()) {
-    return entries.some(({ wo, pdline }) => (wo || pdline) && !wo);
+    return entries.some(({ wo, fileName }) => fileName && !wo);
 }
 
 
 function collectMesRequirements() {
     return readMesRequirementRows()
         .filter(({ wo }) => wo)
-        .map(({ wo, pdline }) => ({ wo, pdline }));
+        .map(({ wo }) => ({ wo }));
 }
 
 
@@ -274,12 +286,10 @@ function updateMesRequirementRowText() {
     const rows = getMesRequirementRows();
     rows.forEach((row) => {
         const woInput = row.querySelector('.mes-requirement-wo');
-        const pdLineInput = row.querySelector('.mes-requirement-pdline');
         const fileNameInput = row.querySelector('.mes-requirement-filename');
         const removeBtn = row.querySelector('.mes-requirement-remove');
 
         if (woInput) woInput.placeholder = 'WO';
-        if (pdLineInput) pdLineInput.placeholder = 'PDLINE';
         if (fileNameInput && !fileNameInput.value) fileNameInput.placeholder = t('fileNameLabel');
 
         if (removeBtn) {
@@ -306,19 +316,16 @@ function addMesRequirementRow(values = {}) {
     if (!list) return null;
 
     const row = document.createElement('div');
-    row.className = 'grid grid-cols-1 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_40px] gap-2 mes-requirement-row';
+    row.className = 'grid grid-cols-1 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)_40px] gap-2 mes-requirement-row';
     row.innerHTML = [
         '<input type="text" class="mes-requirement-wo w-full text-sm px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 text-textMain dark:text-textDark"  autocomplete="off">',
-        '<input type="text" class="mes-requirement-pdline w-full text-sm px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 text-textMain dark:text-textDark" autocomplete="off">',
         '<input type="text" class="mes-requirement-filename w-full text-sm px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 text-textMain dark:text-textDark" autocomplete="off" data-auto="true">',
         '<button type="button" class="mes-requirement-remove inline-flex items-center justify-center rounded-lg border border-borderLight dark:border-borderDark text-textMuted dark:text-gray-500 hover:text-red-500 hover:border-red-300 dark:hover:border-red-500/50 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>'
     ].join('');
 
     const woInput       = row.querySelector('.mes-requirement-wo');
-    const pdLineInput   = row.querySelector('.mes-requirement-pdline');
     const fileNameInput = row.querySelector('.mes-requirement-filename');
     if (woInput)       woInput.value       = values.wo        || '';
-    if (pdLineInput)   pdLineInput.value   = values.pdline    || '';
     if (fileNameInput) {
         fileNameInput.value = values.fileName || '';
         fileNameInput.dataset.auto = values.fileName ? 'false' : 'true';
@@ -450,28 +457,11 @@ function updateMesRequirementStaticLabels() {
         if (el.id === 'mes-requirement-header-aligned' || el.closest('.mesdaily-feature-toggle')) return;
         const raw = String(el.textContent || '').trim();
         const compact = raw.replace(/\s+/g, '').toUpperCase();
-        if (compact === 'PDLINELABEL' || compact === 'PDLINE' || raw === 'PDLine') el.textContent = 'PDLINE';
         if (compact === 'RENAMEDIPLABEL' || compact === 'RENAMEDIP_LABEL' || compact === 'RENAMEDIP') {
             el.classList.add('hidden');
             el.setAttribute('aria-hidden', 'true');
         }
     });
-    panel.querySelectorAll('.mes-requirement-pdline').forEach((input) => { input.placeholder = 'PDLINE'; });
-    ensureMesRequirementHeaderAlignment();
-}
-
-function ensureMesRequirementHeaderAlignment() {
-    const list = document.getElementById('mes-requirement-list');
-    if (!list || !list.parentNode) return;
-    removeDuplicatedMesRequirementHeaders(list);
-    let header = document.getElementById('mes-requirement-header-aligned');
-    if (!header) {
-        header = document.createElement('div');
-        header.id = 'mes-requirement-header-aligned';
-        header.innerHTML = '<div>WO</div><div>PDLINE</div><div>File name</div><div></div>';
-        list.parentNode.insertBefore(header, list);
-    }
-    header.className = 'hidden md:grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_40px] gap-2 mb-2 px-0 text-[11px] font-bold uppercase tracking-wide text-textMuted dark:text-gray-400';
 }
 
 function ensureMesDailyFeatureTabs() {
@@ -665,10 +655,28 @@ function ensureMesR001Panel() {
         document.getElementById('mes-r001-open-log')?.addEventListener('click', openMesR001SelectedLogUiOnly);
         document.getElementById('mes-r001-export-csv')?.addEventListener('click', exportMesR001CsvUiOnly);
         document.getElementById('mes-r001-wo-input')?.addEventListener('input', () => updateMesR001Summary(mesR001Rows));
+        document.getElementById('mes-r001-wo-input')?.addEventListener('keydown', (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') searchMesR001();
+        });
+        document.getElementById('mes-r001-history-container')?.addEventListener('click', (event) => {
+            const chip = event.target.closest('.mes-r001-history-chip');
+            if (!chip) return;
+            const input = document.getElementById('mes-r001-wo-input');
+            if (input) input.value = chip.dataset.value || '';
+        });
+        document.getElementById('mes-r001-download-zip')?.addEventListener('click', downloadMesR001LogsZip);
+        // ZIP status tooltip hover
+        const zipStatus = document.getElementById('mes-r001-zip-status');
+        const zipTooltip = document.getElementById('mes-r001-zip-tooltip');
+        if (zipStatus && zipTooltip) {
+            zipStatus.addEventListener('mouseenter', () => zipTooltip.classList.remove('hidden'));
+            zipStatus.addEventListener('mouseleave', () => zipTooltip.classList.add('hidden'));
+        }
     }
     initMesR001TimePickers();
     ensureMesR001TimeRange();
     renderMesR001Rows(mesR001Rows);
+    renderMesR001History();
     applyMesDailyFeatureVisibility();
     _refreshIcons(defectSection);
 }
@@ -706,6 +714,10 @@ function clearMesR001Panel(clearInput = false) {
     renderMesR001Rows([]);
     updateMesR001Summary([]);
     updateMesR001SelectedRowLabel();
+    if (typeof destroyDefectDashboard === 'function') destroyDefectDashboard();
+    // Hide ZIP status icon
+    const zipStatus = document.getElementById('mes-r001-zip-status');
+    if (zipStatus) zipStatus.classList.add('hidden');
 }
 
 async function searchMesR001() {
@@ -723,6 +735,10 @@ async function searchMesR001() {
         if (!response.ok || !data.success) throw createBackendError(data, 'Defect Daily search failed');
         mesR001Rows = Array.isArray(data.rows) ? data.rows : [];
         renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', t('statusSuccess')); logToConsole(`Defect Daily search done. Rows: <b>${mesR001Rows.length}</b>`, 'success');
+        saveMesR001History(woText);
+        // Render dashboard
+        const woList = data.summary?.workOrders || parseMesR001WoInput(woText);
+        if (typeof renderDefectDashboard === 'function') renderDefectDashboard(mesR001Rows, woList);
     } catch (error) {
         resetProgress();
         let message = error.message || String(error);
@@ -736,6 +752,143 @@ async function searchMesR001() {
         showImportantToast('error', t('reqFailed'), message);
     } finally { setMesR001SearchLoading(false); resetProgress(); }
 }
+
+function saveMesR001History(input) {
+    const text = String(input || '').trim();
+    if (!text) return;
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem('mes_r001_history') || '[]'); } catch (_) {}
+    history = history.filter((item) => item !== text);
+    history.unshift(text);
+    if (history.length > 5) history = history.slice(0, 5);
+    localStorage.setItem('mes_r001_history', JSON.stringify(history));
+    renderMesR001History();
+}
+
+function renderMesR001History() {
+    const container = document.getElementById('mes-r001-history-container');
+    if (!container) return;
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem('mes_r001_history') || '[]'); } catch (_) {}
+    if (!history.length) {
+        container.innerHTML = '';
+        return;
+    }
+    container.innerHTML = history.map((item) => {
+        const text = quickLogEscape(item);
+        const display = text.length > 25 ? text.substring(0, 25) + '...' : text;
+        return `<button type="button" class="mes-r001-history-chip px-2 py-1 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 border border-borderLight dark:border-borderDark rounded-md text-[10px] text-textMuted dark:text-gray-300 transition-colors" data-value="${text}" title="${text}">${display}</button>`;
+    }).join('');
+}
+
+async function downloadMesR001LogsZip() {
+    if (!Array.isArray(mesR001Rows) || !mesR001Rows.length) {
+        logToConsole('No result rows. Search first.', 'warning');
+        showImportantToast('warning', 'No Data', 'Search for defects first before downloading logs.');
+        return;
+    }
+
+    // Only FAIL rows
+    const failRows = mesR001Rows.filter(() => true); // R001 data is already all FAIL
+    if (!failRows.length) {
+        logToConsole('No FAIL rows found to download.', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('mes-r001-download-zip');
+    const originalHtml = btn ? btn.innerHTML : '';
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Downloading...</span>`;
+            _refreshIcons(btn);
+        }
+        logToConsole(`Downloading FAIL logs for ${failRows.length} rows...`, 'system');
+
+        const response = await fetch('/api/logs/download-zip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rows: failRows, source: 'defectDaily' }),
+        });
+
+        if (!response.ok) {
+            let errMsg = 'Download failed';
+            try {
+                const errData = await response.json();
+                errMsg = errData.error || errMsg;
+                // Show missing info even on error
+                if (Array.isArray(errData.missing) && errData.missing.length) {
+                    _showMesR001ZipStatus([], errData.missing);
+                }
+            } catch (_) {}
+            throw new Error(errMsg);
+        }
+
+        // Read report from header
+        let report = null;
+        try {
+            const reportB64 = response.headers.get('X-Download-Report');
+            if (reportB64) report = JSON.parse(atob(reportB64));
+        } catch (_) {}
+
+        // Download blob
+        const blob = await response.blob();
+        const now = new Date();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const zipName = `FAIL Log ${mm}.${dd}.zip`;
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = zipName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        const foundCount = report ? report.foundCount : '?';
+        const missingCount = report ? report.missingCount : '?';
+        logToConsole(`Downloaded: ${zipName} (${foundCount} files, ${missingCount} missing)`, 'success');
+
+        // Show status icon with tooltip
+        if (report) {
+            _showMesR001ZipStatus(report.found || [], report.missing || []);
+        }
+    } catch (err) {
+        logToConsole(`Download FAIL logs failed: ${err.message || err}`, 'error');
+        showImportantToast('error', 'Download Failed', err.message || String(err));
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            _refreshIcons(btn);
+        }
+    }
+}
+
+function _showMesR001ZipStatus(found, missing) {
+    const statusEl = document.getElementById('mes-r001-zip-status');
+    const tooltipEl = document.getElementById('mes-r001-zip-tooltip');
+    if (!statusEl || !tooltipEl) return;
+
+    let text = `✅ Downloaded: ${found.length} files\n`;
+    if (found.length) {
+        found.slice(0, 20).forEach((f) => { text += `  ✓ ${f.sn} | ${f.station}\n`; });
+        if (found.length > 20) text += `  ... and ${found.length - 20} more\n`;
+    }
+    if (missing.length) {
+        text += `\n❌ Missing: ${missing.length} files\n`;
+        missing.slice(0, 20).forEach((m) => { text += `  ✗ ${m.sn} | ${m.station}\n    ${m.reason}\n`; });
+        if (missing.length > 20) text += `  ... and ${missing.length - 20} more\n`;
+    }
+
+    tooltipEl.textContent = text.trim();
+    statusEl.classList.remove('hidden');
+    _refreshIcons(statusEl);
+}
+
+
 
 async function openMesR001SelectedLogUiOnly() {
     if (mesR001SelectedIndex < 0 || !mesR001Rows[mesR001SelectedIndex]) {
@@ -790,7 +943,7 @@ function getMesSimpleGroupedPayload(stationList) {
             mode: 'grouped',
             groups: [{
                 label: 'Merged',
-                requirements: rows.map((r) => ({ workOrder: r.wo, pdLine: r.pdline })),
+                requirements: rows.map((r) => ({ workOrder: r.wo })),
                 output_path: outputBase,
             }],
             selected_stations: stationList,
@@ -808,8 +961,8 @@ function getMesSimpleGroupedPayload(stationList) {
         if (!fname) fname = `${r.wo}_${dateTag}`;
         if (!fname.toLowerCase().endsWith('.xlsx')) fname += '.xlsx';
         return {
-            label: r.wo,
-            requirements: [{ workOrder: r.wo, pdLine: r.pdline }],
+            label: r.wo || 'Unknown',
+            requirements: [{ workOrder: r.wo }],
             output_path: `${base}${fname}`,
         };
     });

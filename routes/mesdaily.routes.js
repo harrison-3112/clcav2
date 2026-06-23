@@ -16,9 +16,8 @@ function parseMesDateTimeLocal(dtStr) {
 
 module.exports = function createMesDailyRoutes(context = {}) {
   const router = require('express').Router();
-  const appRoot = context.rootDir || path.resolve(__dirname, '..');
-  const getMesLogic = context.getMesLogic || (() => require(path.resolve(appRoot, 'MES API', 'logic.js')));
-  const parseMesDateTime = context.parseMesDateTime || parseMesDateTimeLocal;
+  const appRoot = context.rootDir || path.resolve(__dirname, '..', '..', '..');
+  const { getMesLogic, parseMesDateTime } = require('../modules/mesdaily/mesClient');
 
   function parseWoInput(text) {
     const seen = new Set(); const out = [];
@@ -75,7 +74,6 @@ router.post('/api/generate/mesdaily', async (req, res) => {
     return (Array.isArray(rawList) ? rawList : [])
       .map((item) => ({
         workOrder: String(item?.workOrder || item?.wo || '').trim(),
-        pdLine:    String(item?.pdLine    || item?.pdline  || '').trim(),
       }))
       .filter((item) => item.workOrder);
   }

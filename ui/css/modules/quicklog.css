@@ -1,0 +1,82 @@
+/* QuickLog custom combo scrollbar — scoped to model/mode dropdown menus */
+.quicklog-combo-menu::-webkit-scrollbar {
+ width: 6px;
+ height: 6px;
+}
+.quicklog-combo-menu::-webkit-scrollbar-track {
+ background: transparent;
+}
+.quicklog-combo-menu::-webkit-scrollbar-thumb {
+ background: #CBD5E1;
+ border-radius: 999px;
+}
+.quicklog-combo-menu::-webkit-scrollbar-thumb:hover {
+ background: linear-gradient(180deg, #38BDF8, #8B5CF6);
+}
+.dark .quicklog-combo-menu::-webkit-scrollbar-thumb {
+ background: #334155;
+}
+.dark .quicklog-combo-menu::-webkit-scrollbar-thumb:hover {
+ background: linear-gradient(180deg, rgba(56,189,248,0.4), rgba(139,92,246,0.3));
+}
+.quicklog-model-combo-menu {
+ max-height: 180px;
+ overflow-y: auto;
+ overflow-x: hidden;
+}
+
+
+
+/* QuickLog MES Travel Card filter + table scroll patch */
+.quicklog-filter-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+.quicklog-filter-scroll.hidden {
+  display: none !important;
+}
+.quicklog-filter-chip {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(199, 223, 240, 0.78);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.quicklog-filter-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 118, 182, 0.35);
+}
+.quicklog-filter-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.quicklog-filter-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.quicklog-filter-scroll::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 999px;
+}
+.quicklog-filter-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #38BDF8, #8B5CF6);
+}
+.dark .quicklog-filter-scroll::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark .quicklog-filter-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, rgba(56,189,248,0.4), rgba(139,92,246,0.3));
+}
+.quicklog-row-first-sn td {
+  background: rgba(250, 204, 21, 0.16) !important;
+}
+.dark .quicklog-row-first-sn td {
+  background: rgba(234, 179, 8, 0.16) !important;
+}
+

@@ -848,4 +848,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof initMesTimePickers === 'function') initMesTimePickers();
     if (typeof initMesRequirements === 'function') initMesRequirements();
     if (typeof loadMesState === 'function') loadMesState();
+
+    const sidebarBrand = document.getElementById('sidebar-brand');
+    if (sidebarBrand) sidebarBrand.addEventListener('click', backToLanding);
+    if (typeof btnSidebarToggle !== 'undefined' && btnSidebarToggle) btnSidebarToggle.addEventListener('click', openSidebar);
+    if (typeof btnSidebarClose !== 'undefined' && btnSidebarClose) btnSidebarClose.addEventListener('click', closeSidebar);
+    if (typeof sidebarBackdrop !== 'undefined' && sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
+    
+    if (typeof btnSidebarToggleLg !== 'undefined' && btnSidebarToggleLg) {
+        btnSidebarToggleLg.addEventListener('click', () => {
+            if (typeof workspaceSidebar === 'undefined' || !workspaceSidebar) return;
+            const hidden = workspaceSidebar.classList.contains('-translate-x-full');
+            if (hidden) { workspaceSidebar.classList.remove('-translate-x-full'); }
+            else { workspaceSidebar.classList.add('-translate-x-full'); }
+        });
+    }
+
+    // Close sidebar on resize to large (sidebar becomes pinned via CSS)
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024 && typeof sidebarBackdrop !== 'undefined' && sidebarBackdrop) {
+            sidebarBackdrop.classList.add('hidden', 'opacity-0');
+            sidebarBackdrop.classList.remove('opacity-100');
+        }
+    });
+
+    if (typeof landingThemeToggle !== 'undefined' && landingThemeToggle) landingThemeToggle.addEventListener('click', applyThemeToggle);
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) themeToggle.addEventListener('click', applyThemeToggle);
+
+    if (typeof landingLangEn !== 'undefined' && landingLangEn) landingLangEn.addEventListener('click', () => setLanguage('en'));
+    if (typeof landingLangCn !== 'undefined' && landingLangCn) landingLangCn.addEventListener('click', () => setLanguage('cn'));
 });

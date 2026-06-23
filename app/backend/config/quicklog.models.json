@@ -1,6 +1,7 @@
 {
   "models": [
-    "VO0301"
+    "VO0301",
+    "EO0305"
   ],
   "mesTrace": {
     "apiUrl": "http://10.24.97.22/MES_API/api/MESApi/ApiAll",

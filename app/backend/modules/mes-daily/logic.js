@@ -56,14 +56,24 @@ function isPassStatus(status) {
 // -------------------------------------------------------
 
 async function pingMesServer() {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 3000);
-  try {
-    await fetch(API_URL, { method: "HEAD", signal: controller.signal });
-    clearTimeout(id);
-  } catch (err) {
-    clearTimeout(id);
-    throw new Error('ERR_MES_API_UNREACHABLE');
+  const MAX_RETRIES = 3;
+  const TIMEOUT_MS = 60000;
+  
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      await fetch(API_URL, { method: "HEAD", signal: controller.signal });
+      clearTimeout(id);
+      return; // Success
+    } catch (err) {
+      clearTimeout(id);
+      if (i === MAX_RETRIES - 1) {
+        throw new Error('ERR_MES_API_UNREACHABLE');
+      }
+      // Wait a short delay before retrying
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
 }
 
@@ -157,7 +167,6 @@ function normalizeRequirements(requirements = []) {
   return requirements
     .map((req) => ({
       workOrder: String(req.workOrder || req.wo || "").trim(),
-      pdLine: String(req.pdLine || req.pdline || "").trim(),
     }))
     .filter((req) => req.workOrder);
 }
@@ -174,30 +183,13 @@ function createRequirementMatcher(requirements = []) {
   const byWorkOrder = new Map();
 
   for (const req of normalized) {
-    let entry = byWorkOrder.get(req.workOrder);
-    if (!entry) {
-      entry = { anyPdLine: null, byPdLine: new Map() };
-      byWorkOrder.set(req.workOrder, entry);
-    }
-
-    if (req.pdLine) {
-      if (!entry.byPdLine.has(req.pdLine)) {
-        entry.byPdLine.set(req.pdLine, req);
-      }
-    } else if (!entry.anyPdLine) {
-      entry.anyPdLine = req;
+    if (!byWorkOrder.has(req.workOrder)) {
+      byWorkOrder.set(req.workOrder, req);
     }
   }
 
   const match = (record) => {
-    const entry = byWorkOrder.get(record.work_order);
-    if (!entry) return null;
-
-    const recordPdLine = String(record.pdline_name || "").trim();
-    if (recordPdLine && entry.byPdLine.has(recordPdLine)) {
-      return entry.byPdLine.get(recordPdLine);
-    }
-    return entry.anyPdLine || null;
+    return byWorkOrder.get(record.work_order) || null;
   };
 
   return {
@@ -235,7 +227,7 @@ function getEffectiveProcessName(record) {
  * @param {number}   opts.toHour      - 0–23
  * @returns {object[]}
  */
-function filterB005(data, { workOrders = [], processes = [], pdLine = "", fromDate, fromHour, toDate, toHour, requirements = [] }) {
+function filterB005(data, { workOrders = [], processes = [], fromDate, fromHour, toDate, toHour, requirements = [] }) {
   const requirementMatcher = createRequirementMatcher(requirements);
   const workOrderSet = workOrders.length > 0 ? new Set(workOrders) : null;
   const processSet = processes.length > 0 ? new Set(processes) : null;
@@ -245,7 +237,6 @@ function filterB005(data, { workOrders = [], processes = [], pdLine = "", fromDa
       if (!requirementMatcher.match(r)) return false;
     } else {
       if (workOrderSet && !workOrderSet.has(r.work_order))                return false;
-      if (pdLine && r.pdline_name !== pdLine)                             return false;
     }
     if (processSet && !processSet.has(r.process_name))                    return false;
     const wh = parseInt(r.work_time, 10);
@@ -267,7 +258,7 @@ function filterB005(data, { workOrders = [], processes = [], pdLine = "", fromDa
  * @param {Date}     opts.toDT        - end datetime (exclusive)
  * @returns {object[]}
  */
-function filterB006(data, { workOrders = [], processes = [], pdLine = "", fromDT, toDT, requirements = [] }) {
+function filterB006(data, { workOrders = [], processes = [], fromDT, toDT, requirements = [] }) {
   const requirementMatcher = createRequirementMatcher(requirements);
   const workOrderSet = workOrders.length > 0 ? new Set(workOrders) : null;
   const processSet = processes.length > 0 ? new Set(processes) : null;
@@ -277,7 +268,6 @@ function filterB006(data, { workOrders = [], processes = [], pdLine = "", fromDT
       if (!requirementMatcher.match(r)) return false;
     } else {
       if (workOrderSet && !workOrderSet.has(r.work_order))                return false;
-      if (pdLine && r.pdline_name !== pdLine)                             return false;
     }
     if (processSet && !processSet.has(r.process_name))                    return false;
     const rt = recTimeToDate(r.rec_time);
@@ -361,10 +351,7 @@ function getB006DefectUnitKey(row) {
  * Build Data sheet rows — one row per process_name.
  * @param {object[]} b005      - filtered B005 records
  * @param {object[]} b006      - filtered B006 records
- * @param {string}   pdLine    - override PDLine (or "" to use row value)
- * @returns {object[]}
- */
-function buildDataRows(b005, pdLine = "", processRemap = {}, requirements = [], b006 = []) {
+function buildDataRows(b005, processRemap = {}, requirements = [], b006 = []) {
   // model lookup from B005
   const modelLookup = {};
   for (const r of b005) {
@@ -373,14 +360,13 @@ function buildDataRows(b005, pdLine = "", processRemap = {}, requirements = [], 
 
   const requirementMatcher = createRequirementMatcher(requirements);
 
-  // Group by effective model + pdline + process to avoid collapsing different requirement rows.
+  // Group by effective model + process to avoid collapsing different requirement rows.
   const groups = {};
   for (const r of b005) {
     const modelName = modelLookup[r.work_order] || r.model_name;
-    const pdlineVal = requirementMatcher.hasRules ? (r.pdline_name || "") : (pdLine || r.pdline_name);
     const procName = getEffectiveProcessName(r, requirementMatcher.match, processRemap);
-    const key = [modelName, pdlineVal, procName].join("\u0000");
-    if (!groups[key]) groups[key] = { key, modelName, pdlineVal, procName, rows: [] };
+    const key = [modelName, procName].join("\u0000");
+    if (!groups[key]) groups[key] = { key, modelName, procName, rows: [] };
     groups[key].rows.push(r);
   }
 
@@ -393,15 +379,14 @@ if (useB006Defects) {
 for (const r of b006) {
 if (isPassStatus(r.rstatus)) continue;
 const modelName = modelLookup[r.work_order] || r.model_name || "";
-const pdlineVal = requirementMatcher.hasRules ? (r.pdline_name || "") : (pdLine || r.pdline_name);
 const procName = getEffectiveProcessName(r, requirementMatcher.match, processRemap);
-const key = [modelName, pdlineVal, procName].join("\u0000");
+const key = [modelName, procName].join("\u0000");
 if (!defectsByGroup.has(key)) defectsByGroup.set(key, new Set());
 defectsByGroup.get(key).add(getB006DefectUnitKey(r));
 }
 }
 return Object.values(groups)
-    .map(({ key, modelName, pdlineVal, procName, rows: grp }) => {
+    .map(({ key, modelName, procName, rows: grp }) => {
       const outputQty = grp.reduce((s, r) => s + (parseInt(r.output_qty,  10) || 0), 0);
       const failQty   = grp.reduce((s, r) => s + (parseInt(r.fail_qty,    10) || 0), 0);
       const repassQty = grp.reduce((s, r) => s + (parseInt(r.repass_qty,  10) || 0), 0);
@@ -421,7 +406,6 @@ return Object.values(groups)
       return {
         PLANT_CODE:   PLANT_CODE,
         MODEL_NAME:   modelName,
-        PDLINE_NAME:  pdlineVal,
         PROCESS_NAME: procName,
         INPUT_QTY:    inputQty,
         FAIL_QTY:     failQty,
@@ -434,7 +418,6 @@ return Object.values(groups)
       };
     })
     .sort((a, b) =>
-      a.PDLINE_NAME.localeCompare(b.PDLINE_NAME) ||
       a.PROCESS_NAME.localeCompare(b.PROCESS_NAME) ||
       a.MODEL_NAME.localeCompare(b.MODEL_NAME)
     );
@@ -460,10 +443,8 @@ function buildDetailRows(b006, modelLookup = {}, processRemap = {}, requirements
     };
   });
 
-  // Sort by PDLine ASC, effective process_name ASC, then serial_number ASC.
+  // Sort by effective process_name ASC, then serial_number ASC.
   normalized.sort((a, b) => {
-    const lineCmp = (a.source.pdline_name || "").localeCompare(b.source.pdline_name || "");
-    if (lineCmp !== 0) return lineCmp;
     if (a.processName < b.processName) return -1;
     if (a.processName > b.processName) return  1;
     if (a.source.serial_number < b.source.serial_number) return -1;
@@ -478,7 +459,6 @@ function buildDetailRows(b006, modelLookup = {}, processRemap = {}, requirements
     WORK_ORDER:    source.work_order    || "",
     WO_TYPE:       source.wo_type || "",
     SERIAL_NUMBER: source.serial_number || "",
-    PDLINE_NAME:   source.pdline_name   || "",
     PROCESS_NAME:  processName,
     TERMINAL_NAME: source.terminal_name || "",
     DEFECT_CODE:   source.defect_code   || "",
@@ -496,19 +476,19 @@ function buildDetailRows(b006, modelLookup = {}, processRemap = {}, requirements
 // -------------------------------------------------------
 
 const DATA_HEADERS = [
-  "PLANT_CODE", "MODEL_NAME", "PDLINE_NAME", "PROCESS_NAME",
+  "PLANT_CODE", "MODEL_NAME", "PROCESS_NAME",
   "INPUT_QTY", "FAIL_QTY", "FAIL_P", "PASS_P",
   "DEFECT_QTY", "FAIL_D", "PASS_D", "OUTPUT_QTY",
 ];
 
 const DETAIL_HEADERS = [
   "PLANT_CODE", "MODEL_NAME", "PART_NO", "WORK_ORDER", "WO_TYPE",
-  "SERIAL_NUMBER", "PDLINE_NAME", "PROCESS_NAME", "TERMINAL_NAME",
+  "SERIAL_NUMBER", "PROCESS_NAME", "TERMINAL_NAME",
   "DEFECT_CODE", "DEFECT_DESC", "TIME", "EMP", "STATUS", "MAC", "CUSTOMER_SN",
 ];
 
 // Columns in Data sheet that are percentages (0-indexed)
-const PCT_COLS_DATA = [6, 7, 9, 10]; // FAIL_P, PASS_P, FAIL_D, PASS_D
+const PCT_COLS_DATA = [5, 6, 8, 9]; // FAIL_P, PASS_P, FAIL_D, PASS_D
 
 /**
  * Write Data + Detail sheets to an Excel file.
@@ -557,7 +537,7 @@ async function exportToExcel(filePath, dataRows, detailRows, templatePath) {
     wsData.getColumn(colIdx + 1).numFmt = "0.00%";
   }
   wsData.addRows(dataRows.map((row) => [
-      row.PLANT_CODE, row.MODEL_NAME, row.PDLINE_NAME, row.PROCESS_NAME,
+      row.PLANT_CODE, row.MODEL_NAME, row.PROCESS_NAME,
       row.INPUT_QTY,  row.FAIL_QTY,
       row.FAIL_P,     row.PASS_P,
       row.DEFECT_QTY,
@@ -567,10 +547,10 @@ async function exportToExcel(filePath, dataRows, detailRows, templatePath) {
 
   // --- Fill Detail sheet ---
   const wsDetail = wb.getWorksheet("Detail");
-  wsDetail.getColumn(12).numFmt = 'yyyy/mm/dd hh:mm:ss';
+  wsDetail.getColumn(11).numFmt = 'yyyy/mm/dd hh:mm:ss';
   wsDetail.addRows(detailRows.map((row) => [
       row.PLANT_CODE, row.MODEL_NAME, row.PART_NO,   row.WORK_ORDER,
-      row.WO_TYPE,    row.SERIAL_NUMBER, row.PDLINE_NAME, row.PROCESS_NAME,
+      row.WO_TYPE,    row.SERIAL_NUMBER, row.PROCESS_NAME,
       row.TERMINAL_NAME, row.DEFECT_CODE, row.DEFECT_DESC, row.TIME,
       row.EMP,        row.STATUS,   row.MAC,         row.CUSTOMER_SN,
     ]));
@@ -713,7 +693,6 @@ function logCoverageTables(selectedWorkOrders = [], selectedProcesses = [], b005
  * @param {string}   config.outputFile    - full path for output .xlsx
  * @param {string[]} config.workOrders    - WO filter (empty = any)
  * @param {string[]} config.processes     - process name filter (empty = any)
- * @param {string}   config.pdLine        - PDLine filter (empty = any)
  * @param {string}   config.fromDate      - "yyyyMMdd"
  * @param {number}   config.fromHour      - 0–23
  * @param {string}   config.toDate        - "yyyyMMdd"
@@ -722,7 +701,7 @@ function logCoverageTables(selectedWorkOrders = [], selectedProcesses = [], b005
  */
 async function run(config) {
   const {
-    outputFile, workOrders = [], processes = [], pdLine = "",
+    outputFile, workOrders = [], processes = [],
     fromDate, fromHour, toDate, toHour,
     fromMinute = 0, toMinute = 0,
     templatePath, processRemap = {}, requirements = [],
@@ -732,19 +711,17 @@ async function run(config) {
   const effectiveWorkOrders = normalizedRequirements.length > 0
     ? [...new Set(normalizedRequirements.map((req) => req.workOrder))]
     : workOrders;
-  const effectivePdLine = normalizedRequirements.length > 0 ? "" : pdLine;
 
   console.log("=== MES Export ===");
   console.log(`WOs      : ${effectiveWorkOrders.join(", ") || "(any)"}`);
   console.log(`Processes: ${processes.join(", ")  || "(any)"}`);
-  console.log(`PDLine   : ${effectivePdLine || "(by requirement)"}`);
   console.log(`Time     : ${fromDate} ${String(fromHour).padStart(2,"0")}:${String(fromMinute).padStart(2,"0")} -> ${toDate} ${String(toHour).padStart(2,"0")}:${String(toMinute).padStart(2,"0")}`);
   console.log(`Output   : ${outputFile}`);
   console.log("");
   if (normalizedRequirements.length > 0) {
     console.log("Requirements:");
     normalizedRequirements.forEach((req) => {
-      console.log(`  ${req.workOrder} @ ${req.pdLine || "(any line)"}`);
+      console.log(`  ${req.workOrder}`);
     });
     console.log("");
   }
@@ -759,7 +736,6 @@ console.log(`Fetching ${chunks.length} non-overlapping 2-day window chunk(s) wit
 const filtOpts = {
 workOrders: effectiveWorkOrders,
 processes,
-pdLine: effectivePdLine,
 fromDate,
 fromHour,
 toDate,
@@ -826,7 +802,7 @@ const noDataWorkOrders = getWorkOrdersWithoutData(effectiveWorkOrders, b005, b00
   }
 
   if (b005.length === 0) {
-    console.warn("WARNING: No B005 data after filtering. Check WO / PDLine / date range.");
+    console.warn("WARNING: No B005 data after filtering. Check WO / date range.");
   }
 
   // Build model lookup
@@ -835,7 +811,7 @@ const noDataWorkOrders = getWorkOrdersWithoutData(effectiveWorkOrders, b005, b00
     if (!modelLookup[r.work_order]) modelLookup[r.work_order] = r.model_name;
   }
 
-  const dataRows   = buildDataRows(b005, effectivePdLine, processRemap, normalizedRequirements, b006);
+  const dataRows   = buildDataRows(b005, processRemap, normalizedRequirements, b006);
   const detailRows = buildDetailRows(b006, modelLookup, processRemap, normalizedRequirements);
 
   console.log(`\nData rows: ${dataRows.length}  Detail rows: ${detailRows.length}`);

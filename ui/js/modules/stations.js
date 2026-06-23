@@ -6,6 +6,32 @@ const stationPanel = document.getElementById('station-panel');
 
 let stationPresets = {};
 
+function sortStationsByPresetOrder(stations, presets) {
+    const source = Array.isArray(stations) ? stations : [];
+    const presetMap = (presets && typeof presets === 'object') ? presets : {};
+    const presetKeys = Object.keys(presetMap);
+    const preferredPresetOrder = ['FATP', 'DIP', 'SMT'];
+    const orderedPresetKeys = [
+        ...preferredPresetOrder.filter((k) => presetKeys.includes(k)),
+        ...presetKeys.filter((k) => !preferredPresetOrder.includes(k))
+    ];
+    const stationRank = new Map();
+    let rank = 0;
+    for (const presetKey of orderedPresetKeys) {
+        const list = Array.isArray(presetMap[presetKey]) ? presetMap[presetKey] : [];
+        for (const station of list) {
+            if (!stationRank.has(station)) stationRank.set(station, rank++);
+        }
+    }
+    const originalIndex = new Map(source.map((station, idx) => [station, idx]));
+    return [...source].sort((a, b) => {
+        const aRank = stationRank.has(a) ? stationRank.get(a) : Number.MAX_SAFE_INTEGER;
+        const bRank = stationRank.has(b) ? stationRank.get(b) : Number.MAX_SAFE_INTEGER;
+        if (aRank !== bRank) return aRank - bRank;
+        return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
+    });
+}
+
 function renderStationCheckboxes(animate) {
     const selectedStations = getSelectedStations();
     const fragment = document.createDocumentFragment();

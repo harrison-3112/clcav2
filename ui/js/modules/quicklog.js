@@ -557,6 +557,10 @@ async function searchQuickLog() {
         if (!isMesTrace && data.summary && Array.isArray(data.summary.notFound) && data.summary.notFound.length) {
             logToConsole(`Not found: ${data.summary.notFound.join(', ')}`, 'warning');
         }
+        saveQuickLogHistory(snText);
+        // Show/hide download button based on mode
+        const qlZipBtn = document.getElementById('quicklog-download-zip');
+        if (qlZipBtn) qlZipBtn.classList.toggle('hidden', !isMesTrace || quickLogRows.length === 0);
     } catch (err) {
         resetProgress();
         setStatus('error', t('reqFailed'));
@@ -612,7 +616,10 @@ function renderQuickLogPanel() {
                 <label class="grid gap-1.5 text-sm">
                     <span id="quicklog-input-label" class="font-semibold text-textMain dark:text-textDark">${t('quickLogInput')}</span>
                     <textarea id="quicklog-input" rows="5" class="w-full text-sm px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 text-textMain dark:text-textDark resize-y" placeholder="${t('quickLogPlaceholder')}">${quickLogEscape(existingInput)}</textarea>
-                    <span id="quicklog-input-hint" class="text-xs text-textMuted dark:text-gray-400">${t('quickLogInputHint')}</span>
+                    <div class="flex items-center justify-between mt-1">
+                        <span id="quicklog-input-hint" class="text-xs text-textMuted dark:text-gray-400">Support comma, space, newline (Press <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Ctrl</kbd> + <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Enter</kbd> to search)</span>
+                    </div>
+                    <div id="quicklog-history-container" class="flex flex-wrap gap-2 mt-2 empty:hidden"></div>
                 </label>
                 <div class="quicklog-main-actions flex items-center gap-3">
                     <button id="quicklog-generate" type="button" class="quicklog-generate-btn flex-1 py-3.5 px-8 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-500 hover:from-cyan-400 hover:via-blue-500 hover:to-violet-400 dark:from-cyan-400 dark:via-blue-400 dark:to-violet-400 dark:hover:from-cyan-300 dark:hover:via-blue-300 dark:hover:to-violet-300 text-white dark:text-bgDark font-semibold text-base shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-violet-500/20 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg relative overflow-hidden font-display tracking-wide">
@@ -633,6 +640,13 @@ function renderQuickLogPanel() {
                     <span id="quicklog-result-title" class="text-sm font-semibold">${t('quickLogResult')}</span>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button id="quicklog-download-zip" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors hidden" title="Download FAIL log files as ZIP">
+                        <i data-lucide="archive" class="w-3.5 h-3.5"></i><span>FAIL Logs</span>
+                    </button>
+                    <span id="quicklog-zip-status" class="relative hidden cursor-pointer" title="">
+                        <i data-lucide="info" class="w-4 h-4 text-white/70 hover:text-white transition-colors"></i>
+                        <span id="quicklog-zip-tooltip" class="absolute bottom-full right-0 mb-2 hidden w-72 max-h-48 overflow-y-auto p-3 text-[10px] leading-relaxed rounded-lg bg-gray-900/95 text-gray-200 border border-gray-700 shadow-xl backdrop-blur-sm z-50 whitespace-pre-wrap"></span>
+                    </span>
                     <button id="quicklog-export-csv" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors" title="${t('quickLogExportCsv')}">
                         <i data-lucide="download" class="w-3.5 h-3.5"></i><span>${t('quickLogExportCsv')}</span>
                     </button>
@@ -673,6 +687,7 @@ function renderQuickLogPanel() {
     renderQuickLogRows(quickLogRows);
     _refreshIcons(fileCards);
     loadQuickLogModels();
+    renderQuickLogHistory();
 }
 
 function bindQuickLogUi() {
@@ -705,6 +720,21 @@ function bindQuickLogUi() {
     });
     // QL-06: Bind export button
     document.getElementById('quicklog-export-csv')?.addEventListener('click', downloadQuickLogCsv);
+    // History click
+    document.getElementById('quicklog-history-container')?.addEventListener('click', (event) => {
+        const chip = event.target.closest('.quicklog-history-chip');
+        if (!chip) return;
+        const input = document.getElementById('quicklog-input');
+        if (input) input.value = chip.dataset.value || '';
+    });
+    // Download FAIL logs ZIP
+    document.getElementById('quicklog-download-zip')?.addEventListener('click', downloadQuickLogFailLogsZip);
+    const qlZipStatus = document.getElementById('quicklog-zip-status');
+    const qlZipTooltip = document.getElementById('quicklog-zip-tooltip');
+    if (qlZipStatus && qlZipTooltip) {
+        qlZipStatus.addEventListener('mouseenter', () => qlZipTooltip.classList.remove('hidden'));
+        qlZipStatus.addEventListener('mouseleave', () => qlZipTooltip.classList.add('hidden'));
+    }
 }
 
 function clearQuickLogUi() {
@@ -724,6 +754,141 @@ function clearQuickLogUi() {
     if (searchInput) searchInput.value = ''; // QL-05: clear search input
     renderQuickLogRows([]);
     updateQuickLogSelectedRowLabel(); // QL-04: reset label to "No row selected"
+    // Hide ZIP button and status
+    const qlZipBtn = document.getElementById('quicklog-download-zip');
+    if (qlZipBtn) qlZipBtn.classList.add('hidden');
+    const qlZipStatus = document.getElementById('quicklog-zip-status');
+    if (qlZipStatus) qlZipStatus.classList.add('hidden');
+}
+
+async function downloadQuickLogFailLogsZip() {
+    if (!isQuickLogMesTraceMode()) {
+        logToConsole('Download FAIL Logs is only available in MES Trace mode.', 'warning');
+        return;
+    }
+    const failRows = quickLogRows.filter((row) => {
+        const result = String(row?.result ?? row?.status ?? '').toUpperCase().trim();
+        return result === '1' || result === 'FAIL' || result === 'NG';
+    });
+    if (!failRows.length) {
+        logToConsole('No FAIL rows found to download.', 'warning');
+        showImportantToast('warning', 'No FAIL Rows', 'No FAIL results found in the current search.');
+        return;
+    }
+
+    const btn = document.getElementById('quicklog-download-zip');
+    const originalHtml = btn ? btn.innerHTML : '';
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Downloading...</span>`;
+            _refreshIcons(btn);
+        }
+        logToConsole(`Downloading FAIL logs for ${failRows.length} rows...`, 'system');
+
+        const response = await fetch('/api/logs/download-zip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rows: failRows, source: 'mesTrace' }),
+        });
+
+        if (!response.ok) {
+            let errMsg = 'Download failed';
+            try {
+                const errData = await response.json();
+                errMsg = errData.error || errMsg;
+                if (Array.isArray(errData.missing) && errData.missing.length) {
+                    _showQuickLogZipStatus([], errData.missing);
+                }
+            } catch (_) {}
+            throw new Error(errMsg);
+        }
+
+        let report = null;
+        try {
+            const reportB64 = response.headers.get('X-Download-Report');
+            if (reportB64) report = JSON.parse(atob(reportB64));
+        } catch (_) {}
+
+        const blob = await response.blob();
+        const now = new Date();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const zipName = `FAIL Log ${mm}.${dd}.zip`;
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = zipName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        const foundCount = report ? report.foundCount : '?';
+        const missingCount = report ? report.missingCount : '?';
+        logToConsole(`Downloaded: ${zipName} (${foundCount} files, ${missingCount} missing)`, 'success');
+
+        if (report) _showQuickLogZipStatus(report.found || [], report.missing || []);
+    } catch (err) {
+        logToConsole(`Download FAIL logs failed: ${err.message || err}`, 'error');
+        showImportantToast('error', 'Download Failed', err.message || String(err));
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            _refreshIcons(btn);
+        }
+    }
+}
+
+function _showQuickLogZipStatus(found, missing) {
+    const statusEl = document.getElementById('quicklog-zip-status');
+    const tooltipEl = document.getElementById('quicklog-zip-tooltip');
+    if (!statusEl || !tooltipEl) return;
+
+    let text = `✅ Downloaded: ${found.length} files\n`;
+    if (found.length) {
+        found.slice(0, 20).forEach((f) => { text += `  ✓ ${f.sn} | ${f.station}\n`; });
+        if (found.length > 20) text += `  ... and ${found.length - 20} more\n`;
+    }
+    if (missing.length) {
+        text += `\n❌ Missing: ${missing.length} files\n`;
+        missing.slice(0, 20).forEach((m) => { text += `  ✗ ${m.sn} | ${m.station}\n    ${m.reason}\n`; });
+        if (missing.length > 20) text += `  ... and ${missing.length - 20} more\n`;
+    }
+
+    tooltipEl.textContent = text.trim();
+    statusEl.classList.remove('hidden');
+    _refreshIcons(statusEl);
+}
+
+function saveQuickLogHistory(input) {
+    const text = String(input || '').trim();
+    if (!text) return;
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem('quicklog_history') || '[]'); } catch (_) {}
+    history = history.filter((item) => item !== text);
+    history.unshift(text);
+    if (history.length > 5) history = history.slice(0, 5);
+    localStorage.setItem('quicklog_history', JSON.stringify(history));
+    renderQuickLogHistory();
+}
+
+function renderQuickLogHistory() {
+    const container = document.getElementById('quicklog-history-container');
+    if (!container) return;
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem('quicklog_history') || '[]'); } catch (_) {}
+    if (!history.length) {
+        container.innerHTML = '';
+        return;
+    }
+    container.innerHTML = history.map((item) => {
+        const text = quickLogEscape(item);
+        const display = text.length > 25 ? text.substring(0, 25) + '...' : text;
+        return `<button type="button" class="quicklog-history-chip px-2 py-1 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 border border-borderLight dark:border-borderDark rounded-md text-[10px] text-textMuted dark:text-gray-300 transition-colors" data-value="${text}" title="${text}">${display}</button>`;
+    }).join('');
 }
 
 

@@ -664,7 +664,7 @@ async function pingMesServer(apiUrl) {
   return new Promise((resolve, reject) => {
     const u = new URL(targetUrl);
     const lib = u.protocol === 'https:' ? https : http;
-    const req = lib.request({ method: 'HEAD', hostname: u.hostname, port: u.port || (u.protocol === 'https:' ? 443 : 80), path: u.pathname + u.search, timeout: 3000 }, (res) => {
+    const req = lib.request({ method: 'HEAD', hostname: u.hostname, port: u.port || (u.protocol === 'https:' ? 443 : 80), path: u.pathname + u.search, timeout: 15000 }, (res) => {
       resolve();
     });
     req.on('timeout', () => req.destroy(new Error('ERR_MES_API_UNREACHABLE')));
@@ -878,6 +878,54 @@ function findMesTraceLogFile(row, options = {}) {
   if (!model || !sn || !date) return { success: false, error: 'Missing model/sn/date for log path.' };
   const root = path.join(settings.logRoot, model, 'SYNC LOCAL DATA');
   const stationCandidates = stationFolderCandidates(row, settings);
+  
+  // Fast path: Check exact standard folder structure
+  const fastChecked = [];
+  for (const station of stationCandidates) {
+    for (const fixture of ['J01', 'J02', 'J03', 'J04', 'J05', 'J06', 'J07', 'J08']) {
+      const dateDir = path.join(root, station, 'Log', model, 'PROD', station, fixture, date);
+      if (!existsDir(dateDir)) continue;
+      
+      const folders = [];
+      if (result === 'FAIL') folders.push(path.join(dateDir, 'FAIL'), path.join(dateDir, 'PASS'));
+      else if (result === 'PASS') folders.push(path.join(dateDir, 'PASS'), path.join(dateDir, 'FAIL'));
+      else folders.push(path.join(dateDir, 'FAIL'), path.join(dateDir, 'PASS'));
+
+      for (const folder of folders) {
+        fastChecked.push(folder);
+        if (!existsDir(folder)) continue;
+        const candidates = [];
+        for (const entry of safeReaddir(folder)) {
+          if (entry.isFile() && isSnTxtFile(entry.name, sn)) {
+            candidates.push(path.join(folder, entry.name));
+          }
+        }
+        if (candidates.length) {
+          const picked = chooseDayCandidate(candidates, row, result, settings);
+          if (picked && picked.filePath) {
+            return {
+              success: true,
+              path: picked.filePath,
+              checkedPaths: fastChecked,
+              selectedBy: 'fast-standard-path',
+              diffMs: Math.round(picked.diffMs),
+              fileTime: picked.fileTime,
+              windowFrom: picked.windowFrom,
+              windowTo: picked.windowTo,
+              resultPriority: result,
+              candidateCount: candidates.length,
+              scannedDirs: 0,
+              dateDirs: 1,
+              truncated: false,
+              fromCache: false,
+              usedRoot: dateDir
+            };
+          }
+        }
+      }
+    }
+  }
+
   const checkedPaths = [`${root} [model=${model}; mesModel=${row.modelNo || row.modelRoot || ''}; date=${date}; stationCandidates=${stationCandidates.join(',')}]`];
   if (!existsDir(root)) return { success: false, error: 'Model SYNC LOCAL DATA path not found.', checkedPaths, resolved: { mesModel: row.modelNo || row.modelRoot || '', model, sn, date, root, stationCandidates } };
   let lastFound = null;

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CloudMetrics</title>
-    <link rel="icon" type="image/x-icon" href="app%20icon.ico">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -353,9 +353,8 @@
                                             <span data-i18n="addRequirementRow">Add row</span>
                                         </button>
                                     </div>
-                                    <div class="hidden md:grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_40px] gap-2 px-2 mb-2 text-[11px] font-medium uppercase tracking-wide text-textMuted dark:text-gray-500">
+                                    <div class="hidden md:grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)_40px] gap-2 px-2 mb-2 text-[11px] font-medium uppercase tracking-wide text-textMuted dark:text-gray-500">
                                         <span>WO</span>
-                                        <span data-i18n="pdLineLabel">Production Line</span>
                                         <span data-i18n="fileNameLabel">File name</span>
                                         <span class="sr-only" data-i18n="removeRow">Remove row</span>
                                     </div>
@@ -432,7 +431,10 @@
                             <label class="grid gap-1.5 text-sm">
                                 <span class="font-semibold text-textMain dark:text-textDark" data-i18n="mesR001WoInput">WO Input</span>
                                 <textarea id="mes-r001-wo-input" rows="5" class="w-full text-sm px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 text-textMain dark:text-textDark resize-y" placeholder="Paste WO list here..." data-i18n-placeholder="mesR001WoPlaceholder"></textarea>
-                                <span class="text-xs text-textMuted dark:text-gray-400" data-i18n="quickLogInputHint">Support comma, space, newline, or Excel column paste</span>
+                                <div class="flex items-center justify-between mt-1">
+                                    <span class="text-xs text-textMuted dark:text-gray-400">Support comma, space, newline (Press <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Ctrl</kbd> + <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Enter</kbd> to search)</span>
+                                </div>
+                                <div id="mes-r001-history-container" class="flex flex-wrap gap-2 mt-2 empty:hidden"></div>
                             </label>
                             <div class="quicklog-main-actions flex items-center gap-3">
                                 <button id="mes-r001-search" type="button" class="quicklog-generate-btn flex-1 py-3.5 px-8 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-500 hover:from-cyan-400 hover:via-blue-500 hover:to-violet-400 dark:from-cyan-400 dark:via-blue-400 dark:to-violet-400 dark:hover:from-cyan-300 dark:hover:via-blue-300 dark:hover:to-violet-300 text-white dark:text-bgDark font-semibold text-base shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-violet-500/20 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg relative overflow-hidden font-display tracking-wide">
@@ -448,6 +450,8 @@
                     </div>
                 </section>
 
+                <section id="mes-r001-dashboard" class="hidden"></section>
+
                 <section id="mes-r001-result-panel" class="hidden glass-card rounded-xl border border-borderLight dark:border-borderDark overflow-hidden">
                     <div class="section-header-gradient justify-between">
                         <div class="flex items-center gap-2">
@@ -455,6 +459,11 @@
                             <span id="mes-r001-result-title" class="text-sm font-semibold" data-i18n="mesR001ResultTitle">Defect Daily Result</span>
                         </div>
                         <div class="flex items-center gap-2">
+                            <button id="mes-r001-download-zip" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors" title="Download FAIL log files as ZIP"><i data-lucide="archive" class="w-3.5 h-3.5"></i><span>FAIL Logs</span></button>
+                            <span id="mes-r001-zip-status" class="relative hidden cursor-pointer" title="">
+                                <i data-lucide="info" class="w-4 h-4 text-white/70 hover:text-white transition-colors"></i>
+                                <span id="mes-r001-zip-tooltip" class="absolute bottom-full right-0 mb-2 hidden w-72 max-h-48 overflow-y-auto p-3 text-[10px] leading-relaxed rounded-lg bg-gray-900/95 text-gray-200 border border-gray-700 shadow-xl backdrop-blur-sm z-50 whitespace-pre-wrap"></span>
+                            </span>
                             <button id="mes-r001-export-csv" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white"><i data-lucide="download" class="w-3.5 h-3.5"></i><span data-i18n="mesR001ExportCsv">Export CSV</span></button>
                             <button id="mes-r001-open-log" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white"><i data-lucide="file-search" class="w-3.5 h-3.5"></i><span data-i18n="mesR001OpenLog">Open Log UI</span></button>
                         </div>
@@ -678,15 +687,17 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.5.3/air-datepicker.min.js"></script>
-    <script src="core/error.js"></script>
-    <script src="js/core/state.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    
     <script src="js/core/globals.js"></script>
+    <script src="js/core/state.js"></script>
     <script src="js/core/i18n.js"></script>
     <script src="js/core/utils.js"></script>
     <script src="js/core/api.js"></script>
     <script src="js/core/ui.js"></script>
     <script src="js/modules/landing.js"></script>
     <script src="js/modules/clca.js"></script>
+    <script src="js/modules/defectDashboard.js"></script>
     <script src="js/modules/mesdaily.js"></script>
     <script src="js/modules/quicklog.js"></script>
     <script src="js/modules/stations.js"></script>

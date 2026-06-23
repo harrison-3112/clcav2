@@ -1,0 +1,47 @@
+Cards
+/* Toast
+Generate Button
+Buttons
+Progress Bar ---- */
+.progress-container {
+    height: 4px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.progress-container.active {
+    opacity: 1;
+}
+
+.dark .progress-container {
+    background: rgba(255,255,255,0.06);
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #22D3EE, #3B82F6, #8B5CF6, #C084FC, #22D3EE);
+    background-size: 300% auto;
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.progress-bar.animating {
+    animation: shimmerBar 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmerBar {
+    0%   { background-position: 0% center; }
+    100% { background-position: 300% center; }
+}
+
+
+Console
+Console
+Buttons
+Console
+Cards

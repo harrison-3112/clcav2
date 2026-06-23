@@ -1,6 +1,6 @@
 // CloudMetrics – Desktop Host (WinForms + WebView2)
 // Native GDI+ loading screen shown instantly; dismissed when JS sends 'clca-ui-ready'.
-// Build: csc.exe /target:winexe /out:"CloudMetrics.exe" /win32icon:"ui new\clca_icon_multi.ico"
+// Build: csc.exe /target:winexe /out:"CloudMetrics.exe" /win32icon:"ui\clca_icon_multi.ico"
 //        /reference:Microsoft.Web.WebView2.Core.dll /reference:Microsoft.Web.WebView2.WinForms.dll
 //        /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll
 //        /win32manifest:desktop-host\app.manifest
@@ -108,9 +108,9 @@ public class MainForm : Form
         // Try to set icon
         try
         {
-            string icoPath = Path.Combine(appRoot, "ui new", "clca_icon_multi.ico");
+            string icoPath = Path.Combine(appRoot, "ui", "clca_icon_multi.ico");
             if (!File.Exists(icoPath))
-                icoPath = Path.Combine(appRoot, "ui new", "app icon.ico");
+                icoPath = Path.Combine(appRoot, "ui", "app icon.ico");
             if (File.Exists(icoPath))
                 Icon = new Icon(icoPath);
         }
@@ -124,7 +124,7 @@ public class MainForm : Form
         Controls.Add(webView);
 
         // ── Create native splash (shows instantly) ──
-        string logoPath = Path.Combine(appRoot, "ui new", "icon.png");
+        string logoPath = Path.Combine(appRoot, "ui", "icon.png");
         splash = new SplashOverlay(logoPath);
         splash.Dock = DockStyle.Fill;
         Controls.Add(splash);

@@ -1,0 +1,29 @@
+# PROJECT HANDOFF
+
+## 1. Project Overview
+- **Name:** CloudMetrics (CLCA Gen)
+- **Path:** `c:\Users\PC\Downloads\clca`
+- **Architecture:** Node.js Backend (Express) + Vanilla JS/HTML/TailwindCSS Frontend.
+- **Run Command:** Desktop executable (`CloudMetrics.exe`) wrapped around a local server `server.js`.
+
+## 2. Recent Work Completed (UX & Logic Fixes)
+- **Global JS Errors Fixed:**
+  - Resolved `toggleTheme is not defined` and language switch bugs in `ui/js/main.js`.
+  - Moved `stateByModule` definition back into `ui/js/core/state.js` to fix initialization crashes.
+- **UI/UX Enhancements (QuickLog & MES Daily R001):**
+  - **Recent History:** Implemented LocalStorage-based history (`quicklog_history` & `mes_r001_history`) that saves the last 5 search terms. Displayed as clickable chips under the textarea.
+  - **Keyboard Shortcuts:** Added `Ctrl + Enter` to instantly trigger Search for both QuickLog and MES Daily, allowing the normal `Enter` key to continue serving as a newline separator.
+  - **UI Hints:** Added hint text `(Press Ctrl + Enter to search)` below the textareas.
+- **Features Skipped by User Choice:**
+  - "Copy to Clipboard" button was skipped because WebView2 natively supports text highlighting and copying.
+  - Real-time MES Daily Progress Bar via SSE was skipped; the user decided to keep the existing indeterminate loading indicator.
+
+## 3. Current State & Known Issues
+- The UI is mostly stable. The app launches correctly via EXE and local browser.
+- The user's goal was to identify logic and architecture conflicts. Most conflicts stemmed from recent restructurings (moving globals around), which have now been mitigated.
+- MES API default timeouts are 15s for QuickLog and 5m for MES Daily. This has been verified in the code.
+
+## 4. Next Steps for Next Agent
+- Review any pending feature requests from the user.
+- If the user asks for Auto Log Downloader or Analytics Dashboards, remember the user explicitly wants to be asked for detailed requirements BEFORE any implementation begins. Do NOT guess the implementation.
+- Continue adhering to the "glassmorphism" modern UI design rules.

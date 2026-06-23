@@ -446,7 +446,6 @@ let serverOnline = false;
 
 let isBrowsingOutput = false;
 
-const stateByModule = Object.fromEntries(Object.keys(MODULES).map((key) => [key, { files: {}, output: '', mergeAll: false, useCsnMapping: false, mergeSheetPrefixes: {} }]));
 
 const MAX_RETRIES = 3;
 
@@ -721,7 +720,7 @@ function removeDuplicatedMesRequirementHeaders(list) {
     Array.from(list.parentElement.children).forEach((child) => {
         if (child.id === 'mes-requirement-header-aligned' || child.id === 'mes-requirement-list') return;
         const compact = String(child.textContent || '').replace(/\s+/g, '').toUpperCase();
-        const looksLikeHeader = compact.includes('WO') && compact.includes('PDLINE') && compact.includes('FILENAME');
+        const looksLikeHeader = compact.includes('WO') && compact.includes('FILENAME');
         const noInputs = !child.querySelector('input,textarea,button');
         if (looksLikeHeader && noInputs) child.remove();
     });
@@ -849,97 +848,11 @@ function filterQuickLogResultsBySearchText(rows = []) {
 }
 // QL-06: Generate CSV string from visible rows
 
-async function precheckOneClcaFile(file) {
-    const key = getClcaFileKey(file);
-    if (!key) return;
-    clcaPrecheckByKey[key] = { loading: true };
-    renderClcaMergeRenamePanel();
-    const form = new FormData();
-    form.append('data', file);
-    form.append('selected_stations', JSON.stringify(Array.from(selectedStationsByModule.clca || [])));
-    try {
-        const response = await fetchRetry('/api/clca/precheck', { method: 'POST', body: form }, 1);
-        const data = await response.json();
-        if (!response.ok || !data.success) throw createBackendError(data, 'CLCA pre-check failed.');
-        clcaPrecheckByKey[key] = data;
-    } catch (err) {
-        clcaPrecheckByKey[key] = { ok: false, error: String(err.message || err) };
-    }
-    renderClcaMergeRenamePanel();
-}
-
-function sortStationsByPresetOrder(stations, presets) {
-    const source = Array.isArray(stations) ? stations : [];
-    const presetMap = (presets && typeof presets === 'object') ? presets : {};
-    const presetKeys = Object.keys(presetMap);
-    const preferredPresetOrder = ['FATP', 'DIP', 'SMT'];
-    const orderedPresetKeys = [
-        ...preferredPresetOrder.filter((k) => presetKeys.includes(k)),
-        ...presetKeys.filter((k) => !preferredPresetOrder.includes(k))
-    ];
-    const stationRank = new Map();
-    let rank = 0;
-    for (const presetKey of orderedPresetKeys) {
-        const list = Array.isArray(presetMap[presetKey]) ? presetMap[presetKey] : [];
-        for (const station of list) {
-            if (!stationRank.has(station)) stationRank.set(station, rank++);
-        }
-    }
-    const originalIndex = new Map(source.map((station, idx) => [station, idx]));
-    return [...source].sort((a, b) => {
-        const aRank = stationRank.has(a) ? stationRank.get(a) : Number.MAX_SAFE_INTEGER;
-        const bRank = stationRank.has(b) ? stationRank.get(b) : Number.MAX_SAFE_INTEGER;
-        if (aRank !== bRank) return aRank - bRank;
-        return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
-    });
-}
 
 
-const dateFromEl = document.getElementById('mes-datefrom');
-if (dateFromEl) {
-    dateFromEl.addEventListener('change', () => {
-        syncMesTimeRangeFromStart();
-        updateStatus();
-    });
-}
 
 
-const dateToEl = document.getElementById('mes-dateto');
-if (dateToEl) {
-    dateToEl.addEventListener('change', () => {
-        syncMesHiddenRange();
-        updateMesOutputNameFromRange();
-        updateStatus();
-    });
-}
 
-
-const hourFromEl = document.getElementById('mes-hourfrom');
-if (hourFromEl) {
-    hourFromEl.addEventListener('input', () => {
-        syncMesTimeRangeFromStart();
-        updateStatus();
-    });
-    hourFromEl.addEventListener('blur', () => {
-        setMesHourValue(hourFromEl, hourFromEl.value);
-        syncMesTimeRangeFromStart();
-        updateStatus();
-    });
-}
-
-
-const hourToEl = document.getElementById('mes-hourto');
-if (hourToEl) {
-    hourToEl.addEventListener('input', () => {
-        syncMesHiddenRange();
-        updateStatus();
-    });
-    hourToEl.addEventListener('blur', () => {
-        setMesHourValue(hourToEl, hourToEl.value);
-        syncMesHiddenRange();
-        updateStatus();
-    });
-}
 
 // Initialization moved to main.js
 
