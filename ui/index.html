@@ -359,6 +359,9 @@
                                         <span class="sr-only" data-i18n="removeRow">Remove row</span>
                                     </div>
                                     <div id="mes-requirement-list" class="space-y-2"></div>
+                                    <div class="flex items-center justify-between mt-1.5">
+                                        <span class="text-[10px] text-textMuted dark:text-gray-400 font-medium">Support comma, space, newline (Press <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Ctrl</kbd> + <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Enter</kbd> to search)</span>
+                                    </div>
                                     <!-- Merge option -->
                                     <div class="flex items-center gap-2.5 mt-3 pt-2.5 border-t border-borderLight dark:border-borderDark">
                                         <input type="checkbox" id="mes-merge-all" class="w-4 h-4 rounded border-borderLight dark:border-borderDark accent-primary cursor-pointer shrink-0">
@@ -511,7 +514,10 @@
                                 <span class="text-[10px] text-textMuted dark:text-gray-400 font-medium">One station per line. Excel paste supported.</span>
                             </div>
                             <textarea id="station-edit-textarea" class="flex-1 w-full text-sm font-mono p-3 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 text-textMain dark:text-textDark resize-none shadow-inner" placeholder="Paste stations here..."></textarea>
-                            <div class="flex justify-end gap-2 mt-3 shrink-0">
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-[10px] text-textMuted dark:text-gray-400 font-medium">Support comma, space, newline (Press <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Ctrl</kbd> + <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Enter</kbd> to search)</span>
+                            </div>
+                            <div class="flex justify-end gap-2 mt-2 shrink-0">
                                 <button id="btn-cancel-edit-stations" class="px-4 py-1.5 text-xs font-medium rounded-lg text-textMuted hover:bg-black/5 dark:hover:bg-white/10 transition-colors">Cancel</button>
                                 <button id="btn-save-edit-stations" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors flex items-center gap-1.5 shadow-md shadow-primary/20"><i data-lucide="save" class="w-3.5 h-3.5"></i> Save</button>
                             </div>
