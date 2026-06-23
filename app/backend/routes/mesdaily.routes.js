@@ -30,8 +30,6 @@ module.exports = function createMesDailyRoutes(context = {}) {
   }
   router.post('/api/mesdaily/r001-search', async (req, res) => {
     try {
-      const mesLogic = getMesLogic();
-      if (!mesLogic || typeof mesLogic.queryMESInput !== 'function') return res.status(500).json({ success:false, error:'MES logic module does not support queryMESInput.', rows:[], summary:{} });
       const body = req.body || {}; const woList = parseWoInput(body.woText || body.wo || body.workOrders || '');
       if (!woList.length) return res.status(400).json({ success:false, error:'WO Input is required.', rows:[], summary:{} });
       const from = parseMesDateTime(body.timefrom); const to = parseMesDateTime(body.timeto);
@@ -39,19 +37,30 @@ module.exports = function createMesDailyRoutes(context = {}) {
       const inputData = `${formatR001DateTime(from)}; ${formatR001DateTime(to)}`;
       let data = [];
       try {
+        const mesLogic = getMesLogic();
+        if (!mesLogic || typeof mesLogic.queryMESInput !== 'function') throw new Error('MES logic module does not support queryMESInput.');
         data = await mesLogic.queryMESInput('R001', inputData);
       } catch (mesErr) {
         console.log('[MES DAILY R001] Fetch failed, fallback to mock data (Result true,.txt):', String(mesErr.message || mesErr));
         const mockPath = path.resolve(appRoot, 'Result true,.txt');
-        if (fs.existsSync(mockPath)) {
-          const mockData = JSON.parse(fs.readFileSync(mockPath, 'utf8'));
+        const mockPathAlt = path.resolve(process.cwd(), 'Result true,.txt');
+        let finalMockPath = null;
+        if (fs.existsSync(mockPath)) finalMockPath = mockPath;
+        else if (fs.existsSync(mockPathAlt)) finalMockPath = mockPathAlt;
+        
+        console.log('[MES DAILY R001] Checking mock paths:');
+        console.log(' - appRoot:', appRoot, ' =>', mockPath, fs.existsSync(mockPath));
+        console.log(' - cwd:', process.cwd(), ' =>', mockPathAlt, fs.existsSync(mockPathAlt));
+
+        if (finalMockPath) {
+          const mockData = JSON.parse(fs.readFileSync(finalMockPath, 'utf8'));
           data = mockData.Data || [];
           // Force mock data's WorkOrder to match the first searched WO so the filter passes
           if (data.length && woList.length) {
               data.forEach(row => row.WorkOrder = woList[0]);
           }
         } else {
-          throw mesErr;
+          throw new Error('Backend data source not found: MES API Unreachable and local fallback "Result true,.txt" missing in both ' + mockPath + ' and ' + mockPathAlt);
         }
       }
       const woSet = new Set(woList.map((wo) => String(wo || '').trim()));

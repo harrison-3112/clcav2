@@ -393,11 +393,14 @@ function updateQuickLogSourceVisibility() {
     document.getElementById('quicklog-model-field')?.classList.toggle('hidden', isMes);
     document.getElementById('quicklog-mode-field')?.classList.toggle('hidden', isMes);
     const inputLabel = document.getElementById('quicklog-input-label');
-    const inputHint = document.getElementById('quicklog-input-hint');
     if (inputLabel) inputLabel.textContent = isMes ? 'SN / CSN Input' : t('quickLogInput');
-    if (inputHint) inputHint.textContent = t('quickLogInputHint');
     updateQuickLogSourceToggle();
     renderQuickLogMesTraceFilterBar();
+    renderMesTraceHistory();
+    const historyContainer = document.getElementById('quicklog-mestrace-history-container');
+    if (historyContainer) {
+        historyContainer.classList.toggle('hidden', !isMes);
+    }
 }
 
 
@@ -557,7 +560,7 @@ async function searchQuickLog() {
         if (!isMesTrace && data.summary && Array.isArray(data.summary.notFound) && data.summary.notFound.length) {
             logToConsole(`Not found: ${data.summary.notFound.join(', ')}`, 'warning');
         }
-        saveQuickLogHistory(snText);
+        if (isMesTrace) saveMesTraceHistory(snText);
         // Show/hide download button based on mode
         const qlZipBtn = document.getElementById('quicklog-download-zip');
         if (qlZipBtn) qlZipBtn.classList.toggle('hidden', !isMesTrace || quickLogRows.length === 0);
@@ -619,7 +622,7 @@ function renderQuickLogPanel() {
                     <div class="flex items-center justify-between mt-1">
                         <span id="quicklog-input-hint" class="text-xs text-textMuted dark:text-gray-400">Support comma, space, newline (Press <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Ctrl</kbd> + <kbd class="font-sans px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded border border-black/10 dark:border-white/10 mx-0.5">Enter</kbd> to search)</span>
                     </div>
-                    <div id="quicklog-history-container" class="flex flex-wrap gap-2 mt-2 empty:hidden"></div>
+                    <div id="quicklog-mestrace-history-container" class="flex flex-wrap gap-2 mt-2 hidden empty:hidden"></div>
                 </label>
                 <div class="quicklog-main-actions flex items-center gap-3">
                     <button id="quicklog-generate" type="button" class="quicklog-generate-btn flex-1 py-3.5 px-8 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-500 hover:from-cyan-400 hover:via-blue-500 hover:to-violet-400 dark:from-cyan-400 dark:via-blue-400 dark:to-violet-400 dark:hover:from-cyan-300 dark:hover:via-blue-300 dark:hover:to-violet-300 text-white dark:text-bgDark font-semibold text-base shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-violet-500/20 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg relative overflow-hidden font-display tracking-wide">
@@ -687,7 +690,7 @@ function renderQuickLogPanel() {
     renderQuickLogRows(quickLogRows);
     _refreshIcons(fileCards);
     loadQuickLogModels();
-    renderQuickLogHistory();
+
 }
 
 function bindQuickLogUi() {
@@ -721,8 +724,8 @@ function bindQuickLogUi() {
     // QL-06: Bind export button
     document.getElementById('quicklog-export-csv')?.addEventListener('click', downloadQuickLogCsv);
     // History click
-    document.getElementById('quicklog-history-container')?.addEventListener('click', (event) => {
-        const chip = event.target.closest('.quicklog-history-chip');
+    document.getElementById('quicklog-mestrace-history-container')?.addEventListener('click', (event) => {
+        const chip = event.target.closest('.quicklog-mestrace-history-chip');
         if (!chip) return;
         const input = document.getElementById('quicklog-input');
         if (input) input.value = chip.dataset.value || '';
@@ -863,23 +866,23 @@ function _showQuickLogZipStatus(found, missing) {
     _refreshIcons(statusEl);
 }
 
-function saveQuickLogHistory(input) {
+function saveMesTraceHistory(input) {
     const text = String(input || '').trim();
     if (!text) return;
     let history = [];
-    try { history = JSON.parse(localStorage.getItem('quicklog_history') || '[]'); } catch (_) {}
+    try { history = JSON.parse(localStorage.getItem('quicklog_mestrace_history') || '[]'); } catch (_) {}
     history = history.filter((item) => item !== text);
     history.unshift(text);
-    if (history.length > 5) history = history.slice(0, 5);
-    localStorage.setItem('quicklog_history', JSON.stringify(history));
-    renderQuickLogHistory();
+    if (history.length > 3) history = history.slice(0, 3);
+    localStorage.setItem('quicklog_mestrace_history', JSON.stringify(history));
+    if (isQuickLogMesTraceMode()) renderMesTraceHistory();
 }
 
-function renderQuickLogHistory() {
-    const container = document.getElementById('quicklog-history-container');
+function renderMesTraceHistory() {
+    const container = document.getElementById('quicklog-mestrace-history-container');
     if (!container) return;
     let history = [];
-    try { history = JSON.parse(localStorage.getItem('quicklog_history') || '[]'); } catch (_) {}
+    try { history = JSON.parse(localStorage.getItem('quicklog_mestrace_history') || '[]'); } catch (_) {}
     if (!history.length) {
         container.innerHTML = '';
         return;
@@ -887,7 +890,7 @@ function renderQuickLogHistory() {
     container.innerHTML = history.map((item) => {
         const text = quickLogEscape(item);
         const display = text.length > 25 ? text.substring(0, 25) + '...' : text;
-        return `<button type="button" class="quicklog-history-chip px-2 py-1 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 border border-borderLight dark:border-borderDark rounded-md text-[10px] text-textMuted dark:text-gray-300 transition-colors" data-value="${text}" title="${text}">${display}</button>`;
+        return `<button type="button" class="quicklog-mestrace-history-chip px-2 py-1 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 border border-borderLight dark:border-borderDark rounded-md text-[10px] text-textMuted dark:text-gray-300 transition-colors" data-value="${text}" title="${text}">${display}</button>`;
     }).join('');
 }
 

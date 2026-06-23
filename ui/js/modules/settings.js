@@ -72,11 +72,17 @@ function getAliasRowHtml(mesName, networkNames) {
 }
 
 
-function getModelRowHtml(name) {
+function getModelRowHtml(name, logPath = '', csvPath = '') {
     return `
         <tr class="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
             <td class="px-2 py-2 border-r border-borderLight dark:border-borderDark">
                 <input type="text" class="settings-model-name w-full bg-transparent outline-none font-mono text-xs" value="${clcaEscapeHtml(name)}" placeholder="VO0301">
+            </td>
+            <td class="px-2 py-2 border-r border-borderLight dark:border-borderDark">
+                <input type="text" class="settings-model-log-path w-full bg-transparent outline-none font-mono text-xs" value="${clcaEscapeHtml(logPath)}" placeholder="\\\\server\\Testlog\\camera\\VO0301\\SYNC LOCAL DATA">
+            </td>
+            <td class="px-2 py-2 border-r border-borderLight dark:border-borderDark">
+                <input type="text" class="settings-model-csv-path w-full bg-transparent outline-none font-mono text-xs" value="${clcaEscapeHtml(csvPath)}" placeholder="\\\\server\\Testlog\\camera\\VO0301\\CSV">
             </td>
             <td class="px-2 py-2 text-center">
                 <button type="button" class="btn-delete-row p-1.5 text-textMuted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
@@ -141,7 +147,9 @@ function populateSettingsUI(data) {
     const models = Array.isArray(data.models) ? data.models : [];
     models.forEach(m => {
         const name = typeof m === 'string' ? m : (m.name || '');
-        if (name) modelsTbody.insertAdjacentHTML('beforeend', getModelRowHtml(name));
+        const logPath = typeof m === 'object' ? (m.logPath || '') : '';
+        const csvPath = typeof m === 'object' ? (m.csvPath || '') : '';
+        if (name) modelsTbody.insertAdjacentHTML('beforeend', getModelRowHtml(name, logPath, csvPath));
     });
     
     const aliasesTbody = document.getElementById('settings-aliases-tbody');
@@ -174,7 +182,9 @@ async function saveSettings() {
         const newModels = [];
         document.querySelectorAll('#settings-models-tbody tr').forEach(tr => {
             const name = tr.querySelector('.settings-model-name')?.value?.trim();
-            if (name) newModels.push(name);
+            const logPath = tr.querySelector('.settings-model-log-path')?.value?.trim() || '';
+            const csvPath = tr.querySelector('.settings-model-csv-path')?.value?.trim() || '';
+            if (name) newModels.push({ name, logPath, csvPath });
         });
         newData.models = newModels;
         
@@ -201,6 +211,7 @@ async function saveSettings() {
             showImportantToast('success', t('settingsSaved'), t('settingsSavedMsg'));
             closeSettingsModal();
             if (typeof loadStations === 'function') loadStations(); // Refresh stations UI
+            if (typeof loadQuickLogModels === 'function') loadQuickLogModels(); // Refresh models UI
         } else {
             showImportantToast('error', t('reqFailed'), jsonQuicklog.error || 'Unknown error');
         }

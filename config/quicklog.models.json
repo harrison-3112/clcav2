@@ -1,7 +1,15 @@
 {
   "models": [
-    "VO0301",
-    "EO0305"
+    {
+      "name": "VO0301",
+      "logPath": "",
+      "csvPath": ""
+    },
+    {
+      "name": "EO0305",
+      "logPath": "",
+      "csvPath": ""
+    }
   ],
   "mesTrace": {
     "apiUrl": "http://10.24.97.22/MES_API/api/MESApi/ApiAll",

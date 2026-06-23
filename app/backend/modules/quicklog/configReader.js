@@ -105,6 +105,8 @@ function normalizeQuickLogModel(raw) {
   if (!name) return null;
   return {
     name,
+    logPath: typeof raw === 'object' ? String(raw.logPath || '').trim() : '',
+    csvPath: typeof raw === 'object' ? String(raw.csvPath || '').trim() : '',
     path: typeof raw === 'object' ? String(raw.path || '').trim() : '',
     project: name,
     fixture: 'J01',
@@ -135,10 +137,18 @@ function loadQuickLogModelsFromConfig() {
   }
 }
 
-const QUICKLOG_MODELS = loadQuickLogModelsFromConfig();
+let QUICKLOG_MODELS = loadQuickLogModelsFromConfig();
+
+function reloadQuickLogModelsFromConfig() {
+  QUICKLOG_MODELS = loadQuickLogModelsFromConfig();
+}
 
 function getQuickLogModel(modelName) {
   return QUICKLOG_MODELS[String(modelName || '').trim()] || null;
+}
+
+function getQuickLogModelsDict() {
+  return QUICKLOG_MODELS;
 }
 
 function resolveQuickLogConfig(input = {}) {
@@ -147,12 +157,13 @@ function resolveQuickLogConfig(input = {}) {
   const requestedModel = String(body.model || body.quickLogModel || body._QuickLogModel || row._QuickLogModel || '').trim();
   const model = getQuickLogModel(requestedModel);
   if (model) {
-      let base = model.path;
+      let base = model.logPath || model.path;
       if (!base) {
           base = require('path').join(QUICKLOG_GLOBAL_ROOT, model.name, 'SYNC LOCAL DATA');
       }
       return { 
           base, 
+          csvBase: model.csvPath || '',
           project: model.project || model.name, 
           fixture: model.fixture || 'J01', 
           model: model.name 
@@ -160,6 +171,7 @@ function resolveQuickLogConfig(input = {}) {
   }
   return {
     base: '',
+    csvBase: '',
     project: String(body.project || body._QuickLogProject || row._QuickLogProject || requestedModel || 'VO0301').trim(),
     fixture: String(body.fixture || body._QuickLogFixture || row._QuickLogFixture || 'J01').trim(),
     model: requestedModel,
@@ -184,8 +196,9 @@ module.exports = {
   getQuickLogCore,
   getQuickLogLocalStationsConfig,
   resolveQuickLogLocalStationForServer,
-  QUICKLOG_MODELS,
+  getQuickLogModelsDict,
   getQuickLogModel,
+  reloadQuickLogModelsFromConfig,
   resolveQuickLogConfig,
   openQuickLogFile,
   QUICKLOG_MODELS_CONFIG_PATH,

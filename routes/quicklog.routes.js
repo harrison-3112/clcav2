@@ -7,8 +7,9 @@ const {
   getQuickLogCore,
   getQuickLogLocalStationsConfig,
   resolveQuickLogLocalStationForServer,
-  QUICKLOG_MODELS,
+  getQuickLogModelsDict,
   getQuickLogModel,
+  reloadQuickLogModelsFromConfig,
   resolveQuickLogConfig,
   openQuickLogFile,
   QUICKLOG_MODELS_CONFIG_PATH,
@@ -49,7 +50,7 @@ module.exports = function createQuickLogRoutes(context) {
       for (const m of models) {
           const modelName = typeof m === 'string' ? m.trim() : String(m.name || '').trim();
           if (modelName) {
-              const expectedPath = path.join(globalRoot, modelName, 'SYNC LOCAL DATA');
+              const expectedPath = m.logPath ? m.logPath : path.join(globalRoot, modelName, 'SYNC LOCAL DATA');
               if (!fs.existsSync(expectedPath)) {
                   return res.status(400).json({ success: false, error: `Folder does not exist on network for model ${modelName}:\n${expectedPath}` });
               }
@@ -58,10 +59,9 @@ module.exports = function createQuickLogRoutes(context) {
       fs.mkdirSync(path.dirname(QUICKLOG_MODELS_CONFIG_PATH), { recursive: true });
       fs.writeFileSync(QUICKLOG_MODELS_CONFIG_PATH, JSON.stringify(newData, null, 2), 'utf8');
       
-      // Note: In Phase 2 we would need a proper reload method. For now, we tell user to restart.
-      // We can't reassign QUICKLOG_MODELS because it's imported as const.
+      reloadQuickLogModelsFromConfig();
       
-      res.json({ success: true, message: 'Settings saved successfully. Please restart server.' });
+      res.json({ success: true, message: 'Settings saved successfully.' });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error.message || error) });
     }
@@ -97,7 +97,7 @@ module.exports = function createQuickLogRoutes(context) {
   });
 
   router.get('/api/quicklog/models', (_req, res) => {
-    res.json({ success: true, models: Object.values(QUICKLOG_MODELS) });
+    res.json({ success: true, models: Object.values(getQuickLogModelsDict()) });
   });
 
   router.get(['/api/quicklog/modes', '/api/sn-search/modes'], (req, res) => {

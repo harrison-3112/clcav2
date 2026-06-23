@@ -17,6 +17,7 @@ let mesR001Rows = [];
 let mesR001SelectedIndex = -1;
 
 let mesDailyActiveFeature = 'rtydaily';
+let defectDailyCharts = [];
 
 function formatMesDate(date) {
     return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
@@ -665,12 +666,17 @@ function ensureMesR001Panel() {
             if (input) input.value = chip.dataset.value || '';
         });
         document.getElementById('mes-r001-download-zip')?.addEventListener('click', downloadMesR001LogsZip);
-        // ZIP status tooltip hover
+        // ZIP status tooltip toggle
         const zipStatus = document.getElementById('mes-r001-zip-status');
         const zipTooltip = document.getElementById('mes-r001-zip-tooltip');
         if (zipStatus && zipTooltip) {
-            zipStatus.addEventListener('mouseenter', () => zipTooltip.classList.remove('hidden'));
-            zipStatus.addEventListener('mouseleave', () => zipTooltip.classList.add('hidden'));
+            zipStatus.addEventListener('click', (e) => {
+                e.stopPropagation();
+                zipTooltip.classList.toggle('hidden');
+            });
+            document.addEventListener('click', (e) => {
+                if (!zipStatus.contains(e.target)) zipTooltip.classList.add('hidden');
+            });
         }
     }
     initMesR001TimePickers();
@@ -760,7 +766,7 @@ function saveMesR001History(input) {
     try { history = JSON.parse(localStorage.getItem('mes_r001_history') || '[]'); } catch (_) {}
     history = history.filter((item) => item !== text);
     history.unshift(text);
-    if (history.length > 5) history = history.slice(0, 5);
+    if (history.length > 3) history = history.slice(0, 3);
     localStorage.setItem('mes_r001_history', JSON.stringify(history));
     renderMesR001History();
 }
@@ -1012,4 +1018,358 @@ function initMesMergeOption() {
     });
     applyMesMergeModeUi();
     setQuickLogReportControlsVisibility();
+}
+
+
+function destroyDefectDashboard() {
+    if (Array.isArray(defectDailyCharts)) {
+        defectDailyCharts.forEach(chart => chart.destroy());
+    }
+    defectDailyCharts = [];
+    const container = document.getElementById('mes-r001-dashboard');
+    if (container) {
+        container.innerHTML = '';
+        container.classList.add('hidden');
+    }
+}
+
+function renderDefectDashboard(rows, woList) {
+    destroyDefectDashboard();
+    const container = document.getElementById('mes-r001-dashboard');
+    if (!container) return;
+
+    if (!Array.isArray(woList) || woList.length === 0) return;
+
+    container.classList.remove('hidden');
+
+    woList.forEach(wo => {
+        // Group rows for this WO
+        const woRows = (rows || []).filter(r => r.WorkOrder === wo || r.WO === wo);
+        
+        // Mocking Data Logic for Demo
+        const hourlyData = [];
+        let totalInput = 0;
+        let totalFail = woRows.length > 0 ? woRows.length : Math.floor(Math.random() * 50) + 10;
+        
+        // Count actual fails per hour if we have rows
+        const failsPerHour = new Array(24).fill(0);
+        if (woRows.length > 0) {
+            woRows.forEach(r => {
+                const dt = r.defectTime || r.Time || '';
+                const m = dt.match(/\s(\d{2}):/);
+                if (m) {
+                    const h = parseInt(m[1], 10);
+                    failsPerHour[h]++;
+                } else {
+                    failsPerHour[12]++; // default noon
+                }
+            });
+        } else {
+            // distribute mock totalFail randomly
+            for (let i = 0; i < totalFail; i++) {
+                const h = Math.floor(Math.random() * 12) + 8; // 8am to 7pm
+                failsPerHour[h]++;
+            }
+        }
+
+        // Generate PASS data
+        let totalPass = 0;
+        for (let i = 0; i < 24; i++) {
+            let pass = 0;
+            if (i >= 8 && i <= 20) { // working hours
+                pass = Math.floor(Math.random() * 500) + 100;
+            } else if (failsPerHour[i] > 0) {
+                pass = Math.floor(Math.random() * 100) + 20; // if there's fail, there must be pass
+            }
+            const fail = failsPerHour[i];
+            const input = pass + fail;
+            const yieldRate = input > 0 ? ((pass / input) * 100).toFixed(2) : null;
+            
+            totalInput += input;
+            totalPass += pass;
+            
+            hourlyData.push({
+                hour: `${i.toString().padStart(2, '0')}:00`,
+                yield: yieldRate,
+                input: input
+            });
+        }
+
+        const overallYield = totalInput > 0 ? ((totalPass / totalInput) * 100).toFixed(2) : 0;
+
+        // Top 3 Defects
+        const defectCounts = {};
+        if (woRows.length > 0) {
+            woRows.forEach(r => {
+                const code = r.DefectCode || r.ErrorCode || 'Unknown';
+                defectCounts[code] = (defectCounts[code] || 0) + 1;
+            });
+        } else {
+            // Mock defect codes
+            defectCounts['VNPWRTU001'] = Math.floor(totalFail * 0.4);
+            defectCounts['VNSCR002'] = Math.floor(totalFail * 0.3);
+            defectCounts['VNBTN003'] = Math.floor(totalFail * 0.2);
+            defectCounts['OTHER'] = totalFail - defectCounts['VNPWRTU001'] - defectCounts['VNSCR002'] - defectCounts['VNBTN003'];
+        }
+
+        const sortedDefects = Object.entries(defectCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3);
+        
+        const pieLabels = sortedDefects.map(d => d[0]);
+        const pieData = sortedDefects.map(d => d[1]);
+
+        // Build UI
+        const woSection = document.createElement('div');
+        woSection.className = 'glass-card rounded-xl border border-borderLight dark:border-borderDark overflow-hidden mb-6';
+        
+        woSection.innerHTML = `
+            <div class="section-header-gradient justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="p-1 rounded-md bg-white/20"><i data-lucide="bar-chart-2" class="w-4 h-4"></i></div>
+                    <span class="text-sm font-semibold">Dashboard: ${clcaEscapeHtml(wo)}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="text-xs font-medium px-2.5 py-1 bg-white/20 rounded-full text-white">
+                        Overall Yield: ${overallYield}%
+                    </div>
+                    <button class="export-html-btn inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors" data-wo="${wo}" title="Export dashboard as standalone HTML"><i data-lucide="file-code" class="w-3.5 h-3.5"></i><span>Export HTML</span></button>
+                </div>
+            </div>
+            <div class="p-5">
+                <!-- Number Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-borderLight dark:border-borderDark">
+                        <div class="text-xs text-textMuted dark:text-gray-400 font-medium mb-1 uppercase tracking-wider">Total Input</div>
+                        <div class="text-2xl font-bold text-textMain dark:text-textDark font-display">${totalInput.toLocaleString()}</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-borderLight dark:border-borderDark">
+                        <div class="text-xs text-textMuted dark:text-gray-400 font-medium mb-1 uppercase tracking-wider">Total Pass</div>
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400 font-display">${totalPass.toLocaleString()}</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-borderLight dark:border-borderDark">
+                        <div class="text-xs text-textMuted dark:text-gray-400 font-medium mb-1 uppercase tracking-wider">Total Fail</div>
+                        <div class="text-2xl font-bold text-red-600 dark:text-red-400 font-display">${totalFail.toLocaleString()}</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-borderLight dark:border-borderDark relative overflow-hidden">
+                        <div class="text-xs text-textMuted dark:text-gray-400 font-medium mb-1 uppercase tracking-wider">Yield Rate</div>
+                        <div class="text-2xl font-bold text-primary dark:text-secondary font-display">${overallYield}%</div>
+                        <div class="absolute -right-4 -bottom-4 opacity-10 text-primary dark:text-secondary"><i data-lucide="percent" class="w-16 h-16"></i></div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Pie Chart -->
+                    <div class="col-span-1 bg-white dark:bg-gray-900 rounded-xl border border-borderLight dark:border-borderDark p-4 shadow-sm flex flex-col items-center">
+                        <h3 class="text-sm font-semibold text-textMain dark:text-textDark mb-4 self-start">Top 3 Defects</h3>
+                        <div class="relative w-full max-w-[220px] aspect-square flex items-center justify-center">
+                            <canvas id="pie-${wo}"></canvas>
+                        </div>
+                    </div>
+                    <!-- Line Chart -->
+                    <div class="col-span-1 lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl border border-borderLight dark:border-borderDark p-4 shadow-sm">
+                        <h3 class="text-sm font-semibold text-textMain dark:text-textDark mb-4">Hourly Yield Rate</h3>
+                        <div class="relative w-full h-[220px]">
+                            <canvas id="line-${wo}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(woSection);
+        if (window.lucide) lucide.createIcons({ root: woSection });
+
+        // Initialize Charts
+        const pieCtx = document.getElementById(`pie-${wo}`);
+        const lineCtx = document.getElementById(`line-${wo}`);
+
+        if (window.Chart) {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#9ca3af' : '#6b7280';
+            const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+            Chart.defaults.color = textColor;
+            Chart.defaults.font.family = "'Inter', sans-serif";
+
+            const pieChart = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: pieLabels,
+                    datasets: [{
+                        data: pieData,
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)', // red-500
+                            'rgba(245, 158, 11, 0.8)', // amber-500
+                            'rgba(59, 130, 246, 0.8)'  // blue-500
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, color: textColor } }
+                    }
+                }
+            });
+
+            const lineLabels = hourlyData.map(d => d.hour);
+            const lineYields = hourlyData.map(d => d.yield);
+
+            const lineChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: lineLabels,
+                    datasets: [{
+                        label: 'Yield %',
+                        data: lineYields,
+                        borderColor: '#0ea5e9', // sky-500
+                        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#0ea5e9',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4,
+                        spanGaps: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) { return `Yield: ${context.parsed.y}%`; }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 80,
+                            max: 100,
+                            grid: { color: gridColor },
+                            ticks: { callback: function(value) { return value + '%'; }, color: textColor }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor }
+                        }
+                    }
+                }
+            });
+
+            defectDailyCharts.push(pieChart, lineChart);
+        }
+
+        // Add Export HTML logic
+        const btnExport = woSection.querySelector('.export-html-btn');
+        if (btnExport) {
+            btnExport.addEventListener('click', () => {
+                const htmlContent = `<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ${wo}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#3b82f6', secondary: '#8b5cf6' }, fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } } }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+        body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%), radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%); }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); }
+        .section-header-gradient { background: linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05)); border-bottom: 1px solid #334155; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .number-card { transition: all 0.3s ease; }
+        .number-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); border-color: rgba(59, 130, 246, 0.5); }
+    </style>
+</head>
+<body class="antialiased p-6 md:p-10">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight font-display bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent inline-flex items-center gap-3">
+                    <i data-lucide="layout-dashboard" class="w-8 h-8 text-primary"></i> Defect Daily Report
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">Exported Data for ${wo}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-medium px-3 py-1.5 bg-slate-800 rounded-full border border-slate-700 text-slate-300">Offline Report</span>
+            </div>
+        </header>
+        <main id="dashboard-container" class="space-y-8">
+            ${woSection.innerHTML}
+        </main>
+    </div>
+    <script>
+        lucide.createIcons();
+        
+        // Re-initialize Charts
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        
+        const pieCtx = document.getElementById('pie-${wo}');
+        const lineCtx = document.getElementById('line-${wo}');
+        
+        new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ${JSON.stringify(pieLabels)},
+                datasets: [{
+                    data: ${JSON.stringify(pieData)},
+                    backgroundColor: ['rgba(239, 68, 68, 0.85)', 'rgba(245, 158, 11, 0.85)', 'rgba(139, 92, 246, 0.85)'],
+                    borderWidth: 1, borderColor: '#0f172a', hoverOffset: 6
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 15, font: { size: 11 } } } } }
+        });
+
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: ${JSON.stringify(hourlyData.map(d => d.hour))},
+                datasets: [{
+                    label: 'Yield Rate',
+                    data: ${JSON.stringify(hourlyData.map(d => d.yield))},
+                    borderColor: '#3b82f6',
+                    backgroundColor: (context) => {
+                        const ctx = context.chart.ctx;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+                        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+                        return gradient;
+                    },
+                    borderWidth: 3, pointBackgroundColor: '#0f172a', pointBorderColor: '#3b82f6',
+                    pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6, fill: true, tension: 0.4, spanGaps: true
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', borderWidth: 1, padding: 12, callbacks: { label: function(context) { return \`Yield: \${context.parsed.y}%\`; } } } },
+                scales: { y: { min: 80, max: 100, grid: { color: '#334155', drawBorder: false }, ticks: { callback: function(value) { return value + '%'; } } }, x: { grid: { display: false, drawBorder: false }, ticks: { maxRotation: 45, minRotation: 45 } } }
+            }
+        });
+    </script>
+</body>
+</html>`;
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Dashboard_${wo}.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+    });
 }
