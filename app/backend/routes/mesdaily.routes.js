@@ -4,15 +4,6 @@
 const fs = require('fs');
 const path = require('path');
 
-function parseMesDateTimeLocal(dtStr) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(dtStr || '').trim());
-  if (!m) return null;
-  return {
-    date: m[1] + m[2] + m[3],
-    hour: parseInt(m[4], 10),
-    minute: parseInt(m[5], 10),
-  };
-}
 
 module.exports = function createMesDailyRoutes(context = {}) {
   const router = require('express').Router();
@@ -41,27 +32,7 @@ module.exports = function createMesDailyRoutes(context = {}) {
         if (!mesLogic || typeof mesLogic.queryMESInput !== 'function') throw new Error('MES logic module does not support queryMESInput.');
         data = await mesLogic.queryMESInput('R001', inputData);
       } catch (mesErr) {
-        console.log('[MES DAILY R001] Fetch failed, fallback to mock data (Result true,.txt):', String(mesErr.message || mesErr));
-        const mockPath = path.resolve(appRoot, 'Result true,.txt');
-        const mockPathAlt = path.resolve(process.cwd(), 'Result true,.txt');
-        let finalMockPath = null;
-        if (fs.existsSync(mockPath)) finalMockPath = mockPath;
-        else if (fs.existsSync(mockPathAlt)) finalMockPath = mockPathAlt;
-        
-        console.log('[MES DAILY R001] Checking mock paths:');
-        console.log(' - appRoot:', appRoot, ' =>', mockPath, fs.existsSync(mockPath));
-        console.log(' - cwd:', process.cwd(), ' =>', mockPathAlt, fs.existsSync(mockPathAlt));
-
-        if (finalMockPath) {
-          const mockData = JSON.parse(fs.readFileSync(finalMockPath, 'utf8'));
-          data = mockData.Data || [];
-          // Force mock data's WorkOrder to match the first searched WO so the filter passes
-          if (data.length && woList.length) {
-              data.forEach(row => row.WorkOrder = woList[0]);
-          }
-        } else {
-          throw new Error('Backend data source not found: MES API Unreachable and local fallback "Result true,.txt" missing in both ' + mockPath + ' and ' + mockPathAlt);
-        }
+        throw new Error('MES API Query Failed: ' + String(mesErr.message || mesErr));
       }
       const woSet = new Set(woList.map((wo) => String(wo || '').trim()));
       const rows = (Array.isArray(data) ? data : []).filter((row) => woSet.has(String(row && row.WorkOrder || '').trim()));

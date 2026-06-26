@@ -7,9 +7,9 @@ let mesLogicCached = null;
 
 function getMesLogic() {
   if (mesLogicCached) return mesLogicCached;
-  const logicPath = path.resolve(process.cwd(), 'MES API', 'logic.js');
+  const logicPath = path.resolve(__dirname, '..', 'mes-daily', 'logic.js');
   if (!fs.existsSync(logicPath)) {
-    throw new Error('MES logic module not found.');
+    throw new Error('MES logic module not found at: ' + logicPath);
   }
   const loaded = require(logicPath);
   if (!loaded || typeof loaded.run !== 'function') {

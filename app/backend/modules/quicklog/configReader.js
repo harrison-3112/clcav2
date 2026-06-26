@@ -12,11 +12,11 @@ function getQuickLogCore() {
   return quickLogCore;
 }
 
-const QUICKLOG_MODELS_CONFIG_PATH = path.resolve(process.cwd(), 'config', 'quicklog.models.json');
+const QUICKLOG_MODELS_CONFIG_PATH = path.resolve(__dirname, '../../../../config', 'quicklog.models.json');
 const QUICKLOG_LOCAL_STATIONS_CONFIG_CANDIDATES = [
-  path.resolve(process.cwd(), 'config', 'quicklog.local-stations.json'),
-  path.resolve(process.cwd(), 'quicklog.local-stations.json'),
-  path.resolve(process.cwd(), 'ui', 'quicklog.local-stations.json'),
+  path.resolve(__dirname, '../../../../config', 'quicklog.local-stations.json'),
+  path.resolve(__dirname, '../../../../', 'quicklog.local-stations.json'),
+  path.resolve(__dirname, '../../../../ui', 'quicklog.local-stations.json'),
 ];
 
 let quickLogLocalStationsConfigCache = null;

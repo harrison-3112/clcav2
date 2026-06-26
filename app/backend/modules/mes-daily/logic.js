@@ -351,6 +351,7 @@ function getB006DefectUnitKey(row) {
  * Build Data sheet rows — one row per process_name.
  * @param {object[]} b005      - filtered B005 records
  * @param {object[]} b006      - filtered B006 records
+ */
 function buildDataRows(b005, processRemap = {}, requirements = [], b006 = []) {
   // model lookup from B005
   const modelLookup = {};
