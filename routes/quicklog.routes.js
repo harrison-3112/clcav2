@@ -13,7 +13,8 @@ const {
   resolveQuickLogConfig,
   openQuickLogFile,
   QUICKLOG_MODELS_CONFIG_PATH,
-  getQuickLogGlobalRoot
+  getQuickLogGlobalRoot,
+  getQuickLogPrograms
 } = require('../modules/quicklog/configReader');
 
 module.exports = function createQuickLogRoutes(context) {
@@ -45,17 +46,6 @@ module.exports = function createQuickLogRoutes(context) {
   router.post('/api/config/quicklog', (req, res) => {
     try {
       const newData = req.body || {};
-      const globalRoot = (newData.mesTrace && newData.mesTrace.logRoot) ? String(newData.mesTrace.logRoot).trim() : getQuickLogGlobalRoot();
-      const models = Array.isArray(newData.models) ? newData.models : [];
-      for (const m of models) {
-          const modelName = typeof m === 'string' ? m.trim() : String(m.name || '').trim();
-          if (modelName) {
-              const expectedPath = m.logPath ? m.logPath : path.join(globalRoot, modelName, 'SYNC LOCAL DATA');
-              if (!fs.existsSync(expectedPath)) {
-                  return res.status(400).json({ success: false, error: `Folder does not exist on network for model ${modelName}:\n${expectedPath}` });
-              }
-          }
-      }
       fs.mkdirSync(path.dirname(QUICKLOG_MODELS_CONFIG_PATH), { recursive: true });
       fs.writeFileSync(QUICKLOG_MODELS_CONFIG_PATH, JSON.stringify(newData, null, 2), 'utf8');
       
@@ -100,6 +90,10 @@ module.exports = function createQuickLogRoutes(context) {
     res.json({ success: true, models: Object.values(getQuickLogModelsDict()) });
   });
 
+  router.get('/api/quicklog/programs', (_req, res) => {
+    res.json({ success: true, programs: getQuickLogPrograms() });
+  });
+
   router.get(['/api/quicklog/modes', '/api/sn-search/modes'], (req, res) => {
     try {
       const cfg = resolveQuickLogConfig(req.query || {});
@@ -127,7 +121,7 @@ module.exports = function createQuickLogRoutes(context) {
       const body = req.body || {};
       const cfg = resolveQuickLogConfig(body);
       if (!cfg.base) return res.status(400).json({ success: false, error: 'Model path not configured.', rows: [], summary: {} });
-      const data = getQuickLogCore().searchSn(cfg.base, body.snText || body.sn || '', body.mode || 'PROD', cfg.project, cfg.fixture);
+      const data = getQuickLogCore().searchSn(cfg.base, body.snText || body.sn || '', body.mode || 'PROD', cfg.project, cfg.fixture, cfg.program);
       res.status(data.success ? 200 : 400).json(data);
     } catch (err) {
       res.status(500).json({ success: false, error: String(err.message || err), rows: [], summary: {} });
@@ -139,7 +133,7 @@ module.exports = function createQuickLogRoutes(context) {
       const body = req.body || {};
       const cfg = resolveQuickLogConfig(body);
       if (!cfg.base) return res.status(400).json({ success: false, error: 'Model path not configured.' });
-      const data = getQuickLogCore().findLogFileForRow(cfg.base, body.row || {}, cfg.project, cfg.fixture);
+      const data = getQuickLogCore().findLogFileForRow(cfg.base, body.row || {}, cfg.project, cfg.fixture, cfg.program);
       if (!data.success) return res.status(404).json(data);
       await openQuickLogFile(data.path);
       res.json({ ...data, opened: true });
@@ -164,6 +158,9 @@ module.exports = function createQuickLogRoutes(context) {
     try {
       const body = req.body || {};
       const row = body.row || {};
+      const programName = body.program || 'MFGX';
+      const programs = getQuickLogPrograms();
+      const program = programs.find(p => p.name === programName) || programs[0];
       const model = getQuickLogMesRowModel(row);
       const sourceStation = getQuickLogMesRowStation(row);
       const resolved = resolveQuickLogLocalStationForServer(model, sourceStation);
@@ -178,7 +175,7 @@ module.exports = function createQuickLogRoutes(context) {
       const localStationCandidates = Array.isArray(resolved.localStations) && resolved.localStations.length ? resolved.localStations : [resolved.localStation || sourceStation];
       const core = getQuickLogCore();
       const rowForOpen = { ...row, _QuickLogLocalStation: localStationCandidates[0], _QuickLogLocalStationCandidates: localStationCandidates };
-      const found = core.findMesTraceLogFile(rowForOpen, { ...(body.options || {}), localStationCandidates });
+      const found = core.findMesTraceLogFile(rowForOpen, { ...(body.options || {}), localStationCandidates, program });
       if (!found.success) return res.status(404).json(found);
       await core.openMesTraceLogFile(found.path);
       res.json({ ...found, opened: true });

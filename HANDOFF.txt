@@ -1,29 +1,50 @@
-# PROJECT HANDOFF
+PROJECT HANDOFF
+===============
+
+## Session Summary (2026-07-01 ~14:00)
+**Task:** Tái thiết kế UX/UI cho MES Daily (Gộp luồng RTY Daily và Defect Daily - Hướng B).
+**Outcome:** Đã chốt phương án thiết kế "Hướng B", thống nhất loại bỏ các cột dữ liệu không có thật (Model/PartNo), và đã soạn xong bản Kế hoạch tích hợp chi tiết. Giao diện tĩnh (mockup) đã được tạo để review.
+
+---
 
 ## 1. Project Overview
 - **Name:** CloudMetrics (CLCA Gen)
 - **Path:** `c:\Users\PC\Downloads\clca`
-- **Architecture:** Node.js Backend (Express) + Vanilla JS/HTML/TailwindCSS Frontend.
-- **Run Command:** Desktop executable (`CloudMetrics.exe`) wrapped around a local server `server.js`.
+- **Architecture:** Node.js Backend (Express) + Vanilla JS/HTML/TailwindCSS Frontend
+- **Run Command:** Desktop executable (`CloudMetrics.exe`) wrapped around a local server `server.js`
 
-## 2. Recent Work Completed (UX & Logic Fixes)
-- **Global JS Errors Fixed:**
-  - Resolved `toggleTheme is not defined` and language switch bugs in `ui/js/main.js`.
-  - Moved `stateByModule` definition back into `ui/js/core/state.js` to fix initialization crashes.
-- **UI/UX Enhancements (QuickLog & MES Daily R001):**
-  - **Recent History:** Implemented LocalStorage-based history (`quicklog_history` & `mes_r001_history`) that saves the last 5 search terms. Displayed as clickable chips under the textarea.
-  - **Keyboard Shortcuts:** Added `Ctrl + Enter` to instantly trigger Search for both QuickLog and MES Daily, allowing the normal `Enter` key to continue serving as a newline separator.
-  - **UI Hints:** Added hint text `(Press Ctrl + Enter to search)` below the textareas.
-- **Features Skipped by User Choice:**
-  - "Copy to Clipboard" button was skipped because WebView2 natively supports text highlighting and copying.
-  - Real-time MES Daily Progress Bar via SSE was skipped; the user decided to keep the existing indeterminate loading indicator.
+## 2. Recent Work Completed (Dynamic Program & Template Path)
+- **Global Active Program & Dynamic Template Engine:** Hoàn thiện việc chuyển đổi đường dẫn tĩnh sang dynamic template parsing cho module QuickLog, MES Trace và Defect Daily (giữ nguyên từ session trước).
 
-## 3. Current State & Known Issues
-- The UI is mostly stable. The app launches correctly via EXE and local browser.
-- The user's goal was to identify logic and architecture conflicts. Most conflicts stemmed from recent restructurings (moving globals around), which have now been mitigated.
-- MES API default timeouts are 15s for QuickLog and 5m for MES Daily. This has been verified in the code.
+## 3. Current Work — MES Daily UX Redesign (IN PROGRESS)
 
-## 4. Next Steps for Next Agent
-- Review any pending feature requests from the user.
-- If the user asks for Auto Log Downloader or Analytics Dashboards, remember the user explicitly wants to be asked for detailed requirements BEFORE any implementation begins. Do NOT guess the implementation.
-- Continue adhering to the "glassmorphism" modern UI design rules.
+### 3.1 UX Decisions (Direction B)
+- **Gộp chung luồng:** Thay vì 2 tab riêng biệt (R001 Defect & RTY Daily), mọi thao tác gộp chung vào 1 Dashboard duy nhất gọi qua API `dashboardAggregator.js`.
+- **Thứ tự UI mới:** (1) Unified Query Section (WO + Time + Global Stations) -> (2) RTY Preview Table -> (3) Defect Table -> (4) Charts -> (5) RTY Export Panel.
+- **Loại bỏ Model/PartNo:** Cột Model Name và Part Number đã bị xóa khỏi bảng Defect vì B006 raw feed không cung cấp dữ liệu này.
+- **Auto-naming cho RTY Export:** Xóa logic điền tên file thủ công cho từng trạm. Tên file RTY sẽ tự động sinh theo mẫu: `{WO}_{Date}.xlsx` (chế độ tách lẻ) hoặc `Merged_{N}_WOs_{Date}.xlsx` (chế độ gộp chung).
+
+### 3.2 Artifacts Produced
+- `mesdaily_integration_plan.txt`: Bản kế hoạch tích hợp 6 bước chi tiết (cách cắt ghép file HTML và gọi API Dashboard).
+- `ui/mesdaily-unified.html`: Bản HTML tĩnh chứa UI mới nhất đã sửa đổi theo Hướng B để user review trước khi code thật.
+- `scratch/update_html.js`: Script nhỏ (chưa chạy) dùng để thay thế khối `mes-panel` cũ bằng UI mới vào trong `index.html`.
+
+### 3.3 Tasks Remaining (Nhiệm vụ cần làm)
+1. **Thực thi HTML Update:** Chạy script `update_html.js` hoặc dùng tool để đắp nội dung từ `mesdaily-unified.html` đè lên `<section id="mes-panel">` trong `ui/index.html`.
+2. **Cập nhật JS (mesdaily.js):** 
+   - Đổi endpoint từ `/api/mesdaily/r001-search` sang `/api/mesdaily/dashboard`.
+   - Update hàm render để vẽ dữ liệu ra các khu vực mới: 4 KPI cards, bảng RTY Preview (`stationYield`), bảng Defect (`defectRows`), và vẽ 2 biểu đồ (Pareto, Yield Trend).
+   - Xóa bỏ logic vẽ/đọc cột `Model` và `PartNo` trong JS.
+3. **Cập nhật Export RTY (mesdaily.js):**
+   - Đọc trạng thái checkbox `Export merged file` và `Output Folder`.
+   - Build mảng `groups` và tự động sinh filename. Gọi API `/api/generate/mesdaily` (mode = grouped).
+4. **Clean-up:** Xóa bỏ code thừa của UI cũ (như `requirements-list` cũ). Đảm bảo tính năng Auto-refresh 5m hoạt động tốt với luồng API Dashboard mới.
+
+## 4. Known Issues
+- File HTML gốc (`ui/index.html`) khá dài, việc đè code cần chú ý không làm hỏng các section lân cận (như `console-panel`).
+- Chart.js cần lấy lại instance context cũ trước khi destroy/render chart mới để tránh memory leak.
+
+## 5. Key Architecture Notes for Next Agent
+- Backend follows modular pattern: `app/backend/modules/<module>/` for logic, `app/backend/routes/<module>.routes.js` for Express routes.
+- Frontend modules in `ui/js/modules/` loaded dynamically by `ui/js/main.js`.
+- RTY Export (B005) dùng mode `grouped` của API generate. Đòi hỏi payload phải có `requirements` mảng cho từng nhóm, cho dù là merged hay split.

@@ -52,6 +52,7 @@ CloudMetrics là một ứng dụng máy tính (Desktop application) tiện lợ
 * **Chức năng:** Hỗ trợ kỹ sư tìm kiếm và mở trực tiếp các file log kiểm tra vật lý định dạng `.txt` của các sản phẩm lỗi dựa vào SN hoặc Customer SN.
 * **Tính năng đặc biệt:**
   * **Tra cứu log mạng cục bộ (UNC Path):** Quét trực tiếp file log trên thư mục máy chủ chia sẻ mạng (ví dụ `\\10.24.111.80\Testlog\camera\VO0301\...`).
+  * **Quản lý Program linh hoạt (Template Path):** Cấu trúc thư mục chứa log thay vì bị fix cứng nay đã hỗ trợ Template biến đổi linh hoạt (Ví dụ: `{Root}\{Model}\...\{Fixture}`). Cấu hình lựa chọn Program này mang tính toàn cục (Global) và áp dụng thống nhất cho toàn bộ hệ thống (kể cả Local Log, MES Trace và Defect Daily).
   * **Tích hợp MES Trace:** Gọi API S001 của MES để dịch từ mã SN sang Customer SN/WO hiện tại của máy, sau đó gọi A003/A004 để dựng lịch sử chạy trạm & lịch sử sửa chữa của sản phẩm.
   * **Định vị file log theo mốc thời gian:** Lấy thông tin EndTime từ MES để quét thư mục log của ngày tương ứng, so khớp và tìm kiếm file log chuẩn xác nhất trong khoảng sai lệch thời gian cho phép (mặc định 30 giây).
   * **Mở tệp trực tiếp:** Hộp thoại cho phép kích đúp và mở file log cục bộ/mạng trực tiếp bằng Notepad hoặc chương trình chỉnh sửa mặc định trên máy tính của bạn.

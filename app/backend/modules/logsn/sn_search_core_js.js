@@ -148,7 +148,16 @@ function markLatestRows(results) {
 function rowToPublic(r) {
   return { SN: r.SN || '', Station: r.Station || '', Mode: r.Mode || '', Result: r.Result || '', Failitem: r.Failitem || '', EndTime: r.EndTime || '', SourceFile: r.SourceFile || '', IsLatestByStation: !!r._IsLatestByStation };
 }
-function searchSn(networkBase, snText, mode = 'PROD', projectName = 'VO0301', fixtureName = 'J01') {
+function parseQuickLogTemplate(template, vars) {
+    if (!template) return '';
+    let result = template;
+    for (const key of Object.keys(vars)) {
+        result = result.replace(new RegExp(`\\\\{${key}\\\\}`, 'gi'), String(vars[key] || ''));
+    }
+    return require('path').resolve(result);
+}
+
+function searchSn(networkBase, snText, mode = 'PROD', projectName = 'VO0301', fixtureName = 'J01', program) {
   const { snList, snSet } = parseSnInput(snText);
   if (!snSet.size) return { success: false, error: 'Missing SN input.', rows: [], summary: {} };
   const base = path.resolve(networkBase);
@@ -159,26 +168,34 @@ function searchSn(networkBase, snText, mode = 'PROD', projectName = 'VO0301', fi
   for (const station of getStations(base)) {
     scannedStations++;
     const baseCsvDir = path.join(base, station, 'CSV');
-    if (!existsDir(baseCsvDir)) continue;
-    const projects = fs.readdirSync(baseCsvDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name);
-    for (const proj of projects) {
-      const csvDir = path.join(baseCsvDir, proj, mode, station, fixtureName);
-      if (!existsDir(csvDir)) continue;
-      const dirsToScan = [csvDir];
-      const subDirs = fs.readdirSync(csvDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => path.join(csvDir, d.name));
-      dirsToScan.push(...subDirs);
-      const csvFiles = [];
-      for (const d of dirsToScan) {
+      let csvDir;
+      if (program && program.csvPath) {
+          const globalRoot = require('../quicklog/configReader').getQuickLogGlobalRoot();
+          csvDir = parseQuickLogTemplate(program.csvPath, {
+              Root: globalRoot,
+              Model: projectName,
+              Mode: mode,
+              Station: station,
+              Fixture: fixtureName
+          });
+      } else {
+          csvDir = path.join(baseCsvDir, projectName, mode, station, fixtureName);
+      }
+    if (!existsDir(csvDir)) continue;
+    const dirsToScan = [csvDir];
+    const subDirs = fs.readdirSync(csvDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => path.join(csvDir, d.name));
+    dirsToScan.push(...subDirs);
+    const csvFiles = [];
+    for (const d of dirsToScan) {
         if (!existsDir(d)) continue;
         const files = fs.readdirSync(d, { withFileTypes: true }).filter(f => f.isFile() && f.name.toLowerCase().endsWith('.csv')).map(f => path.join(d, f.name));
         csvFiles.push(...files);
-      }
-      csvFiles.sort();
-      for (const csvFile of csvFiles) {
+    }
+    csvFiles.sort();
+    for (const csvFile of csvFiles) {
         readFiles++;
         try { results.push(...readCsvForSnSet(csvFile, snSet, mode, station)); }
         catch (_) { errorFiles++; }
-      }
     }
   }
   results.sort((a, b) => String(a.SN || '').localeCompare(String(b.SN || '')) || String(a.Station || '').localeCompare(String(b.Station || '')) || ((a._EndTimeDT?.getTime?.() ?? Number.MAX_SAFE_INTEGER) - (b._EndTimeDT?.getTime?.() ?? Number.MAX_SAFE_INTEGER)));
@@ -199,7 +216,7 @@ function fileDiffSeconds(filePath, targetDt) {
 
   return diff;
 }
-function findLogFileForRow(networkBase, row, projectName = 'VO0301', fixtureName = 'J01', toleranceSeconds = LOG_TIME_TOLERANCE_SECONDS) {
+function findLogFileForRow(networkBase, row, projectName = 'VO0301', fixtureName = 'J01', program, toleranceSeconds = LOG_TIME_TOLERANCE_SECONDS) {
   const sn = String(row?.SN || '').trim();
   const station = String(row?.Station || '').trim();
   const mode = String(row?.Mode || 'PROD').trim();
@@ -209,10 +226,24 @@ function findLogFileForRow(networkBase, row, projectName = 'VO0301', fixtureName
   if (!dt) return { success: false, error: `Invalid EndTime for SN ${sn}.` };
 
   // networkBase now includes the model and 'SYNC LOCAL DATA' from server.js
-  const dateDir = path.join(path.resolve(networkBase), station, 'Log', projectName, mode, station, fixtureName, yyyymmdd(dt));
-  const dirs = [];
-  if (result === 'PASS' || result === 'FAIL') dirs.push(path.join(dateDir, result));
-  for (const alt of ['PASS', 'FAIL']) { const p = path.join(dateDir, alt); if (!dirs.includes(p)) dirs.push(p); }
+    let dateDir;
+    if (program && program.logPath) {
+        const globalRoot = require('../quicklog/configReader').getQuickLogGlobalRoot();
+        let logPath = program.logPath;
+        dateDir = parseQuickLogTemplate(logPath, {
+            Root: globalRoot,
+            Model: projectName,
+            Mode: mode,
+            Station: station,
+            Fixture: fixtureName,
+            Date: yyyymmdd(dt),
+            Result: result === 'PASS' || result === 'FAIL' ? result : ''
+        });
+    } else {
+        dateDir = path.join(path.resolve(networkBase), station, 'Log', projectName, mode, station, fixtureName, yyyymmdd(dt));
+        if (result === 'PASS' || result === 'FAIL') dateDir = path.join(dateDir, result);
+    }
+    const dirs = [dateDir];
   const checkedPaths = [], matches = [];
   for (const folder of dirs) {
     checkedPaths.push(folder);
@@ -878,18 +909,53 @@ function findMesTraceLogFile(row, options = {}) {
   if (!model || !sn || !date) return { success: false, error: 'Missing model/sn/date for log path.' };
   const root = path.join(settings.logRoot, model, 'SYNC LOCAL DATA');
   const stationCandidates = stationFolderCandidates(row, settings);
-  
+  const program = options.program;
+
   // Fast path: Check exact standard folder structure
   const fastChecked = [];
   for (const station of stationCandidates) {
-    for (const fixture of ['J01', 'J02', 'J03', 'J04', 'J05', 'J06', 'J07', 'J08']) {
-      const dateDir = path.join(root, station, 'Log', model, 'PROD', station, fixture, date);
-      if (!existsDir(dateDir)) continue;
-      
-      const folders = [];
-      if (result === 'FAIL') folders.push(path.join(dateDir, 'FAIL'), path.join(dateDir, 'PASS'));
-      else if (result === 'PASS') folders.push(path.join(dateDir, 'PASS'), path.join(dateDir, 'FAIL'));
-      else folders.push(path.join(dateDir, 'FAIL'), path.join(dateDir, 'PASS'));
+    let stationDir;
+    if (program && program.logPath) {
+      const globalRoot = require('../quicklog/configReader').getQuickLogGlobalRoot();
+      const resolvedDummy = parseQuickLogTemplate(program.logPath, {
+        Root: globalRoot,
+        Model: model,
+        Mode: 'PROD',
+        Station: station,
+        Fixture: '__FIXTURE__',
+        Date: '__DATE__',
+        Result: '__RESULT__'
+      });
+      stationDir = resolvedDummy.split('__FIXTURE__')[0];
+    } else {
+      stationDir = path.join(root, station, 'Log', model, 'PROD', station);
+    }
+    if (!existsDir(stationDir)) continue;
+
+    const fixtures = fs.readdirSync(stationDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name);
+    for (const fixture of fixtures) {
+      let folders = [];
+      if (program && program.logPath) {
+        const globalRoot = require('../quicklog/configReader').getQuickLogGlobalRoot();
+        const dateDir = parseQuickLogTemplate(program.logPath, {
+          Root: globalRoot,
+          Model: model,
+          Mode: 'PROD',
+          Station: station,
+          Fixture: fixture,
+          Date: date,
+          Result: result === 'PASS' || result === 'FAIL' ? result : ''
+        });
+        folders.push(dateDir);
+      } else {
+        const dateDir = path.join(stationDir, fixture, date);
+        if (!existsDir(dateDir)) continue;
+        if (result === 'FAIL' || result === 'PASS') {
+          folders.push(path.join(dateDir, result));
+        } else {
+          folders.push(path.join(dateDir, 'FAIL'), path.join(dateDir, 'PASS'));
+        }
+      }
 
       for (const folder of folders) {
         fastChecked.push(folder);

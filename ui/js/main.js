@@ -1,7 +1,7 @@
 function updateModuleUiVisibility() {
     const module = MODULES[activeModule];
     if (stationPanel) {
-        stationPanel.classList.toggle('hidden', !module.needsStations || isMesDailyDefectDailyActive());
+        stationPanel.classList.toggle('hidden', !module.needsStations);
         const titleEl = stationPanel.querySelector('h2');
         if (titleEl) {
             titleEl.textContent = activeModule === 'mesdaily' ? t('station') : t('stations');
@@ -12,10 +12,12 @@ function updateModuleUiVisibility() {
 
     const mesPanel = document.getElementById('mes-panel');
     const resultPanel = document.getElementById('mes-r001-result-panel');
+    const dashboard = document.getElementById('mes-r001-dashboard');
     if (mesPanel) mesPanel.classList.toggle('hidden', activeModule !== 'mesdaily');
-    if (resultPanel) resultPanel.classList.toggle('hidden', activeModule !== 'mesdaily' || mesDailyActiveFeature !== 'defectdaily');
+    if (resultPanel) resultPanel.classList.toggle('hidden', activeModule !== 'mesdaily');
+    if (dashboard) dashboard.classList.toggle('hidden', dashboard.dataset.hasContent !== 'true' || activeModule !== 'mesdaily');
     if (fileCards) fileCards.classList.toggle('hidden', activeModule === 'mesdaily');
-    if (activeModule === 'mesdaily') { ensureMesTimeRange(); ensureMesDailyFeatureTabs(); ensureMesR001Panel(); initMesR001TimePickers(); }
+    if (activeModule === 'mesdaily') { ensureMesTimeRange(); ensureMesDailyFeatureTabs(); ensureMesR001Panel(); initMesR001TimePickers(); syncUnifiedMesTimeRange(); }
     applyMesMergeModeUi();
     setQuickLogReportControlsVisibility();
 }
@@ -42,6 +44,8 @@ function resetNonPersistentModuleState(moduleId) {
     if (moduleId === 'clca') {
         stateByModule.clca.mergeAll = false;
         stateByModule.clca.useCsnMapping = false;
+        stateByModule.clca.separateNdf = false;
+        stateByModule.clca.preparedBy = '';
         selectedStationsByModule.clca = new Set();
     }
     if (moduleId === 'mesdaily') {
@@ -101,9 +105,9 @@ function hideGrrResult() {
 function renderGrrResult(stats) {
     if (!grrResultPanel) return;
     const s = stats || {};
-    const inputRows  = s.inputRows  != null ? Number(s.inputRows).toLocaleString()  : '—';
+    const inputRows = s.inputRows != null ? Number(s.inputRows).toLocaleString() : '—';
     const outputRows = s.outputRows != null ? Number(s.outputRows).toLocaleString() : '—';
-    const removedDup  = s.removedDup  != null ? Number(s.removedDup).toLocaleString()  : '—';
+    const removedDup = s.removedDup != null ? Number(s.removedDup).toLocaleString() : '—';
     const removedFail = s.removedFail != null ? Number(s.removedFail).toLocaleString() : '—';
 
     grrResultPanel.innerHTML = `
@@ -194,15 +198,31 @@ function renderFileCards() {
                             <div data-drop-title="true" class="text-sm font-semibold text-textMain dark:text-textDark">${t('clcaDropHint')}</div>
                             <div class="mt-1 text-xs text-textMuted dark:text-gray-400">${t('clcaDropSub')}</div>
                         </button>
-                        <div class="mt-4 text-xs text-textMuted dark:text-gray-400" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;">
-                            <label class="select-none cursor-pointer" style="display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:calc(100% - 160px);">
-                                <input type="checkbox" id="clca-merge-all" class="w-4 h-4 rounded border-borderLight dark:border-borderDark accent-primary" style="flex:0 0 auto;" ${moduleState.mergeAll ? 'checked' : ''}>
-                                <span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t('clcaMergeAllLabel')}</span>
-                            </label>
-                            <label class="select-none cursor-pointer" style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap;flex:0 0 auto;margin-left:auto;">
-                                <input type="checkbox" id="clca-use-csn-mapping" class="w-4 h-4 rounded border-borderLight dark:border-borderDark accent-primary" style="flex:0 0 auto;" ${moduleState.useCsnMapping ? 'checked' : ''}>
-                                <span>${t('clcaCsnMappingLabel')}</span>
-                            </label>
+                        <div class="mt-4 text-xs text-textMuted dark:text-gray-400" style="display:flex;justify-content:space-between;width:100%;gap:16px;">
+                            <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+                                <label class="select-none cursor-pointer" style="display:inline-flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" id="clca-merge-all" class="w-4 h-4 rounded border-borderLight dark:border-borderDark accent-primary" style="flex:0 0 auto;" ${moduleState.mergeAll ? 'checked' : ''}>
+                                    <span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-i18n="clcaMergeAllLabel">${t('clcaMergeAllLabel')}</span>
+                                </label>
+                                <label class="select-none cursor-pointer" style="display:inline-flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" id="clca-use-csn-mapping" class="w-4 h-4 rounded border-borderLight dark:border-borderDark accent-primary" style="flex:0 0 auto;" ${moduleState.useCsnMapping ? 'checked' : ''}>
+                                    <span data-i18n="clcaCsnMappingLabel">${t('clcaCsnMappingLabel')}</span>
+                                </label>
+                                <label class="select-none cursor-pointer" style="display:inline-flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" id="clca-separate-ndf" class="w-4 h-4 rounded border-borderLight dark:border-borderDark accent-primary" style="flex:0 0 auto;" ${moduleState.separateNdf ? 'checked' : ''}>
+                                    <span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-i18n="clcaSeparateNdf">${t('clcaSeparateNdf')}</span>
+                                </label>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:8px;flex:1;align-items:flex-end;">
+                                <label class="select-none" style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap;">
+                                    <span data-i18n="clcaPreparedBy">${t('clcaPreparedBy')}</span>
+                                    <input type="text" id="clca-prepared-by" value="${String(moduleState.preparedBy || '').replace(/"/g, '&quot;')}" class="w-32 px-2 py-1 rounded border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-primary/50 text-textMain dark:text-textDark">
+                                </label>
+                                <label class="select-none" style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap;">
+                                    <span data-i18n="clcaStage">${t('clcaStage')}</span>
+                                    <input type="text" id="clca-stage" value="${String(moduleState.stage || '').replace(/"/g, '&quot;')}" class="w-32 px-2 py-1 rounded border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-primary/50 text-textMain dark:text-textDark">
+                                </label>
+                            </div>
                         </div>
                         <div id="clca-merge-rename-panel" class="mt-4 hidden"></div>
                     ` : `
@@ -299,7 +319,28 @@ function renderFileCards() {
         if (csnMappingCheck) {
             csnMappingCheck.addEventListener('change', () => {
                 getActiveState().useCsnMapping = csnMappingCheck.checked;
-                logToConsole(`CSN mapping: <b>${csnMappingCheck.checked ? 'ON' : 'OFF'}</b>`, 'system');
+                logToConsole(`CLCA Customer SN Mapping: <b>${csnMappingCheck.checked ? 'ON' : 'OFF'}</b>`, 'system');
+            });
+        }
+
+        const separateNdfCheck = document.getElementById('clca-separate-ndf');
+        if (separateNdfCheck) {
+            separateNdfCheck.addEventListener('change', () => {
+                getActiveState().separateNdf = separateNdfCheck.checked;
+            });
+        }
+
+        const preparedByInput = document.getElementById('clca-prepared-by');
+        if (preparedByInput) {
+            preparedByInput.addEventListener('input', () => {
+                getActiveState().preparedBy = preparedByInput.value;
+            });
+        }
+
+        const stageInput = document.getElementById('clca-stage');
+        if (stageInput) {
+            stageInput.addEventListener('input', () => {
+                getActiveState().stage = stageInput.value;
             });
         }
     }
@@ -313,7 +354,7 @@ function updateModuleHeader() {
     const mod = MODULES[activeModule];
     moduleTitle.textContent = mod.title[currentLang];
     updateModuleUiVisibility();
-    
+
     const btnSettings = document.getElementById('btn-settings-toggle');
     if (btnSettings) {
         btnSettings.classList.remove('hidden');
@@ -359,7 +400,7 @@ function restoreOutputPathForActiveModule() {
 
 function persistStationsForActiveModule() {
     if (activeModule === 'clca' || activeModule === 'mesdaily') {
-        try { localStorage.removeItem(MODULES[activeModule].stationKey); } catch (_) {}
+        try { localStorage.removeItem(MODULES[activeModule].stationKey); } catch (_) { }
         return;
     }
     const module = MODULES[activeModule];
@@ -369,7 +410,7 @@ function persistStationsForActiveModule() {
 
 function restoreStationsForActiveModule() {
     if (activeModule === 'clca' || activeModule === 'mesdaily') {
-        try { localStorage.removeItem(MODULES[activeModule].stationKey); } catch (_) {}
+        try { localStorage.removeItem(MODULES[activeModule].stationKey); } catch (_) { }
         setStationSelection([], false);
         return;
     }
@@ -382,7 +423,7 @@ function restoreStationsForActiveModule() {
                 setStationSelection(arr, false);
                 return;
             }
-        } catch (_) {}
+        } catch (_) { }
     }
     renderStationCheckboxes(false);
 }
@@ -400,6 +441,8 @@ function clearInputs() {
     moduleState.output = '';
     moduleState.mergeAll = false;
     moduleState.useCsnMapping = false;
+    moduleState.separateNdf = false;
+    moduleState.preparedBy = '';
     moduleState.mergeSheetPrefixes = {};
     inputOutput.value = '';
     if (activeModule === 'mesdaily') {
@@ -435,13 +478,11 @@ async function onGenerate() {
     let missingFieldsCount = 0;
     let mesRequirements = [];
     if (activeModule === 'mesdaily') {
-        if (isMesDailyDefectDailyActive()) {
-            await searchMesR001();
-            return;
-        }
+        syncUnifiedMesTimeRange();
         ensureMesTimeRange();
-        mesRequirements = collectMesRequirements();
-        if (!mesRequirements.length || hasIncompleteMesRequirements()) missingFieldsCount = 1;
+        // Unified UI: check WO textarea instead of requirement rows
+        const woText = String(document.getElementById('mes-r001-wo-input')?.value || '').trim();
+        if (!woText) missingFieldsCount = 1;
     } else {
         missingFieldsCount = module.fields.filter((f) => f.required && !moduleState.files[f.key]).length;
     }
@@ -536,9 +577,12 @@ async function onGenerate() {
                     formData.append('data', moduleState.files.data);
                     formData.append('merge_all_wo', 'false');
                 }
-                formData.append('sheet_prefixes', JSON.stringify(getClcaSheetPrefixesPayload(clcaDataFiles)));
-                formData.append('use_customer_sn_mapping', getActiveState().useCsnMapping ? 'true' : 'false');
-                formData.append('useCsnMapping', getActiveState().useCsnMapping ? 'true' : 'false');
+                formData.append('use_customer_sn_mapping', !!getActiveState().useCsnMapping);
+                formData.append('separate_ndf', getActiveState().separateNdf ? 'true' : 'false');
+                formData.append('prepared_by', getActiveState().preparedBy || '');
+                formData.append('stage', getActiveState().stage || '');
+                const sheetPrefixes = getClcaSheetPrefixesPayload(clcaDataFiles);
+                if (sheetPrefixes.length) formData.append('sheet_prefixes', JSON.stringify(sheetPrefixes));
             } else {
                 module.fields.forEach((field) => {
                     const selected = moduleState.files[field.key];
@@ -597,41 +641,41 @@ async function onGenerate() {
                 }
             }
         } else {
-  resetProgress();
-  setStatus('error', t('genFailed'));
+            resetProgress();
+            setStatus('error', t('genFailed'));
 
-  appendBackendLogs(result.logs);
+            appendBackendLogs(result.logs);
 
-  const backendError = extractBackendError(result, 'Generation failed.');
-  const backendTrace = extractBackendTrace(result);
+            const backendError = extractBackendError(result, 'Generation failed.');
+            const backendTrace = extractBackendTrace(result);
 
-  logToConsole(`Backend error: ${backendError}`, 'error');
-  showImportantToast('error', t('genFailed'), backendError);
+            logToConsole(`Backend error: ${backendError}`, 'error');
+            showImportantToast('error', t('genFailed'), backendError);
 
-  if (backendTrace) {
-    logToConsole(
-      `Backend traceback: ${String(backendTrace)
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')}`,
-      'error'
-    );
-  }
+            if (backendTrace) {
+                logToConsole(
+                    `Backend traceback: ${String(backendTrace)
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')}`,
+                    'error'
+                );
+            }
 
-  console.error('[BACKEND GENERATE ERROR]', result);
+            console.error('[BACKEND GENERATE ERROR]', result);
         }
     } catch (err) {
-  resetProgress();
+        resetProgress();
 
-  const stack = err && err.stack ? err.stack : String(err);
+        const stack = err && err.stack ? err.stack : String(err);
 
-  logToConsole(
-    `Frontend/connection error: ${String(stack)
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')}`,
-    'error'
-  );
+        logToConsole(
+            `Frontend/connection error: ${String(stack)
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')}`,
+            'error'
+        );
 
-  console.error('[FRONTEND GENERATE CATCH]', err);
+        console.error('[FRONTEND GENERATE CATCH]', err);
 
 
 
@@ -801,41 +845,41 @@ logToConsole(`Origin: ${window.location.origin || window.location.protocol}`, 's
 
 // ==================== DEBUG: GLOBAL ERROR LOGGER ====================
 window.addEventListener('error', (event) => {
-  try {
-    const msg = [
-      '[GLOBAL JS ERROR]',
-      event.message || '',
-      event.filename ? `file=${event.filename}` : '',
-      Number.isFinite(event.lineno) ? `line=${event.lineno}` : '',
-      Number.isFinite(event.colno) ? `col=${event.colno}` : '',
-      event.error && event.error.stack ? `stack=${event.error.stack}` : ''
-    ].filter(Boolean).join(' | ');
+    try {
+        const msg = [
+            '[GLOBAL JS ERROR]',
+            event.message || '',
+            event.filename ? `file=${event.filename}` : '',
+            Number.isFinite(event.lineno) ? `line=${event.lineno}` : '',
+            Number.isFinite(event.colno) ? `col=${event.colno}` : '',
+            event.error && event.error.stack ? `stack=${event.error.stack}` : ''
+        ].filter(Boolean).join(' | ');
 
-    console.error(msg);
+        console.error(msg);
 
-    if (typeof logToConsole === 'function') {
-      logToConsole(msg.replace(/</g, '&lt;').replace(/>/g, '&gt;'), 'error');
+        if (typeof logToConsole === 'function') {
+            logToConsole(msg.replace(/</g, '&lt;').replace(/>/g, '&gt;'), 'error');
+        }
+    } catch (e) {
+        console.error('[GLOBAL ERROR LOGGER FAILED]', e);
     }
-  } catch (e) {
-    console.error('[GLOBAL ERROR LOGGER FAILED]', e);
-  }
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  try {
-    const reason = event.reason;
-    const stack = reason && reason.stack ? reason.stack : String(reason || '');
+    try {
+        const reason = event.reason;
+        const stack = reason && reason.stack ? reason.stack : String(reason || '');
 
-    const msg = `[UNHANDLED PROMISE REJECTION] ${stack}`;
+        const msg = `[UNHANDLED PROMISE REJECTION] ${stack}`;
 
-    console.error(msg);
+        console.error(msg);
 
-    if (typeof logToConsole === 'function') {
-      logToConsole(msg.replace(/</g, '&lt;').replace(/>/g, '&gt;'), 'error');
+        if (typeof logToConsole === 'function') {
+            logToConsole(msg.replace(/</g, '&lt;').replace(/>/g, '&gt;'), 'error');
+        }
+    } catch (e) {
+        console.error('[PROMISE ERROR LOGGER FAILED]', e);
     }
-  } catch (e) {
-    console.error('[PROMISE ERROR LOGGER FAILED]', e);
-  }
 });
 
 // ==================== SETTINGS MODAL LOGIC ====================
@@ -843,8 +887,8 @@ window.addEventListener('unhandledrejection', (event) => {
 // ==================== INLINE STATION EDITING ====================
 
 document.addEventListener('DOMContentLoaded', () => {
-    initSettingsUI();
-    initInlineStationEditor();
+    if (typeof initSettingsUI === 'function') initSettingsUI();
+    if (typeof initInlineStationEditor === 'function') initInlineStationEditor();
     if (typeof initMesTimePickers === 'function') initMesTimePickers();
     if (typeof initMesRequirements === 'function') initMesRequirements();
     if (typeof loadMesState === 'function') loadMesState();
@@ -854,7 +898,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof btnSidebarToggle !== 'undefined' && btnSidebarToggle) btnSidebarToggle.addEventListener('click', openSidebar);
     if (typeof btnSidebarClose !== 'undefined' && btnSidebarClose) btnSidebarClose.addEventListener('click', closeSidebar);
     if (typeof sidebarBackdrop !== 'undefined' && sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
-    
+
     if (typeof btnSidebarToggleLg !== 'undefined' && btnSidebarToggleLg) {
         btnSidebarToggleLg.addEventListener('click', () => {
             if (typeof workspaceSidebar === 'undefined' || !workspaceSidebar) return;

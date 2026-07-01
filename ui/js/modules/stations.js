@@ -59,7 +59,7 @@ function renderStationCheckboxes(animate) {
                 + (cb.checked
                     ? 'border-primary bg-primary/10 dark:border-secondary dark:bg-secondary/10 text-primary dark:text-secondary font-medium'
                     : 'border-borderLight dark:border-borderDark hover:bg-light dark:hover:bg-gray-800 text-textMuted dark:text-gray-400');
-            stationCount.textContent = `${getSelectedStations().size} / ${allStations.length}`;
+            if (stationCount) stationCount.textContent = `${getSelectedStations().size} / ${allStations.length}`;
             updateStatus();
             persistStationsForActiveModule();
         };
@@ -73,7 +73,7 @@ function renderStationCheckboxes(animate) {
     });
     stationGrid.innerHTML = '';
     stationGrid.appendChild(fragment);
-    stationCount.textContent = `${selectedStations.size} / ${allStations.length}`;
+    if (stationCount) stationCount.textContent = `${selectedStations.size} / ${allStations.length}`;
 }
 
 
@@ -101,7 +101,7 @@ function setStationSelection(stationArray, animate) {
                     ? 'border-primary bg-primary/10 dark:border-secondary dark:bg-secondary/10 text-primary dark:text-secondary font-medium'
                     : 'border-borderLight dark:border-borderDark hover:bg-light dark:hover:bg-gray-800 text-textMuted dark:text-gray-400');
         });
-        stationCount.textContent = `${selectedStations.size} / ${allStations.length}`;
+        if (stationCount) stationCount.textContent = `${selectedStations.size} / ${allStations.length}`;
     } else {
         selectedStations.clear();
         newSet.forEach(s => selectedStations.add(s));
@@ -143,7 +143,7 @@ async function loadStations() {
         allStations = data.stations || [];
         Object.keys(MODULES).forEach((moduleId) => {
             if (moduleId === 'clca' || moduleId === 'mesdaily') {
-                try { localStorage.removeItem(MODULES[moduleId].stationKey); } catch (_) {}
+                try { localStorage.removeItem(MODULES[moduleId].stationKey); } catch (_) { }
                 selectedStationsByModule[moduleId] = new Set();
                 return;
             }
@@ -154,7 +154,7 @@ async function loadStations() {
                 if (Array.isArray(parsed)) {
                     selectedStationsByModule[moduleId] = new Set(parsed.filter((s) => allStations.includes(s)));
                 }
-            } catch (_) {}
+            } catch (_) { }
         });
         renderStationCheckboxes(true);
         updateStatus();

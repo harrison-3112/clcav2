@@ -108,6 +108,7 @@ function switchModule(moduleId) {
     restoreStationsForActiveModule();
     hideGrrResult();
     hideToast();
+    applyLanguage();
     updateStatus();
     logToConsole(`${t('moduleChanged')} <b>${moduleLabel(activeModule)}</b>`, 'system');
     setTimeout(() => workspaceView.classList.remove('module-switching'), 300);

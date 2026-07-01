@@ -25,8 +25,8 @@ const MODULES = {
         cardAccent: 'yield',
         cardIcon: 'calendar_month',
         icon: 'calendar-days',
-        menuTitle: { en: 'MES Daily Report', cn: 'MES 每日报表' },
-        title: { en: 'MES Daily', cn: 'MES 每日' },
+        menuTitle: { en: 'MES Daily', cn: 'MES Daily' },
+        title: { en: 'MES Daily', cn: 'MES Daily' },
         summary: { en: 'Generate daily MES report', cn: '生成每日 MES 报表' },
         endpoint: '/api/generate/mesdaily',
         outputKey: 'mesdaily_last_output_path',
@@ -96,6 +96,8 @@ const MES_DATEPICKER_LOCALES = {
 
 
 const QUICKLOG_MES_TRACE_FILTERS = ['ALL', 'SMT', 'DIP', 'FATP', 'PASS', 'FAIL'];
+const QUICKLOG_LOCAL_FILTERS = ['ALL', 'PASS', 'FAIL'];
+const MES_R001_FILTERS = ['ALL', 'SMT', 'DIP', 'FATP'];
 
 const STATUS_COLORS = {
     waiting: 'bg-status-waiting',

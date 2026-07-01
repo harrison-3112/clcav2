@@ -137,21 +137,19 @@ function renderClcaMergeRenamePanel() {
             <td class="px-3 py-2 max-w-[220px]"><div class="truncate font-medium text-textMain dark:text-textDark" title="${safeName}">${safeName}</div><div class="text-[11px] text-textMuted dark:text-gray-500 truncate" title="${detailTitle}">${detailTitle}</div></td>
             <td class="px-3 py-2 whitespace-nowrap">${renderClcaPrecheckStatus(meta)}</td>
             <td class="px-3 py-2 whitespace-nowrap text-textMuted dark:text-gray-400">${clcaEscapeHtml(modelWo)}</td>
-            <td class="px-3 py-2 whitespace-nowrap text-textMuted dark:text-gray-400">${clcaEscapeHtml(stationMatch)}</td>
-            <td class="px-3 py-2 whitespace-nowrap text-textMuted dark:text-gray-400">${mergePossible}</td>
             <td class="px-3 py-2 min-w-[160px]"><input type="text" class="clca-sheet-prefix-input w-full text-xs px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 text-textMain dark:text-textDark" data-file-name="${safeName}" value="${clcaEscapeHtml(prefixes[file.name] || '')}" placeholder="FATP / Rear FPC / 8 Bay Dock"></td>
             <td class="px-3 py-2 text-right"><button type="button" class="clca-remove-file-btn inline-flex items-center justify-center w-8 h-8 rounded-lg border border-borderLight dark:border-borderDark text-textMuted dark:text-gray-400 hover:text-red-500 hover:border-red-300" data-file-key="${key}" title="${t('clcaRemoveFile')}"><i data-lucide="x" class="w-4 h-4"></i></button></td>
         </tr>`;
     }).join('');
     panel.innerHTML = `<div class="rounded-xl border border-borderLight dark:border-borderDark bg-white/45 dark:bg-gray-900/25 overflow-hidden">
         <div class="flex items-center justify-between gap-3 px-3 py-2 border-b border-borderLight dark:border-borderDark">
-            <div><div class="text-xs font-semibold text-textMain dark:text-textDark">${t('clcaPrecheckTitle')}</div><div class="text-[11px] text-textMuted dark:text-gray-400">${t('clcaPrecheckSubtitle')}</div></div>
+            <div><div class="text-xs font-semibold text-textMain dark:text-textDark">${t('clcaPrecheckTitle')}</div></div>
             <div class="text-[11px] text-textMuted dark:text-gray-400">${formatCountText('clcaFileCount', files.length)}</div>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-xs text-left">
                 <thead class="text-textMuted dark:text-gray-400 bg-white/40 dark:bg-gray-800/30">
-                    <tr><th class="px-3 py-2">${t('clcaFileNameHeader')}</th><th class="px-3 py-2">${t('clcaStatusHeader')}</th><th class="px-3 py-2">${t('clcaModelWoHeader')}</th><th class="px-3 py-2">${t('clcaStationMatchedHeader')}</th><th class="px-3 py-2">${t('clcaMergePossibleHeader')}</th><th class="px-3 py-2">${t('clcaSheetPrefixHeader')}</th><th class="px-3 py-2"></th></tr>
+                    <tr><th class="px-3 py-2">${t('clcaFileNameHeader')}</th><th class="px-3 py-2">${t('clcaStatusHeader')}</th><th class="px-3 py-2">${t('clcaModelWoHeader')}</th><th class="px-3 py-2">${t('clcaSheetPrefixHeader')}</th><th class="px-3 py-2"></th></tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>

@@ -13,8 +13,9 @@ let mesStateHydrated = false;
 
 
 let mesR001Rows = [];
-
 let mesR001SelectedIndex = -1;
+let mesR001Filter = 'ALL';
+let mesR001ResultSearchText = '';
 
 let mesDailyActiveFeature = 'rtydaily';
 let defectDailyCharts = [];
@@ -164,7 +165,7 @@ function saveMesState() {
 
 function loadMesState() {
     mesStateHydrated = false;
-    try { localStorage.removeItem(MES_STATE_STORAGE_KEY); } catch (_) {}
+    try { localStorage.removeItem(MES_STATE_STORAGE_KEY); } catch (_) { }
 
     // Reset MES inputs on every app open: no previous date/time/merge restore.
     resetMesRequirementRows([{}]);
@@ -200,13 +201,13 @@ function ensureMesTimeRange(forceReset = false) {
 
 function initMesTimePickers() {
     const controls = getMesRangeControls();
-    
+
     if (controls.hourFrom && controls.hourFrom.dataset.bound !== 'true') {
         controls.hourFrom.dataset.bound = 'true';
         controls.hourFrom.addEventListener('input', () => { syncMesTimeRangeFromStart(); updateStatus(); });
         controls.hourFrom.addEventListener('blur', () => { setMesHourValue(controls.hourFrom, controls.hourFrom.value); syncMesTimeRangeFromStart(); updateStatus(); });
     }
-    
+
     if (controls.hourTo && controls.hourTo.dataset.bound !== 'true') {
         controls.hourTo.dataset.bound = 'true';
         controls.hourTo.addEventListener('input', () => { syncMesHiddenRange(); updateStatus(); });
@@ -324,9 +325,9 @@ function addMesRequirementRow(values = {}) {
         '<button type="button" class="mes-requirement-remove inline-flex items-center justify-center rounded-lg border border-borderLight dark:border-borderDark text-textMuted dark:text-gray-500 hover:text-red-500 hover:border-red-300 dark:hover:border-red-500/50 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>'
     ].join('');
 
-    const woInput       = row.querySelector('.mes-requirement-wo');
+    const woInput = row.querySelector('.mes-requirement-wo');
     const fileNameInput = row.querySelector('.mes-requirement-filename');
-    if (woInput)       woInput.value       = values.wo        || '';
+    if (woInput) woInput.value = values.wo || '';
     if (fileNameInput) {
         fileNameInput.value = values.fileName || '';
         fileNameInput.dataset.auto = values.fileName ? 'false' : 'true';
@@ -409,7 +410,7 @@ function hideMesDatepickers() {
     ['mes-datefrom', 'mes-dateto', 'mes-r001-datefrom', 'mes-r001-dateto'].forEach((id) => {
         const input = document.getElementById(id);
         if (input && input._airDatepicker && typeof input._airDatepicker.hide === 'function') {
-            try { input._airDatepicker.hide(); } catch (_) {}
+            try { input._airDatepicker.hide(); } catch (_) { }
         }
     });
 }
@@ -491,16 +492,20 @@ function isMesDailyDefectDailyActive() {
 
 function applyMesDailyFeatureVisibility() {
     const isMesDaily = activeModule === 'mesdaily';
-    const isDefectDaily = mesDailyActiveFeature === 'defectdaily';
-    const rtySection = document.getElementById('mes-rty-daily-section');
-    const defectSection = document.getElementById('mes-defect-daily-section');
-    const resultPanel = document.getElementById('mes-r001-result-panel');
-    
-    if (rtySection) rtySection.classList.toggle('hidden', isDefectDaily);
-    if (defectSection) defectSection.classList.toggle('hidden', !isDefectDaily);
-    if (resultPanel) resultPanel.classList.toggle('hidden', !isMesDaily || !isDefectDaily);
-    
-    if (isMesDaily && stationPanel) stationPanel.classList.toggle('hidden', isDefectDaily);
+    const hasData = mesR001Rows && mesR001Rows.length > 0;
+
+    // Data sections: show only when mesdaily + has data
+    const previewSection = document.getElementById('mes-rty-preview-section');
+    const defectSection = document.getElementById('mes-defect-records-section');
+    const analyticsSection = document.getElementById('mes-defect-analytics-section');
+    const dashboard = document.getElementById('mes-r001-dashboard');
+
+    if (previewSection) previewSection.classList.toggle('hidden', !isMesDaily || !hasData);
+    if (defectSection) defectSection.classList.toggle('hidden', !isMesDaily || !hasData);
+    if (analyticsSection) analyticsSection.classList.toggle('hidden', !isMesDaily);
+    if (dashboard) dashboard.classList.toggle('hidden', dashboard.dataset.hasContent !== 'true' || !isMesDaily);
+
+    if (isMesDaily && stationPanel) stationPanel.classList.remove('hidden');
     if (isMesDaily) setQuickLogReportControlsVisibility();
 }
 
@@ -590,14 +595,27 @@ function initMesR001TimePickers() {
     ensureMesR001TimeRange();
 }
 
-function getMesR001Columns() { return ['SN', 'Model', 'Station', 'Result', 'ErrorCode', 'Reason', 'WO', 'PartNo', 'Time']; }
+function getMesR001Columns() { return ['SN', 'Terminal', 'Result', 'DefectCode', 'Description', 'WO', 'Time']; }
 
 function getMesR001Cell(row, key) {
-    const map = { SN: row?.SerialNumber || '', Model: row?.ModelName || '', Station: row?.Terminal || '', Result: 'FAIL', ErrorCode: row?.DefectCode || '', Reason: row?.DefectDesc || '', WO: row?.WorkOrder || '', PartNo: row?.PartNo || '', Time: row?.defectTime || '' };
+    const map = { SN: row?.SerialNumber || '', Terminal: row?.Terminal || '', Result: row?.Status || 'FAIL', DefectCode: row?.DefectCode || '', Description: row?.DefectDesc || '', WO: row?.WorkOrder || '', Time: row?.Time || '' };
     return map[key] || '';
 }
 
-function getMesR001DisplayRows(rows = mesR001Rows) { return (Array.isArray(rows) ? rows : []).map((row, index) => ({ ...row, _MesR001Index: index })); }
+function getMesR001DisplayRows(rows = mesR001Rows) {
+    let filtered = Array.isArray(rows) ? rows : [];
+
+    if (mesR001Filter !== 'ALL') {
+        filtered = filtered.filter(row => getQuickLogMesStationFilter(row) === mesR001Filter);
+    }
+
+    if (mesR001ResultSearchText) {
+        const lowerSearch = mesR001ResultSearchText.toLowerCase();
+        filtered = filtered.filter(row => Object.values(row).some(val => String(val || '').toLowerCase().includes(lowerSearch)));
+    }
+
+    return filtered.map((row, index) => ({ ...row, _MesR001Index: index }));
+}
 
 function getMesR001InputCount() { return parseMesR001WoInput(document.getElementById('mes-r001-wo-input')?.value || '').length; }
 
@@ -639,25 +657,22 @@ function setMesR001ExportLoading(isLoading) {
 }
 
 function ensureMesR001Panel() {
-    const defectSection = document.getElementById('mes-defect-daily-section');
-    if (!defectSection) return;
-    
+    const mesPanel = document.getElementById('mes-panel');
+    if (!mesPanel) return;
+
     bindMesDailyFeatureToggle(document);
-    updateMesDailyFeatureToggleState(defectSection);
     const input = document.getElementById('mes-r001-wo-input');
     if (input) input.placeholder = 'Paste WO list here...';
-    const resultTitle = document.getElementById('mes-r001-result-title');
-    if (resultTitle) resultTitle.textContent = t('mesR001ResultTitle');
-    
-    if (defectSection && defectSection.dataset.bound !== 'true') {
-        defectSection.dataset.bound = 'true';
-        document.getElementById('mes-r001-search')?.addEventListener('click', searchMesR001);
+
+    if (mesPanel && mesPanel.dataset.r001Bound !== 'true') {
+        mesPanel.dataset.r001Bound = 'true';
+        document.getElementById('mes-r001-search')?.addEventListener('click', searchMesDashboard);
         document.getElementById('mes-r001-clear')?.addEventListener('click', () => clearMesR001Panel(true));
         document.getElementById('mes-r001-open-log')?.addEventListener('click', openMesR001SelectedLogUiOnly);
         document.getElementById('mes-r001-export-csv')?.addEventListener('click', exportMesR001CsvUiOnly);
         document.getElementById('mes-r001-wo-input')?.addEventListener('input', () => updateMesR001Summary(mesR001Rows));
         document.getElementById('mes-r001-wo-input')?.addEventListener('keydown', (event) => {
-            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') searchMesR001();
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') searchMesDashboard();
         });
         document.getElementById('mes-r001-history-container')?.addEventListener('click', (event) => {
             const chip = event.target.closest('.mes-r001-history-chip');
@@ -665,7 +680,20 @@ function ensureMesR001Panel() {
             const input = document.getElementById('mes-r001-wo-input');
             if (input) input.value = chip.dataset.value || '';
         });
+
+        document.getElementById('mes-r001-result-search')?.addEventListener('input', (event) => {
+            mesR001ResultSearchText = String(event.target.value || '').trim();
+            mesR001SelectedIndex = -1;
+            renderMesR001Rows();
+        });
         document.getElementById('mes-r001-download-zip')?.addEventListener('click', downloadMesR001LogsZip);
+        // Auto-refresh toggle + interval
+        document.getElementById('mes-r001-auto-refresh-toggle')?.addEventListener('click', toggleDashboardAutoRefresh);
+        document.getElementById('mes-r001-auto-refresh-interval')?.addEventListener('change', (e) => {
+            const minutes = Number(e.target.value) || 5;
+            const isOn = document.getElementById('mes-r001-auto-refresh-toggle')?.dataset.active === 'true';
+            if (isOn && typeof startDashboardAutoRefresh === 'function') startDashboardAutoRefresh(minutes);
+        });
         // ZIP status tooltip toggle
         const zipStatus = document.getElementById('mes-r001-zip-status');
         const zipTooltip = document.getElementById('mes-r001-zip-tooltip');
@@ -684,7 +712,19 @@ function ensureMesR001Panel() {
     renderMesR001Rows(mesR001Rows);
     renderMesR001History();
     applyMesDailyFeatureVisibility();
-    _refreshIcons(defectSection);
+    _refreshIcons(mesPanel);
+}
+
+function updateMesR001FiltersUI() {
+    const bar = document.getElementById('mes-r001-filter-bar');
+    if (!bar) return;
+    bar.innerHTML = MES_R001_FILTERS.map((key) => {
+        const active = mesR001Filter === key;
+        const activeCls = active
+            ? 'bg-primary text-white border-primary dark:bg-secondary dark:text-bgDark dark:border-secondary'
+            : 'bg-white/70 dark:bg-gray-800 text-textMain dark:text-textDark border-borderLight dark:border-borderDark';
+        return `<button type="button" class="quicklog-mes-filter-chip quicklog-filter-chip ${activeCls}" data-filter="${key}">${key}</button>`;
+    }).join('');
 }
 
 function renderMesR001Rows(rows = mesR001Rows) {
@@ -695,9 +735,9 @@ function renderMesR001Rows(rows = mesR001Rows) {
     head.innerHTML = `<tr>${columns.map((col) => `<th class="border-b border-borderLight dark:border-borderDark text-xs leading-tight whitespace-nowrap" style="min-width:120px;padding:8px 10px;white-space:nowrap;">${quickLogEscape(getQuickLogColumnDisplayName(col))}</th>`).join('')}</tr>`;
     const displayRows = getMesR001DisplayRows(rows);
     if (!displayRows.length) {
-        body.innerHTML = `<tr><td colspan="${columns.length}" class="border-b border-borderLight dark:border-borderDark text-xs text-textMuted dark:text-gray-400" style="padding:10px;">${quickLogEscape(t('mesR001NoRows'))}</td></tr>`;
+        body.innerHTML = ``;
         mesR001SelectedIndex = -1;
-        updateMesR001Summary([]);
+        updateMesR001Summary(rows);
         updateMesR001SelectedRowLabel();
         return;
     }
@@ -724,9 +764,12 @@ function clearMesR001Panel(clearInput = false) {
     // Hide ZIP status icon
     const zipStatus = document.getElementById('mes-r001-zip-status');
     if (zipStatus) zipStatus.classList.add('hidden');
+    // Hide data sections
+    document.getElementById('mes-rty-preview-section')?.classList.add('hidden');
+    document.getElementById('mes-defect-records-section')?.classList.add('hidden');
 }
 
-async function searchMesR001() {
+async function searchMesDashboard() {
     ensureMesR001Panel();
     ensureMesR001TimeRange();
     syncMesR001HiddenRange();
@@ -736,15 +779,19 @@ async function searchMesR001() {
     if (!inputCount) { const summary = document.getElementById('mes-r001-summary'); if (summary) summary.textContent = t('mesR001NeedWo'); logToConsole(t('mesR001NeedWo'), 'warning'); showImportantToast('warning', t('reqFailed'), t('mesR001NeedWo')); return; }
     try {
         setMesR001SearchLoading(true); setStatus('generating', 'Searching...'); showProgress(); mesR001Rows = []; mesR001SelectedIndex = -1; renderMesR001Rows([]);
-        const response = await fetchRetry('/api/mesdaily/r001-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ woText, timefrom: document.getElementById('mes-r001-timefrom')?.value || '', timeto: document.getElementById('mes-r001-timeto')?.value || '' }) }, MAX_RETRIES);
+        const selectedStations = typeof getSelectedStations === 'function' ? Array.from(getSelectedStations()) : [];
+        const response = await fetchRetry('/api/mesdaily/dashboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ woText, timefrom: document.getElementById('mes-r001-timefrom')?.value || '', timeto: document.getElementById('mes-r001-timeto')?.value || '', selected_stations: selectedStations }) }, MAX_RETRIES);
         const data = await response.json();
-        if (!response.ok || !data.success) throw createBackendError(data, 'Defect Daily search failed');
-        mesR001Rows = Array.isArray(data.rows) ? data.rows : [];
-        renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', t('statusSuccess')); logToConsole(`Defect Daily search done. Rows: <b>${mesR001Rows.length}</b>`, 'success');
+        if (!response.ok || !data.success) throw createBackendError(data, 'Dashboard search failed');
+        mesR001Rows = Array.isArray(data.defectRows) ? data.defectRows : [];
+        renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', t('statusSuccess')); logToConsole(`Dashboard search done. Defect rows: <b>${mesR001Rows.length}</b>`, 'success');
         saveMesR001History(woText);
-        // Render dashboard
+        // Render per-WO charts + overview (KPIs, stationYield, alerts, global charts)
         const woList = data.summary?.workOrders || parseMesR001WoInput(woText);
         if (typeof renderDefectDashboard === 'function') renderDefectDashboard(mesR001Rows, woList);
+        // Show data sections after successful fetch
+        document.getElementById('mes-rty-preview-section')?.classList.remove('hidden');
+        document.getElementById('mes-defect-records-section')?.classList.remove('hidden');
     } catch (error) {
         resetProgress();
         let message = error.message || String(error);
@@ -754,16 +801,19 @@ async function searchMesR001() {
         }
         mesR001Rows = []; mesR001SelectedIndex = -1; renderMesR001Rows([]);
         setStatus('error', t('reqFailed'));
-        logToConsole(`Defect Daily search failed: ${message}`, 'error');
+        logToConsole(`Dashboard search failed: ${message}`, 'error');
         showImportantToast('error', t('reqFailed'), message);
     } finally { setMesR001SearchLoading(false); resetProgress(); }
 }
+
+// Keep alias for backward compatibility (auto-refresh, event bindings)
+async function searchMesR001() { return searchMesDashboard(); }
 
 function saveMesR001History(input) {
     const text = String(input || '').trim();
     if (!text) return;
     let history = [];
-    try { history = JSON.parse(localStorage.getItem('mes_r001_history') || '[]'); } catch (_) {}
+    try { history = JSON.parse(localStorage.getItem('mes_r001_history') || '[]'); } catch (_) { }
     history = history.filter((item) => item !== text);
     history.unshift(text);
     if (history.length > 3) history = history.slice(0, 3);
@@ -775,7 +825,7 @@ function renderMesR001History() {
     const container = document.getElementById('mes-r001-history-container');
     if (!container) return;
     let history = [];
-    try { history = JSON.parse(localStorage.getItem('mes_r001_history') || '[]'); } catch (_) {}
+    try { history = JSON.parse(localStorage.getItem('mes_r001_history') || '[]'); } catch (_) { }
     if (!history.length) {
         container.innerHTML = '';
         return;
@@ -826,7 +876,7 @@ async function downloadMesR001LogsZip() {
                 if (Array.isArray(errData.missing) && errData.missing.length) {
                     _showMesR001ZipStatus([], errData.missing);
                 }
-            } catch (_) {}
+            } catch (_) { }
             throw new Error(errMsg);
         }
 
@@ -835,7 +885,7 @@ async function downloadMesR001LogsZip() {
         try {
             const reportB64 = response.headers.get('X-Download-Report');
             if (reportB64) report = JSON.parse(atob(reportB64));
-        } catch (_) {}
+        } catch (_) { }
 
         // Download blob
         const blob = await response.blob();
@@ -905,10 +955,11 @@ async function openMesR001SelectedLogUiOnly() {
     try {
         setQuickLogOpenLogLoading(true);
         logToConsole('Opening Defect Daily log file...', 'system');
+        const program = typeof getGlobalActiveProgram === 'function' ? getGlobalActiveProgram() : { name: QUICKLOG_DEFAULT_PROGRAM };
         const response = await fetchRetry('/api/quicklog/mes-trace/open-log', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ row }),
+            body: JSON.stringify({ row, program: program.name }),
         }, 1);
         const data = await response.json();
         if (!response.ok || !data.success) {
@@ -943,18 +994,24 @@ function getMesSimpleGroupedPayload(stationList) {
     const mergeAll = document.getElementById('mes-merge-all')?.checked;
     const dateTag = getMesDateTag();
 
-    const rows = readMesRequirementRows().filter((r) => r.wo);
+    // Unified UI: read WO list from the shared textarea instead of requirement rows
+    const woText = String(document.getElementById('mes-r001-wo-input')?.value || '').trim();
+    const woList = parseMesR001WoInput(woText);
+    // Read time range from the unified R001 hidden inputs
+    const timefrom = document.getElementById('mes-r001-timefrom')?.value || '';
+    const timeto = document.getElementById('mes-r001-timeto')?.value || '';
+
     if (mergeAll) {
         return {
             mode: 'grouped',
             groups: [{
                 label: 'Merged',
-                requirements: rows.map((r) => ({ workOrder: r.wo })),
+                requirements: woList.map((wo) => ({ workOrder: wo })),
                 output_path: outputBase,
             }],
             selected_stations: stationList,
-            timefrom: document.getElementById('mes-timefrom').value,
-            timeto: document.getElementById('mes-timeto').value,
+            timefrom,
+            timeto,
         };
     }
 
@@ -962,13 +1019,11 @@ function getMesSimpleGroupedPayload(stationList) {
     const folder = lastSep > 0 ? outputBase.substring(0, lastSep) : outputBase;
     const sep = folder ? (folder.endsWith('\\') || folder.endsWith('/') ? '' : '\\') : '';
     const base = folder ? `${folder}${sep}` : '';
-    const groups = rows.map((r) => {
-        let fname = (r.fileName || '').trim();
-        if (!fname) fname = `${r.wo}_${dateTag}`;
-        if (!fname.toLowerCase().endsWith('.xlsx')) fname += '.xlsx';
+    const groups = woList.map((wo) => {
+        const fname = `${wo}_${dateTag}.xlsx`;
         return {
-            label: r.wo || 'Unknown',
-            requirements: [{ workOrder: r.wo }],
+            label: wo || 'Unknown',
+            requirements: [{ workOrder: wo }],
             output_path: `${base}${fname}`,
         };
     });
@@ -977,8 +1032,8 @@ function getMesSimpleGroupedPayload(stationList) {
         mode: 'grouped',
         groups,
         selected_stations: stationList,
-        timefrom: document.getElementById('mes-timefrom').value,
-        timeto:   document.getElementById('mes-timeto').value,
+        timefrom,
+        timeto,
     };
     return payload;
 }
@@ -1018,4 +1073,62 @@ function initMesMergeOption() {
     });
     applyMesMergeModeUi();
     setQuickLogReportControlsVisibility();
+}
+
+// ============================================
+// Dashboard Auto-Refresh Toggle
+// ============================================
+
+let dashboardAutoRefreshTimer = null;
+
+function startDashboardAutoRefresh(minutes) {
+    stopDashboardAutoRefresh();
+    var ms = Math.max(1, Number(minutes) || 5) * 60 * 1000;
+    dashboardAutoRefreshTimer = setInterval(function () {
+        if (activeModule === 'mesdaily' && typeof searchMesDashboard === 'function') {
+            logToConsole('Auto-refresh: searching MES Daily...', 'system');
+            searchMesDashboard();
+        }
+    }, ms);
+}
+
+function stopDashboardAutoRefresh() {
+    if (dashboardAutoRefreshTimer) {
+        clearInterval(dashboardAutoRefreshTimer);
+        dashboardAutoRefreshTimer = null;
+    }
+}
+
+function toggleDashboardAutoRefresh() {
+    const btn = document.getElementById('mes-r001-auto-refresh-toggle');
+    if (!btn) return;
+    const isOn = btn.dataset.active === 'true';
+    if (isOn) {
+        btn.dataset.active = 'false';
+        btn.classList.remove('bg-green-500/20', 'text-green-600', 'dark:text-green-400');
+        btn.classList.add('bg-white/10', 'text-textMuted', 'dark:text-gray-400');
+        stopDashboardAutoRefresh();
+        if (typeof logToConsole === 'function') logToConsole('Dashboard auto-refresh stopped.', 'system');
+    } else {
+        const intervalSelect = document.getElementById('mes-r001-auto-refresh-interval');
+        const minutes = Number(intervalSelect?.value) || 5;
+        btn.dataset.active = 'true';
+        btn.classList.add('bg-green-500/20', 'text-green-600', 'dark:text-green-400');
+        btn.classList.remove('bg-white/10', 'text-textMuted', 'dark:text-gray-400');
+        startDashboardAutoRefresh(minutes);
+        if (typeof logToConsole === 'function') logToConsole(`Dashboard auto-refresh started (every ${minutes} min).`, 'success');
+    }
+    _refreshIcons(btn);
+}
+
+
+function syncUnifiedMesTimeRange() {
+    const r001 = getMesR001RangeControls();
+    const rty = getMesRangeControls();
+    if (r001.dateFrom && rty.dateFrom) rty.dateFrom.value = r001.dateFrom.value;
+    if (r001.dateTo && rty.dateTo) rty.dateTo.value = r001.dateTo.value;
+    if (r001.hourFrom && rty.hourFrom) rty.hourFrom.value = r001.hourFrom.value;
+    if (r001.hourTo && rty.hourTo) rty.hourTo.value = r001.hourTo.value;
+    syncMesHiddenRange();
+    updateMesOutputNameFromRange();
 }

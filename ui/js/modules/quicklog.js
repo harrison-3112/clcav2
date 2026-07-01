@@ -226,6 +226,106 @@ function renderQuickLogModeOptions(selectedMode = 'PROD') {
 
 
 
+
+function getQuickLogProgram(programName) {
+    return QUICKLOG_PROGRAMS.find((p) => p.name === programName) || QUICKLOG_PROGRAMS[0];
+}
+
+function getQuickLogSelectedProgramName() {
+    return document.getElementById('quicklog-program')?.value || QUICKLOG_DEFAULT_PROGRAM;
+}
+
+function getQuickLogSelectedProgram() {
+    return getQuickLogProgram(getQuickLogSelectedProgramName());
+}
+
+function renderQuickLogProgramMenuOptions(selectedProgram = QUICKLOG_DEFAULT_PROGRAM) {
+    return QUICKLOG_PROGRAMS.map((program) => {
+        const selected = program.name === selectedProgram;
+        return `<button type="button" class="quicklog-combo-option ${selected ? 'active' : ''}" data-program="${quickLogEscape(program.name)}">${quickLogEscape(program.name)}</button>`;
+    }).join('');
+}
+
+function renderQuickLogProgramDropdown(selectedProgram = QUICKLOG_DEFAULT_PROGRAM) {
+    const safeProgram = QUICKLOG_PROGRAMS.some((p) => p.name === selectedProgram) ? selectedProgram : ((QUICKLOG_PROGRAMS[0] && QUICKLOG_PROGRAMS[0].name) || QUICKLOG_DEFAULT_PROGRAM);
+    return `
+        <div id="quicklog-program-combo" class="quicklog-combo" data-open="false">
+            <input type="hidden" id="quicklog-program" value="${quickLogEscape(safeProgram)}">
+            <button id="quicklog-program-button" type="button" class="quicklog-combo-button" aria-haspopup="listbox" aria-expanded="false">
+                <span id="quicklog-program-selected" class="truncate">${quickLogEscape(safeProgram)}</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 shrink-0 quicklog-combo-chevron"></i>
+            </button>
+            <div id="quicklog-program-menu" class="quicklog-combo-menu hidden" role="listbox">
+                ${renderQuickLogProgramMenuOptions(safeProgram)}
+            </div>
+        </div>
+    `;
+}
+
+function closeQuickLogProgramDropdown() {
+    const combo = document.getElementById('quicklog-program-combo');
+    const btn = document.getElementById('quicklog-program-button');
+    const menu = document.getElementById('quicklog-program-menu');
+    if (!combo || !btn || !menu) return;
+    combo.dataset.open = 'false';
+    btn.setAttribute('aria-expanded', 'false');
+    menu.classList.add('hidden');
+}
+
+function setQuickLogProgramValue(programName) {
+    const safeProgram = QUICKLOG_PROGRAMS.some((p) => p.name === programName) ? programName : ((QUICKLOG_PROGRAMS[0] && QUICKLOG_PROGRAMS[0].name) || QUICKLOG_DEFAULT_PROGRAM);
+    const input = document.getElementById('quicklog-program');
+    const label = document.getElementById('quicklog-program-selected');
+    const menu = document.getElementById('quicklog-program-menu');
+    if (input) input.value = safeProgram;
+    if (label) label.textContent = safeProgram;
+    if (menu) {
+        menu.querySelectorAll('.quicklog-combo-option').forEach((item) => {
+            item.classList.toggle('active', item.dataset.program === safeProgram);
+        });
+    }
+}
+
+function refreshQuickLogProgramDropdown(selectedProgram = QUICKLOG_DEFAULT_PROGRAM) {
+    const combo = document.getElementById('quicklog-program-combo');
+    if (!combo) return;
+    combo.outerHTML = renderQuickLogProgramDropdown(selectedProgram);
+    bindQuickLogProgramDropdown();
+    _refreshIcons(document.getElementById('quicklog-program-combo'));
+}
+
+function bindQuickLogProgramDropdown() {
+    const combo = document.getElementById('quicklog-program-combo');
+    const btn = document.getElementById('quicklog-program-button');
+    const menu = document.getElementById('quicklog-program-menu');
+    if (!combo || !btn || !menu || combo.dataset.bound === 'true') return;
+    combo.dataset.bound = 'true';
+    btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const open = combo.dataset.open === 'true';
+        combo.dataset.open = open ? 'false' : 'true';
+        btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+        menu.classList.toggle('hidden', open);
+    });
+    menu.addEventListener('click', (event) => {
+        const option = event.target.closest('.quicklog-combo-option');
+        if (!option) return;
+        setQuickLogProgramValue(option.dataset.program || QUICKLOG_DEFAULT_PROGRAM);
+        closeQuickLogProgramDropdown();
+    });
+    if (!window.__quickLogProgramDropdownDocBound) {
+        document.addEventListener('click', (event) => {
+            const activeCombo = document.getElementById('quicklog-program-combo');
+            if (activeCombo && !activeCombo.contains(event.target)) closeQuickLogProgramDropdown();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeQuickLogProgramDropdown();
+        });
+        window.__quickLogProgramDropdownDocBound = true;
+    }
+}
+
 function getQuickLogSelectedMode() {
     return document.getElementById('quicklog-mode')?.value || 'PROD';
 }
@@ -420,9 +520,16 @@ function getQuickLogMesResultFilter(row) {
 }
 
 function quickLogMesTraceRowMatchesFilters(row) {
-    if (!isQuickLogMesTraceMode() || quickLogMesTraceFilter === 'ALL') return true;
-    if (['SMT', 'DIP', 'FATP'].includes(quickLogMesTraceFilter)) return getQuickLogMesStationFilter(row) === quickLogMesTraceFilter;
-    if (['PASS', 'FAIL'].includes(quickLogMesTraceFilter)) return getQuickLogMesResultFilter(row) === quickLogMesTraceFilter;
+    if (quickLogMesTraceFilter === 'ALL') return true;
+    const isMes = isQuickLogMesTraceMode();
+    
+    if (isMes) {
+        if (['SMT', 'DIP', 'FATP'].includes(quickLogMesTraceFilter)) return getQuickLogMesStationFilter(row) === quickLogMesTraceFilter;
+        if (['PASS', 'FAIL'].includes(quickLogMesTraceFilter)) return getQuickLogMesResultFilter(row) === quickLogMesTraceFilter;
+    } else {
+        if (['PASS', 'FAIL'].includes(quickLogMesTraceFilter)) return getQuickLogBaseResult(row) === quickLogMesTraceFilter;
+    }
+    
     return true;
 }
 
@@ -430,9 +537,15 @@ function renderQuickLogMesTraceFilterBar() {
     const bar = document.getElementById('quicklog-mes-filter-bar');
     if (!bar) return;
     const isMes = isQuickLogMesTraceMode();
-    bar.classList.toggle('hidden', !isMes);
-    if (!isMes) return;
-    bar.innerHTML = QUICKLOG_MES_TRACE_FILTERS.map((key) => {
+    bar.classList.remove('hidden'); // Always show filter bar
+    const filters = isMes ? QUICKLOG_MES_TRACE_FILTERS : QUICKLOG_LOCAL_FILTERS;
+    
+    // Ensure current filter is valid for current mode
+    if (!filters.includes(quickLogMesTraceFilter)) {
+        quickLogMesTraceFilter = 'ALL';
+    }
+
+    bar.innerHTML = filters.map((key) => {
         const active = quickLogMesTraceFilter === key;
         const activeCls = active
             ? 'bg-primary text-white border-primary dark:bg-secondary dark:text-bgDark dark:border-secondary'
@@ -449,7 +562,8 @@ function bindQuickLogMesTraceFilters() {
         const btn = event.target.closest('[data-filter]');
         if (!btn) return;
         const key = String(btn.dataset.filter || '').toUpperCase();
-        if (!QUICKLOG_MES_TRACE_FILTERS.includes(key)) return;
+        const filters = isQuickLogMesTraceMode() ? QUICKLOG_MES_TRACE_FILTERS : QUICKLOG_LOCAL_FILTERS;
+        if (!filters.includes(key)) return;
         quickLogMesTraceFilter = key;
         quickLogSelectedIndex = -1;
         quickLogResultSearchText = ''; // QL-05: reset search when filter changes
@@ -502,6 +616,7 @@ function updateQuickLogSummary(summary = {}) {
 }
 
 async function searchQuickLog() {
+    const program = typeof getGlobalActiveProgram === 'function' ? getGlobalActiveProgram() : { name: QUICKLOG_DEFAULT_PROGRAM };
     const model = getQuickLogSelectedModel();
     const mode = getQuickLogSelectedMode();
     const snText = document.getElementById('quicklog-input')?.value || '';
@@ -532,7 +647,7 @@ async function searchQuickLog() {
             summary.textContent = 'Searching...';
         }
         const endpoint = isMesTrace ? '/api/quicklog/mes-trace/search' : '/api/quicklog/search';
-        const payload = isMesTrace ? { input: snText } : { model: model.name, mode, snText, _QuickLogBase: model.resolvedPath || model.path };
+        const payload = isMesTrace ? { input: snText } : { program: program.name, model: model.name, mode, snText, _QuickLogBase: model.resolvedPath || model.path };
         const response = await fetchRetry(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -591,6 +706,7 @@ async function searchQuickLog() {
 
 
 function renderQuickLogPanel() {
+    const existingProgram = typeof getQuickLogSelectedProgramName === 'function' ? getQuickLogSelectedProgramName() : QUICKLOG_DEFAULT_PROGRAM;
     const existingModel = document.getElementById('quicklog-model')?.value || QUICKLOG_DEFAULT_MODEL;
     const existingMode = document.getElementById('quicklog-mode')?.value || 'PROD';
     const existingInput = document.getElementById('quicklog-input')?.value || '';
@@ -689,6 +805,7 @@ function renderQuickLogPanel() {
     renderQuickLogMesTraceFilterBar();
     renderQuickLogRows(quickLogRows);
     _refreshIcons(fileCards);
+    loadQuickLogPrograms();
     loadQuickLogModels();
 
 }
@@ -969,6 +1086,19 @@ function updateQuickLogSelectedRowLabel() {
     label.textContent = formatted;
 }
 // QL-05: Filter rows by search text in all visible columns
+function filterQuickLogResultsBySearchText(rows) {
+    if (!quickLogResultSearchText) return rows;
+    const lowerSearch = quickLogResultSearchText.toLowerCase();
+    const isMes = isQuickLogMesTraceMode();
+    const columns = isMes ? getQuickLogMesColumns() : ['SN', 'Station', 'Mode', 'Result', 'Failitem', 'EndTime'];
+    
+    return rows.filter(row => {
+        return columns.some(col => {
+            const val = String(row[col] || '').toLowerCase();
+            return val.includes(lowerSearch);
+        });
+    });
+}
 
 function generateQuickLogCsv(displayRows = []) {
     const isMes = isQuickLogMesTraceMode();
@@ -1414,7 +1544,9 @@ async function openQuickLogSelectedLog() {
         setQuickLogOpenLogLoading(true);
         logToConsole(`Opening ${isMesTraceRow ? 'MES Trace' : 'QuickLog'} log file...`, 'system');
         const endpoint = isMesTraceRow ? '/api/quicklog/mes-trace/open-log' : '/api/quicklog/open-log';
+        const program = typeof getGlobalActiveProgram === 'function' ? getGlobalActiveProgram() : { name: QUICKLOG_DEFAULT_PROGRAM };
         const body = isMesTraceRow ? { row: selectedRow } : {
+            program: program.name,
             model: model.name,
             base: model.resolvedPath || model.path,
             project: model.project || model.name,
@@ -1457,4 +1589,5 @@ function setQuickLogReportControlsVisibility() {
         if (btnClear) btnClear.classList.toggle('hidden', hideReportControls);
     }
 }
+
 

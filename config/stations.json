@@ -1,6 +1,6 @@
 {
   "stations": [
-    "Leak Testa",
+    "Leak Test03",
     "Leak Test",
     "123",
     "Leak Test02",
@@ -20,10 +20,14 @@
     "DIP_PCBA_01",
     "DIP_PCBA Test02",
     "DIP_PCBA Test03",
-    "FATP_CHECK",
+    "CHECK",
     "FATP_PCBA_04",
     "FPC02",
-    "FPC01"
+    "FPC01",
+    "FATP_CHECK",
+    "FATP_Leak Test",
+    "FATP_Leak Test02",
+    "FATP_LeakTest03"
   ],
   "presets": {
     "SMT": [],

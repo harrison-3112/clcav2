@@ -2,13 +2,13 @@
   "models": [
     {
       "name": "VO0301",
-      "logPath": "",
-      "csvPath": ""
+      "logPath": "C:\\MODEL\\VO0301\\SYNC LOCAL DATA",
+      "csvPath": "C:\\MODEL\\VO0301\\SYNC LOCAL DATA"
     },
     {
       "name": "EO0305",
-      "logPath": "",
-      "csvPath": ""
+      "logPath": "C:\\MODEL\\EO0305\\SYNC LOCAL DATA",
+      "csvPath": "C:\\MODEL\\EO0305\\SYNC LOCAL DATA"
     }
   ],
   "mesTrace": {
@@ -113,5 +113,12 @@
     "FATP_PCBA_04",
     "FATP_PCBA_03",
     "FATP_PCBA_02"
+  ],
+  "programs": [
+    {
+      "name": "MFGX",
+      "logPath": "{Root}\\{Model}\\SYNC LOCAL DATA\\{Station}\\Log\\{Model}\\{Mode}\\{Station}\\{Fixture}\\{Date}\\{Result}",
+      "csvPath": "{Root}\\{Model}\\SYNC LOCAL DATA\\{Station}\\CSV\\{Model}\\{Mode}\\{Station}\\{Fixture}"
+    }
   ]
 }

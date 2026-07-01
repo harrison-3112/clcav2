@@ -54,6 +54,9 @@ router.post('/api/generate', upload.fields([
       return res.status(400).json({ success: false, error: 'None of the selected stations are valid.' });
     }
     const useCustomerSnMapping = String(req.body.use_customer_sn_mapping || req.body.useCsnMapping || '').toLowerCase() === 'true';
+    const separateNdf = String(req.body.separate_ndf || '').toLowerCase() !== 'false';
+    const preparedBy = String(req.body.prepared_by || '').trim();
+    const stage = String(req.body.stage || '').trim();
     let outputPath = String(req.body.output_path || '').trim();
     const returnFile = !outputPath;
     if (!outputPath) outputPath = path.join(UPLOAD_DIR, `CLCA_Report_${Date.now()}.xlsx`);
@@ -70,10 +73,10 @@ router.post('/api/generate', upload.fields([
     const REPORT_TIMEOUT = 120_000;
     let reportPromise;
     if (mergeAllWo) {
-      reportPromise = getBuildMergedReport()(dataPaths, FIXED_TEMPLATE, outputPath, { selectedStations, useCustomerSnMapping, sheetPrefixes, originalFileNames: dataFiles.map((file) => file.originalname) });
+      reportPromise = getBuildMergedReport()(dataPaths, FIXED_TEMPLATE, outputPath, { selectedStations, useCustomerSnMapping, sheetPrefixes, originalFileNames: dataFiles.map((file) => file.originalname), separateNdf, preparedBy, stage });
     } else {
       const sheetPrefix = sheetPrefixes && sheetPrefixes[0] && typeof sheetPrefixes[0] === 'object' ? String(sheetPrefixes[0].prefix || '').trim() : '';
-      reportPromise = getBuildReport()(dataPaths[0], FIXED_TEMPLATE, mappingPath, outputPath, { selectedStations, useCustomerSnMapping, sheetPrefix, sheetPrefixes });
+      reportPromise = getBuildReport()(dataPaths[0], FIXED_TEMPLATE, mappingPath, outputPath, { selectedStations, useCustomerSnMapping, sheetPrefix, sheetPrefixes, separateNdf, preparedBy, stage });
     }
     const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Report generation timed out (>120 s).')), REPORT_TIMEOUT));
     console.log('[Generate][DEBUG] mergeAllWo=', mergeAllWo);
@@ -203,37 +206,20 @@ router.post('/api/inspect-stations', upload.fields([{ name: 'data', maxCount: 1 
       return res.json({ success: true, matched: [], unmatched: [] });
     }
 
-    // Use the same matching logic as the report engine
+    // Use strict, case-insensitive string match
     const { stations: masterStations } = getStationConfig();
-
-    function extractBaseName(s) { return String(s || '').trim().replace(/^FATP[_\s]*/i, ''); }
-    function normalizeBase(s) { return String(s || '').trim().toUpperCase().replace(/[_\-\s]+/g, '').toLowerCase(); }
 
     const matched = new Set();
     const unmatched = [];
 
     for (const pn of processNames) {
-      const baseName = extractBaseName(pn);
-      const norm = normalizeBase(baseName);
+      const pnLower = String(pn || '').trim().toLowerCase();
       let found = false;
       for (const ms of masterStations) {
-        if (normalizeBase(extractBaseName(ms)) === norm) { matched.add(ms); found = true; break; }
-      }
-      if (!found) {
-        // Leak Test fallback
-        const leakNorm = pn.toLowerCase().replace(/[ _]/g, '');
-        if (leakNorm.includes('leaktest')) {
-          const dm = leakNorm.match(/leaktest(\d*)/);
-          const dn = dm ? dm[1] : '';
-          for (const ms of masterStations) {
-            const tsNorm = ms.toLowerCase().replace(/[ _]/g, '');
-            if (!tsNorm.includes('leaktest')) continue;
-            const tm = tsNorm.match(/leaktest(\d*)/);
-            const tn = tm ? tm[1] : '';
-            if (tn === dn || (dn === '' && tn === '01') || (tn === '' && dn === '01')) {
-              matched.add(ms); found = true; break;
-            }
-          }
+        if (String(ms || '').trim().toLowerCase() === pnLower) {
+          matched.add(ms);
+          found = true;
+          break;
         }
       }
       if (!found) unmatched.push(pn);

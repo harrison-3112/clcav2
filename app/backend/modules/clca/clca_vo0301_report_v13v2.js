@@ -590,39 +590,49 @@ function productFromKpis(kpiByStation, key) {
   return count > 0 ? prod : null;
 }
 
-function rebuildLine1(text, model, wo, line, build) {
-  const s = String(text);
-  const labelModel = s.match(/(Model[^:]*:)/);
-  const labelWo = s.match(/(WO（工单）:|WO\(.*?\):)/);
-  const labelStage = s.match(/(Stage[^:]*:)/);
-  const labelLine = s.match(/(Line[^:]*:)/);
-  const labelBuild = s.match(/(Build Q'ty[^:]*:)/);
-
-  const parts = [];
-  if (labelModel) parts.push(`${labelModel[1]} ${model || ''}`);
-  if (labelWo) parts.push(`${labelWo[1]} ${wo || ''}`);
-  if (labelStage) {
-    let val = '';
-    const m = s.match(new RegExp(`${labelStage[1]}\\s*([^\\s].*?)(\\s{2,}|$)`));
-    if (m) val = m[1];
-    parts.push(`${labelStage[1]} ${val}`);
+function replaceLabelValue(text, labelRegexStr, newValue) {
+  if (newValue === null || newValue === undefined || newValue === '') return text;
+  const re = new RegExp('(' + labelRegexStr + ')', 'i');
+  const match = text.match(re);
+  if (!match) return text;
+  
+  const labelIdx = match.index;
+  const labelLen = match[0].length;
+  
+  const afterLabel = text.substring(labelIdx + labelLen);
+  const spaceMatch = afterLabel.match(/\s{2,}/);
+  let valueEndIdx = afterLabel.length;
+  let spaces = "";
+  if (spaceMatch) {
+    valueEndIdx = spaceMatch.index;
+    spaces = spaceMatch[0];
   }
-  if (labelLine) parts.push(`${labelLine[1]} ${line || ''}`);
-  if (labelBuild) parts.push(`${labelBuild[1]} ${build !== null && build !== undefined ? build : ''}`);
+  
+  const before = text.substring(0, labelIdx);
+  let labelStr = match[0];
+  if (!labelStr.includes(':') && !labelStr.includes('：')) labelStr += ':';
+  
+  const afterSpaces = afterLabel.substring(valueEndIdx + spaces.length);
+  
+  return before + labelStr + " " + newValue + spaces + afterSpaces;
+}
 
-  return parts.length ? parts.join('    ') : s;
+function rebuildLine1(text, model, wo, line, build, stage) {
+  let s = String(text);
+  s = replaceLabelValue(s, 'Model[^:]*:', model);
+  s = replaceLabelValue(s, 'WO（工单）:|WO\\(.*?\\):', wo);
+  s = replaceLabelValue(s, 'Stage[^\\s:：]*(?::|：)?', stage);
+  s = replaceLabelValue(s, 'Line[^:]*:', line);
+  s = replaceLabelValue(s, "Build Q'ty[^:]*:", build);
+  return s;
 }
 
 function rebuildLine2(text, dateStr, startStr, endStr) {
-  const s = String(text);
-  const labelDate = s.match(/(Date[^:]*:)/);
-  const labelStart = s.match(/(Start time[^:]*:)/);
-  const labelEnd = s.match(/(End time[^:]*:)/);
-  const parts = [];
-  if (labelDate) parts.push(`${labelDate[1]} ${dateStr || ''}`);
-  if (labelStart) parts.push(`${labelStart[1]} ${startStr || ''}`);
-  if (labelEnd) parts.push(`${labelEnd[1]} ${endStr || ''}`);
-  return parts.length ? parts.join('    ') : s;
+  let s = String(text);
+  s = replaceLabelValue(s, 'Date[^:]*:', dateStr);
+  s = replaceLabelValue(s, 'Start time[^:]*:', startStr);
+  s = replaceLabelValue(s, 'End time[^:]*:', endStr);
+  return s;
 }
 
 
@@ -732,19 +742,10 @@ async function buildReport(dataPath, templatePath, mappingPathOrOutputPath, outp
     }
   }
 
-  const stationMatcher = buildStationMatcher(templateStations);
-
-  const isLeakTestVariant = (s) => /leak\s*test\s*[01]{1,2}/i.test(String(s).trim().toLowerCase());
-  const hasLeakTestVar = templateStations.some((s) => isLeakTestVariant(s));
-  const hasLeakPlain = templateStations.some((s) => String(s).trim().toLowerCase() === 'leak test');
-  const leakTestVarName = hasLeakTestVar ? templateStations.find((s) => isLeakTestVariant(s)).trim() : null;
-
   function mapToTemplateStation(s) {
-    const normalized = normalizeStation(s);
-    const matched = findTemplateStationMatch(String(s || ''), templateStations, stationMatcher);
-    if (matched) return matched;
-    if (normalized === 'Leak Test' && hasLeakTestVar && !hasLeakPlain && leakTestVarName) return leakTestVarName;
-    return normalized;
+    const sLower = String(s || '').trim().toLowerCase();
+    const matched = templateStations.find((ts) => String(ts || '').trim().toLowerCase() === sLower);
+    return matched ? matched : String(s || '').trim();
   }
 
   const dataColsNorm = {};
@@ -975,15 +976,23 @@ async function buildReport(dataPath, templatePath, mappingPathOrOutputPath, outp
     const entries = [];
     const groups = stationToGroups[stationLabel] || [];
     for (const [desc, sns] of groups) {
-      const groupEntries = [];
+      const ndfEntries = [];
+      const realEntries = [];
       for (const sn of sns) {
         const key = `${stationLabel}||${String(sn).trim()}`;
         const isNdf = !!ndfByMapped[key];
-        if ((mode === 'ndf' && isNdf) || (mode === 'real' && !isNdf)) {
-          groupEntries.push({ sn, desc, is_ndf: isNdf });
-        }
+        if (isNdf && (mode === 'all' || mode === 'ndf')) ndfEntries.push({ sn, desc, is_ndf: true });
+        if (!isNdf && (mode === 'all' || mode === 'real')) realEntries.push({ sn, desc, is_ndf: false });
       }
-      if (groupEntries.length) entries.push({ desc, items: groupEntries });
+      if (ndfEntries.length) entries.push({ desc, items: ndfEntries, is_ndf: true });
+      if (realEntries.length) entries.push({ desc, items: realEntries, is_ndf: false });
+    }
+    
+    if (mode === 'all') {
+      entries.sort((a, b) => {
+        if (a.is_ndf === b.is_ndf) return 0;
+        return a.is_ndf ? -1 : 1;
+      });
     }
     return entries;
   }
@@ -1038,6 +1047,13 @@ async function buildReport(dataPath, templatePath, mappingPathOrOutputPath, outp
     writeLabelValue(rtyCell, rtyVal);
     writeLabelValue(oayCell, oayVal);
 
+    const preparedByCell = findLabelCell(targetWs, ['prepared by:', 'prepared by']);
+    if (options && options.preparedBy && preparedByCell) {
+      const target = targetWs.getRow(preparedByCell.row).getCell(preparedByCell.col + 1);
+      target.value = String(options.preparedBy);
+      target.font = { name: FONT_NAME, size: FONT_SIZE };
+    }
+
     let row1Cell = null;
     let row2Cell = null;
     const scanMaxCol = targetWs.columnCount || targetWs.actualColumnCount || 1;
@@ -1053,7 +1069,7 @@ async function buildReport(dataPath, templatePath, mappingPathOrOutputPath, outp
     const reportDate = todayYmd();
     if (row1Cell) {
       const cell = targetWs.getRow(row1Cell.row).getCell(row1Cell.col);
-      cell.value = rebuildLine1(cell.value, modelVal, woVal, lineVal, buildQty);
+      cell.value = rebuildLine1(cell.value, modelVal, woVal, lineVal, buildQty, options?.stage);
     }
     if (row2Cell) {
       const cell = targetWs.getRow(row2Cell.row).getCell(row2Cell.col);
@@ -1166,12 +1182,18 @@ async function buildReport(dataPath, templatePath, mappingPathOrOutputPath, outp
     unifyFontTable(targetWs, minRow, maxTableRow, noCol, remarkCol, FONT_NAME, FONT_SIZE);
   }
 
-  const ndfWs = cloneWorksheet(wb, ws, '__NDF_TEMP__');
+  const separateNdf = options && options.separateNdf !== false;
+  let ndfWs = null;
   const mainStationRows = stationRows.map(([r, station]) => [r, station]);
-  const ndfStationRows = stationRows.map(([r, station]) => [r, station]);
 
-  buildWorksheetByMode(ws, mainStationRows, 'real');
-  buildWorksheetByMode(ndfWs, ndfStationRows, 'ndf');
+  if (separateNdf) {
+    ndfWs = cloneWorksheet(wb, ws, '__NDF_TEMP__');
+    const ndfStationRows = stationRows.map(([r, station]) => [r, station]);
+    buildWorksheetByMode(ws, mainStationRows, 'real');
+    buildWorksheetByMode(ndfWs, ndfStationRows, 'ndf');
+  } else {
+    buildWorksheetByMode(ws, mainStationRows, 'all');
+  }
 
   for (const w of wb.worksheets) w.state = 'visible';
 
@@ -1179,25 +1201,30 @@ async function buildReport(dataPath, templatePath, mappingPathOrOutputPath, outp
   let buildEff = buildQty == null ? '' : String(buildQty);
   const ndfQty = countEntriesByMode('ndf');
   const mainSheetBaseName = buildEff.trim() ? `${woEff} (${buildEff}pieces)` : woEff;
-  const ndfSheetBaseName = `${woEff} NDF (${ndfQty}pieces)`;
   const singleSheetPrefix = getSingleSheetPrefix(options);
   const mainSheetName = buildPrefixedSheetName(singleSheetPrefix, mainSheetBaseName);
-  const ndfSheetName = buildPrefixedSheetName(singleSheetPrefix, ndfSheetBaseName);
 
-  const keepIds = new Set([ws.id, ndfWs.id]);
+  const keepIds = new Set([ws.id]);
+  if (separateNdf && ndfWs) keepIds.add(ndfWs.id);
+
   for (const w of [...wb.worksheets]) {
     if (!keepIds.has(w.id)) wb.removeWorksheet(w.id);
   }
 
   ws.name = mainSheetName;
-  ndfWs.name = ndfSheetName;
+  let ndfSheetName = null;
+  if (separateNdf && ndfWs) {
+    const ndfSheetBaseName = `${woEff} NDF (${ndfQty}pieces)`;
+    ndfSheetName = buildPrefixedSheetName(singleSheetPrefix, ndfSheetBaseName);
+    ndfWs.name = ndfSheetName;
+  }
 
   try {
     await wb.xlsx.writeFile(outputPath);
   } catch (e) {
     throw new Error(`Cannot write output file: ${e.message}`);
   }
-  return [outputPath, ws.name, ndfWs.name];
+  return separateNdf && ndfWs ? [outputPath, ws.name, ndfWs.name] : [outputPath, ws.name];
 }
 
 
@@ -1311,6 +1338,8 @@ async function buildMergedReport(dataPaths, templatePath, outputPath, options = 
         selectedStations: perFileStations,
         useCustomerSnMapping: !!options.useCustomerSnMapping,
         use_customer_sn_mapping: !!options.useCustomerSnMapping,
+        separateNdf: options.separateNdf,
+        preparedBy: options.preparedBy,
       });
 
       const partWb = new ExcelJS.Workbook();

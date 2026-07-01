@@ -40,12 +40,12 @@ function updateStatus() {
     const module = MODULES[activeModule];
     const moduleState = getActiveState();
     const selectedStations = getSelectedStations();
-    const mesRequirementRows = activeModule === 'mesdaily' ? readMesRequirementRows() : [];
     let missing = [];
 
     if (activeModule === 'mesdaily') {
-        const validRequirements = mesRequirementRows.filter(({ wo }) => wo);
-        if (validRequirements.length === 0 || hasIncompleteMesRequirements(mesRequirementRows)) {
+        // Unified UI: check WO textarea instead of requirement rows
+        const woText = String(document.getElementById('mes-r001-wo-input')?.value || '').trim();
+        if (!woText) {
             missing.push(t('needRequirement'));
         }
     } else {

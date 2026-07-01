@@ -94,79 +94,88 @@ function resolveQuickLogLocalStationForServer(modelName, stationName) {
   return { allowed, localStation: finalStations[0] || raw, localStations: finalStations, configured: true, reason: allowed ? '' : 'station-not-in-local-config' };
 }
 
-const DEFAULT_QUICKLOG_MODELS = {
-  VO0301: { name: 'VO0301', path: process.env.SN_SEARCH_BASE || '\\\\10.24.111.80\\Testlog\\camera\\VO0301\\SYNC LOCAL DATA', project: 'VO0301', fixture: 'J01' },
-  EO0302: { name: 'EO0302', path: '\\\\10.24.111.80\\Testlog\\camera\\EO0302\\SYNC LOCAL DATA', project: 'EO0302', fixture: 'J01' },
-  EO0303: { name: 'EO0303', path: '\\\\10.24.111.80\\Testlog\\camera\\EO0303\\SYNC LOCAL DATA', project: 'EO0303', fixture: 'J01' },
-};
-
-function normalizeQuickLogModel(raw) {
-  const name = typeof raw === 'string' ? raw.trim() : String(raw && raw.name || '').trim();
-  if (!name) return null;
-  return {
-    name,
-    logPath: typeof raw === 'object' ? String(raw.logPath || '').trim() : '',
-    csvPath: typeof raw === 'object' ? String(raw.csvPath || '').trim() : '',
-    path: typeof raw === 'object' ? String(raw.path || '').trim() : '',
-    project: name,
-    fixture: 'J01',
-  };
-}
-
 let QUICKLOG_GLOBAL_ROOT = '\\\\10.24.111.80\\Testlog\\camera';
+let QUICKLOG_PROGRAMS = [];
 
-function loadQuickLogModelsFromConfig() {
+function loadQuickLogConfig() {
   try {
     if (!fs.existsSync(QUICKLOG_MODELS_CONFIG_PATH)) {
-      return { ...DEFAULT_QUICKLOG_MODELS };
+      return;
     }
     const parsed = JSON.parse(fs.readFileSync(QUICKLOG_MODELS_CONFIG_PATH, 'utf8'));
     if (parsed.mesTrace && parsed.mesTrace.logRoot) {
       QUICKLOG_GLOBAL_ROOT = parsed.mesTrace.logRoot;
     }
-    const rawModels = Array.isArray(parsed) ? parsed : parsed.models;
-    if (!Array.isArray(rawModels)) throw new Error('quicklog.models.json must contain a models array.');
-    const models = {};
-    rawModels.map(normalizeQuickLogModel).filter(Boolean).forEach((model) => {
-      models[model.name] = model;
-    });
-    if (!Object.keys(models).length) throw new Error('No valid QuickLog models in config.');
-    return models;
+    if (Array.isArray(parsed.programs)) {
+      QUICKLOG_PROGRAMS = parsed.programs;
+    }
   } catch (error) {
-    return { ...DEFAULT_QUICKLOG_MODELS };
+    // Ignore read errors
   }
 }
 
-let QUICKLOG_MODELS = loadQuickLogModelsFromConfig();
+loadQuickLogConfig();
 
 function reloadQuickLogModelsFromConfig() {
-  QUICKLOG_MODELS = loadQuickLogModelsFromConfig();
-}
-
-function getQuickLogModel(modelName) {
-  return QUICKLOG_MODELS[String(modelName || '').trim()] || null;
+  loadQuickLogConfig();
 }
 
 function getQuickLogModelsDict() {
-  return QUICKLOG_MODELS;
+  const models = {};
+  if (fs.existsSync(QUICKLOG_GLOBAL_ROOT)) {
+    try {
+      const entries = fs.readdirSync(QUICKLOG_GLOBAL_ROOT, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const name = entry.name;
+          models[name] = {
+            name,
+            path: require('path').join(QUICKLOG_GLOBAL_ROOT, name, 'SYNC LOCAL DATA'),
+            project: name,
+            fixture: 'J01'
+          };
+        }
+      }
+    } catch (e) {}
+  }
+  return Object.keys(models).length > 0 ? models : { VO0301: { name: 'VO0301', path: require('path').join(QUICKLOG_GLOBAL_ROOT, 'VO0301', 'SYNC LOCAL DATA') } };
+}
+
+function getQuickLogModel(modelName) {
+  const name = String(modelName || '').trim();
+  if (!name) return null;
+  return {
+    name,
+    path: require('path').join(QUICKLOG_GLOBAL_ROOT, name, 'SYNC LOCAL DATA'),
+    project: name,
+    fixture: 'J01'
+  };
+}
+
+function getQuickLogPrograms() {
+  return QUICKLOG_PROGRAMS;
+}
+
+function getQuickLogProgram(name) {
+  return QUICKLOG_PROGRAMS.find((p) => p.name === name) || QUICKLOG_PROGRAMS[0];
 }
 
 function resolveQuickLogConfig(input = {}) {
   const body = input && typeof input === 'object' ? input : {};
   const row = body.row && typeof body.row === 'object' ? body.row : body;
   const requestedModel = String(body.model || body.quickLogModel || body._QuickLogModel || row._QuickLogModel || '').trim();
+  const requestedProgram = String(body.program || body.quickLogProgram || body._QuickLogProgram || row._QuickLogProgram || '').trim();
   const model = getQuickLogModel(requestedModel);
+  const program = getQuickLogProgram(requestedProgram);
+  
   if (model) {
-      let base = model.logPath || model.path;
-      if (!base) {
-          base = require('path').join(QUICKLOG_GLOBAL_ROOT, model.name, 'SYNC LOCAL DATA');
-      }
       return { 
-          base, 
-          csvBase: model.csvPath || '',
-          project: model.project || model.name, 
-          fixture: model.fixture || 'J01', 
-          model: model.name 
+          base: model.path, 
+          csvBase: '',
+          project: model.project, 
+          fixture: model.fixture, 
+          model: model.name,
+          program: program
       };
   }
   return {
@@ -175,9 +184,9 @@ function resolveQuickLogConfig(input = {}) {
     project: String(body.project || body._QuickLogProject || row._QuickLogProject || requestedModel || 'VO0301').trim(),
     fixture: String(body.fixture || body._QuickLogFixture || row._QuickLogFixture || 'J01').trim(),
     model: requestedModel,
+    program: program
   };
 }
-
 function openQuickLogFile(filePath) {
   return new Promise((resolve, reject) => {
     if (process.platform === 'win32') {
@@ -202,5 +211,6 @@ module.exports = {
   resolveQuickLogConfig,
   openQuickLogFile,
   QUICKLOG_MODELS_CONFIG_PATH,
-  getQuickLogGlobalRoot
+  getQuickLogGlobalRoot,
+  getQuickLogPrograms
 };

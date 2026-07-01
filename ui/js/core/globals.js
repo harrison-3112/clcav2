@@ -93,8 +93,7 @@ const LANG = {
         clcaSheetPrefixLabel: 'Merged sheet prefix',
         clcaSheetPrefixHint: 'Optional. Prefix will be added before each generated sheet name.',
         clcaRemoveFile: 'Remove file',
-        clcaPrecheckTitle: 'CLCA input pre-check & file list',
-        clcaPrecheckSubtitle: 'file name · detected model/WO · station match · merge possible · sheet prefix',
+        clcaPrecheckTitle: 'CLCA input pre-check',
         clcaFileCount: '{count} file(s)',
         clcaFileNameHeader: 'File name',
         clcaStatusHeader: 'Status',
@@ -102,6 +101,9 @@ const LANG = {
         clcaStationMatchedHeader: 'Station matched',
         clcaMergePossibleHeader: 'Merge possible',
         clcaSheetPrefixHeader: 'Sheet prefix',
+        clcaSeparateNdf: 'Seperate NDF, NG',
+        clcaPreparedBy: 'Prepared By:',
+        clcaStage: 'Stage:',
         multipleFilesRequireMerge: 'Multiple files require \"Export merged file\"',
         addRequirementRow: 'Add row',
         removeRow: 'Remove row',
@@ -150,8 +152,12 @@ const LANG = {
     settingsTitle: 'Configuration Settings',
     settingsTabGeneral: 'General',
     settingsTabModels: 'Models',
-    settingsTabAliases: 'Station Aliases',
-    settingsTabStations: 'Stations',
+      settingsTabAliases: 'Station Aliases',
+      settingsTabStations: 'Stations',
+      settingsTabPrograms: 'Programs Configuration',
+      settingsAddProgram: 'Add Program',
+      settingsProgramWarning: 'WARNING: Modifying Program paths incorrectly will cause log file reading to fail. Do you really know what you are doing and wish to proceed?',
+      settingsProgramReset: 'Reset to Default',
     settingsMesApiUrl: 'MES API URL',
     settingsLogRoot: 'Global Log Root Path',
     settingsModelsTitle: 'Models Configuration',
@@ -249,16 +255,19 @@ const LANG = {
         clcaSheetPrefixLabel: '合并页签前缀',
         clcaSheetPrefixHint: '可选。前缀会加在每个生成页签名称前。',
         clcaRemoveFile: '移除文件',
-        clcaPrecheckTitle: 'CLCA 输入预检查与文件列表',
+        clcaPrecheckTitle: 'CLCA input pre-check',
         clcaPrecheckSubtitle: '文件名 · 检测到的机种/工单 · 站点匹配 · 可否合并 · 页签前缀',
         clcaFileCount: '{count} 个文件',
         clcaFileNameHeader: '文件名',
         clcaStatusHeader: '状态',
         clcaModelWoHeader: '机种 / 工单',
-        clcaStationMatchedHeader: '站点匹配',
+        clcaStationMatchedHeader: '匹配站点',
         clcaMergePossibleHeader: '可否合并',
-        clcaSheetPrefixHeader: '页签前缀',
-        multipleFilesRequireMerge: '多个文件需要勾选 \"导出合并文件\"',
+        clcaSheetPrefixHeader: '工作表前缀',
+        clcaSeparateNdf: 'Separate NDF, NG',
+        clcaPreparedBy: '报告编制人:',
+        clcaStage: '阶段 (Stage):',
+        multipleFilesRequireMerge: '多个文件需要勾选 \"Export merged file\"',
         addRequirementRow: '添加行',
         removeRow: '删除行',
         needRequirement: '工单',
@@ -306,8 +315,12 @@ const LANG = {
     settingsTitle: '配置设置',
     settingsTabGeneral: '常规',
     settingsTabModels: '机种',
-    settingsTabAliases: '站点别名',
-    settingsTabStations: '站点管理',
+      settingsTabAliases: '站点别名',
+      settingsTabStations: '站点管理',
+      settingsTabPrograms: '配置 Program',
+      settingsAddProgram: '添加 Program',
+      settingsProgramWarning: '警告：错误修改 Program 路径会导致日志文件无法读取。 您确定知道自己在做什么并希望继续吗？',
+      settingsProgramReset: '恢复默认',
     settingsMesApiUrl: 'MES API 地址',
     settingsLogRoot: '全局日志根路径',
     settingsModelsTitle: '机种配置',
@@ -521,10 +534,27 @@ const grrResultPanel = document.getElementById('grr-result-panel');
 
 
 let QUICKLOG_MODELS = [
-    { name: 'VO0301', path: '\\10.24.111.80\Testlog\camera\VO0301\SYNC LOCAL DATA', project: 'VO0301', fixture: 'J01' },
-    { name: 'EO0302', path: '\\10.24.111.80\Testlog\camera\EO0302\SYNC LOCAL DATA', project: 'EO0302', fixture: 'J01' },
-    { name: 'EO0303', path: '\\10.24.111.80\Testlog\camera\EO0303\SYNC LOCAL DATA', project: 'EO0303', fixture: 'J01' },
+    { name: 'VO0301', path: '\\\\10.24.111.80\\Testlog\\camera\\VO0301\\SYNC LOCAL DATA', project: 'VO0301', fixture: 'J01' },
+    { name: 'EO0302', path: '\\\\10.24.111.80\\Testlog\\camera\\EO0302\\SYNC LOCAL DATA', project: 'EO0302', fixture: 'J01' },
+    { name: 'EO0303', path: '\\\\10.24.111.80\\Testlog\\camera\\EO0303\\SYNC LOCAL DATA', project: 'EO0303', fixture: 'J01' },
 ];
+
+let QUICKLOG_PROGRAMS = [];
+
+function getGlobalActiveProgramName() {
+    const saved = localStorage.getItem('CLCA_ACTIVE_PROGRAM');
+    return saved || QUICKLOG_DEFAULT_PROGRAM;
+}
+
+function getGlobalActiveProgram() {
+    const name = getGlobalActiveProgramName();
+    return QUICKLOG_PROGRAMS.find((p) => p.name === name) || QUICKLOG_PROGRAMS[0] || { name: QUICKLOG_DEFAULT_PROGRAM, logPath: '', csvPath: '' };
+}
+
+function setGlobalActiveProgram(name) {
+    localStorage.setItem('CLCA_ACTIVE_PROGRAM', name);
+}
+const QUICKLOG_DEFAULT_PROGRAM = 'MFGX';
 
 const QUICKLOG_DEFAULT_MODEL = 'VO0301';
 
@@ -761,6 +791,37 @@ async function loadQuickLogModels() {
     }
 }
 
+async function loadQuickLogPrograms() {
+    try {
+        const response = await fetchRetry('/api/quicklog/programs', { method: 'GET', cache: 'no-store' }, 1);
+        const data = await response.json();
+        if (!response.ok || !data.success || !Array.isArray(data.programs)) throw createBackendError(data, 'Cannot load QuickLog programs.');
+        QUICKLOG_PROGRAMS = data.programs.map((p) => ({
+            name: String(p.name || '').trim(),
+            logPath: String(p.logPath || '').trim(),
+            csvPath: String(p.csvPath || '').trim(),
+        })).filter((p) => p.name);
+        
+        if (!QUICKLOG_PROGRAMS.length) {
+            QUICKLOG_PROGRAMS = [{ name: 'MFGX', logPath: '{Root}\\{Model}\\SYNC LOCAL DATA\\{Station}\\Log\\{Model}\\{Mode}\\{Station}\\{Fixture}\\{Date}\\{Result}', csvPath: '{Root}\\{Model}\\SYNC LOCAL DATA\\{Station}\\CSV\\{Model}\\{Mode}\\{Station}\\{Fixture}' }];
+        }
+        
+        // Ensure the active program is still valid, fallback if deleted
+        let current = getGlobalActiveProgramName();
+        if (!QUICKLOG_PROGRAMS.some((p) => p.name === current)) {
+            current = QUICKLOG_PROGRAMS[0].name;
+            setGlobalActiveProgram(current);
+        }
+        
+        if (typeof refreshQuickLogProgramDropdown === 'function') {
+            refreshQuickLogProgramDropdown(current);
+            if (typeof setQuickLogProgramValue === 'function') setQuickLogProgramValue(current);
+        }
+    } catch (err) {
+        logToConsole(`QuickLog program load failed: ${err.message || err}`, 'warning');
+    }
+}
+
 
 async function loadQuickLogModes(showLog = true) {
     const model = getQuickLogSelectedModel();
@@ -856,4 +917,3 @@ function filterQuickLogResultsBySearchText(rows = []) {
 
 // Initialization moved to main.js
 
-let currentSettingsData = {};
