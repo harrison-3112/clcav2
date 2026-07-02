@@ -13,7 +13,7 @@ The redesign must preserve CloudMetrics' current visual language and keep the ME
 - Fetch Dashboard means query and review data.
 - Export RTY Excel means generate the Excel report.
 - RTY Preview and Defect Records should be visible in a minimal state before query.
-- Defect Analytics should remain hidden until usable data exists.
+- Defect Analytics should stay visually lightweight until usable data exists.
 
 Backend routes, response schemas, and MES data processing are out of scope.
 
@@ -37,7 +37,7 @@ Before the user presses Fetch Dashboard:
 - Data Query remains fully interactive.
 - RTY Preview is visible as a compact shell.
 - Defect Records is visible as a compact shell.
-- Defect Analytics is hidden.
+- Defect Analytics is represented by a compact disabled anchor row, not the full chart panel.
 - RTY Export remains available as the report export area.
 
 After a query with data:
@@ -50,7 +50,7 @@ After a query with no data:
 
 - RTY Preview and Defect Records remain in their minimal shells.
 - Empty messages change to "No data found for this query."
-- Defect Analytics remains hidden.
+- Defect Analytics remains a compact disabled anchor row.
 
 ## UI States
 
@@ -62,6 +62,15 @@ MES Daily should have a small explicit state model:
 - `ready`: query completed successfully and dashboard data exists.
 
 The state should be represented on the MES panel or an equivalent local module container, for example with `data-dashboard-state="idle|loading|empty|ready"`. The implementation should avoid deleting or recreating global DOM elements that other scripts bind to.
+
+RTY export should have a separate state model because export is a report-generation job, not a dashboard query:
+
+- `exportIdle`: no export is running.
+- `exporting`: RTY Excel generation is in progress.
+- `exportDone`: the last export completed successfully.
+- `exportError`: the last export failed.
+
+Dashboard state and export state must not overwrite each other. Starting an export should not force the dashboard into `loading`; it should keep the current dashboard view visible while the export panel reports export progress.
 
 ## Section Behavior
 
@@ -93,7 +102,12 @@ In `idle`:
 In `loading`:
 
 - Keep the section visible.
-- Show a loading message or subtle spinner using existing app patterns.
+- Show an indeterminate progress bar using existing app progress styling where possible.
+- Show elapsed time so the user can tell the app is still working.
+- Use only frontend-truthful status text:
+  - "Querying MES server..." while the fetch request is pending.
+  - "Processing response..." after the response resolves and before rendering completes.
+- Avoid guessed staged text such as chunk counts or backend phases unless the backend later exposes real progress events.
 - Avoid heavy skeleton effects that imply background loading before the user acts.
 
 In `empty`:
@@ -140,11 +154,18 @@ In `ready`:
 
 ### Defect Analytics
 
-Hidden in `idle`, `loading`, and `empty`.
+In `idle`, `loading`, and `empty`, show only a compact disabled analytics anchor row, roughly 48-64px high, using existing card/header styling. This row should communicate that Analytics will appear after dashboard data is available without reserving the full chart footprint.
 
-Visible only in `ready`, after there is usable data.
+In `ready`, expand the anchor into the full analytics panel after usable data exists.
 
 When leaving `ready`, existing Chart.js instances and the per-WO dashboard should be destroyed or cleared to avoid stale charts and memory leaks.
+
+To reduce layout jump when Analytics expands:
+
+- Use a lightweight reveal transition.
+- After charts render, smooth-scroll only when helpful.
+- Do not auto-scroll if the Analytics header is already in or near the viewport.
+- Do not auto-scroll if the user has already scrolled down into Defect Records or near the Analytics area while the query was running.
 
 ### RTY Export
 
@@ -161,9 +182,35 @@ The UI should communicate:
 - Fetch Dashboard is for preview/review.
 - Export RTY Excel is for creating the report.
 
-If the app-level Generate button must remain because of shared architecture, it should become context-aware for MES Daily through label, placement, or supporting text. It should not look like an equal alternative to Fetch Dashboard.
+Button hierarchy:
+
+- Fetch Dashboard is the primary action in Data Query.
+- Export RTY Excel is a secondary or outline action in the export panel.
+- In `ready`, Export RTY Excel may become a stronger secondary action, such as a subtle border glow or filled secondary style, to indicate the reviewed data is ready to export.
+- Export RTY Excel should not share the same visual weight as Fetch Dashboard.
+
+If the app-level Generate button must remain because of shared architecture, it should become context-aware for MES Daily through label, placement, styling, or supporting text. It should not look like an equal alternative to Fetch Dashboard.
 
 Export remains allowed before preview if the required WO/time/output conditions are valid, but the UI should make this feel like direct export rather than dashboard review.
+
+Export helper copy should change by dashboard state:
+
+- `idle` or `empty`: "Export directly without preview."
+- `ready`: "Export reviewed RTY report."
+
+When export starts:
+
+- Set export state to `exporting`.
+- Disable the Export RTY Excel button and show a spinner/loading label.
+- Show an export-panel status such as "Creating RTY Excel..."
+- Keep the current dashboard view visible.
+- Do not show Analytics if the dashboard is not already `ready`.
+
+Fetch while export is running:
+
+- For this implementation, keep Fetch Dashboard disabled during `exporting`.
+- Reason: the current MES Daily export route captures `process.stdout.write` and `process.stderr.write` globally while running. Until backend concurrency is made explicit and safe, parallel MES jobs can produce mixed logs or unstable behavior.
+- A future enhancement may replace the hard lock with a confirmation modal if the backend is verified to handle concurrent MES dashboard and export requests safely.
 
 ## Visual Style Requirements
 
@@ -178,6 +225,7 @@ The redesign must match the existing CloudMetrics style:
 - Avoid heavy decorative backgrounds or unrelated visual motifs.
 - Use existing icon style, preferably lucide where already used.
 - Use existing transition and loading patterns.
+- Use only modest contextual emphasis for Export RTY Excel in `ready`; avoid turning both Fetch and Export into primary buttons.
 
 Empty states should feel like part of the app, not a newly pasted design system.
 
@@ -199,8 +247,10 @@ The implementation should prefer small state helpers over large template rewrite
 
 - Add or reuse empty-state DOM within existing RTY Preview and Defect Records sections.
 - Add a MES Daily state helper such as `setMesDailyDashboardState(state, message)`.
+- Add an export state helper such as `setMesDailyExportState(state, message)`.
 - Update `searchMesDashboard()` to set `loading`, then `ready` or `empty`.
 - Update `clearMesR001Panel()` to return to `idle`.
+- Update the MES Daily generate/export path to set `exporting`, then `exportDone` or `exportError`.
 - Ensure analytics cleanup runs when transitioning away from `ready`.
 - Keep render functions tolerant of zero rows.
 
@@ -217,18 +267,30 @@ If a query succeeds but produces no usable data:
 
 - Use `empty`, not `ready`.
 - RTY Preview and Defect Records should remain visible with no-data messaging.
-- Analytics should remain hidden.
+- Analytics should remain a compact disabled anchor row.
+
+If Export RTY Excel fails:
+
+- Keep the current dashboard state unchanged.
+- Set export state to `exportError`.
+- Re-enable Export RTY Excel.
+- Show the existing toast/log error behavior and an export-panel failure message.
 
 ## Verification Criteria
 
 Before completion, verify:
 
-- MES Daily initial view shows Data Query, minimal RTY Preview, minimal Defect Records, Export controls, and no Analytics.
-- Fetch Dashboard loading state keeps result shells visible.
+- MES Daily initial view shows Data Query, minimal RTY Preview, minimal Defect Records, Export controls, and a compact disabled Analytics anchor row.
+- Fetch Dashboard loading state keeps result shells visible, shows an indeterminate progress bar, and shows elapsed time.
+- Fetch Dashboard loading text uses only the two frontend-truthful phases: querying request, then processing response.
 - Successful query with data shows full RTY Preview, Defect Records, and Analytics.
-- Successful query with no rows shows no-data messages and keeps Analytics hidden.
+- Analytics reveal does not auto-scroll when the user is already near Analytics or reading Defect Records.
+- Successful query with no rows shows no-data messages and keeps Analytics as a compact disabled anchor row.
 - Clear returns the module to `idle`.
 - Open Log and FAIL Logs do not behave as available actions when there are no rows.
+- Export RTY Excel uses secondary/outline hierarchy, with stronger secondary emphasis allowed in `ready`.
+- Export RTY Excel has a distinct loading state and does not force dashboard state to `loading`.
+- Fetch Dashboard is unavailable during export for the current implementation.
 - Export RTY Excel behavior is unchanged at the payload/API level.
 - No required global element IDs are removed.
 - `node -c` passes for edited JavaScript files.
