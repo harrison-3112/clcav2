@@ -63,6 +63,14 @@ MES Daily should have a small explicit state model:
 
 The state should be represented on the MES panel or an equivalent local module container, for example with `data-dashboard-state="idle|loading|empty|ready"`. The implementation should avoid deleting or recreating global DOM elements that other scripts bind to.
 
+`ready` may carry freshness metadata without becoming a separate top-level state:
+
+- `lastSuccessfulQueryAt`: timestamp of the last successful dashboard payload.
+- `lastRefreshError`: message from the most recent failed refresh, if any.
+- `data-stale="true"` or equivalent UI flag when a refresh fails after a previous `ready` result.
+
+This keeps the successful dashboard visible while making stale data explicit.
+
 RTY export should have a separate state model because export is a report-generation job, not a dashboard query:
 
 - `exportIdle`: no export is running.
@@ -71,6 +79,8 @@ RTY export should have a separate state model because export is a report-generat
 - `exportError`: the last export failed.
 
 Dashboard state and export state must not overwrite each other. Starting an export should not force the dashboard into `loading`; it should keep the current dashboard view visible while the export panel reports export progress.
+
+Auto-refresh is part of the dashboard fetch pathway. It must respect the same export lock as the Fetch Dashboard button. Programmatic calls to `searchMesDashboard()` should bail out while `exporting`, not only UI button clicks.
 
 ## Section Behavior
 
@@ -109,6 +119,7 @@ In `loading`:
   - "Processing response..." after the response resolves and before rendering completes.
 - Avoid guessed staged text such as chunk counts or backend phases unless the backend later exposes real progress events.
 - Avoid heavy skeleton effects that imply background loading before the user acts.
+- Clear the elapsed timer from the dashboard state helper whenever leaving `loading`, including success, empty, clear, and error paths.
 
 In `empty`:
 
@@ -164,6 +175,7 @@ To reduce layout jump when Analytics expands:
 
 - Use a lightweight reveal transition.
 - After charts render, smooth-scroll only when helpful.
+- Keep the scroll rule simple for v1: auto-scroll to Analytics only if the user is still near the top of the result flow, such as within the upper part of RTY Preview.
 - Do not auto-scroll if the Analytics header is already in or near the viewport.
 - Do not auto-scroll if the user has already scrolled down into Defect Records or near the Analytics area while the query was running.
 
@@ -211,6 +223,27 @@ Fetch while export is running:
 - For this implementation, keep Fetch Dashboard disabled during `exporting`.
 - Reason: the current MES Daily export route captures `process.stdout.write` and `process.stderr.write` globally while running. Until backend concurrency is made explicit and safe, parallel MES jobs can produce mixed logs or unstable behavior.
 - A future enhancement may replace the hard lock with a confirmation modal if the backend is verified to handle concurrent MES dashboard and export requests safely.
+- Auto-refresh must also skip while `exporting`. The guard belongs inside `searchMesDashboard()` as well as any timer callback, because auto-refresh calls the function directly and bypasses disabled button UI.
+
+## i18n Requirements
+
+All new user-facing strings should use i18n keys in `ui/js/core/globals.js` for English, Chinese, and Vietnamese. Do not hard-code English text in the new UI.
+
+Expected keys:
+
+| Key | English | Chinese | Vietnamese |
+|---|---|---|---|
+| `mesDashboardIdleHint` | Enter WO and fetch dashboard. | 输入工单并获取看板。 | Nhập WO và tải dashboard. |
+| `mesDashboardNoData` | No data found for this query. | 本次查询未找到数据。 | Không tìm thấy dữ liệu cho truy vấn này. |
+| `mesAnalyticsLockedHint` | Analytics will appear after dashboard data is available. | 看板数据可用后将显示分析。 | Phân tích sẽ hiển thị khi có dữ liệu dashboard. |
+| `mesDashboardQuerying` | Querying MES server... | 正在查询 MES 服务器... | Đang truy vấn máy chủ MES... |
+| `mesDashboardProcessing` | Processing response... | 正在处理响应... | Đang xử lý phản hồi... |
+| `mesExportRtyExcel` | Export RTY Excel | 导出 RTY Excel | Xuất RTY Excel |
+| `mesExportCreating` | Creating RTY Excel... | 正在创建 RTY Excel... | Đang tạo RTY Excel... |
+| `mesExportDirectHint` | Export directly without preview. | 不预览，直接导出。 | Xuất trực tiếp không cần xem trước. |
+| `mesExportReviewedHint` | Export reviewed RTY report. | 导出已检查的 RTY 报告。 | Xuất báo cáo RTY đã xem lại. |
+| `mesFetchSkippedExporting` | Fetch skipped: export in progress. | 已跳过查询：正在导出。 | Đã bỏ qua tải dữ liệu: đang xuất báo cáo. |
+| `mesDashboardRefreshFailedStale` | Refresh failed. Showing last successful data from {time}. | 刷新失败。正在显示 {time} 的上次成功数据。 | Làm mới thất bại. Đang hiển thị dữ liệu thành công gần nhất lúc {time}. |
 
 ## Visual Style Requirements
 
@@ -248,20 +281,27 @@ The implementation should prefer small state helpers over large template rewrite
 - Add or reuse empty-state DOM within existing RTY Preview and Defect Records sections.
 - Add a MES Daily state helper such as `setMesDailyDashboardState(state, message)`.
 - Add an export state helper such as `setMesDailyExportState(state, message)`.
+- Refactor `applyMesDailyFeatureVisibility()` so it defers to the dashboard state model instead of using `mesR001Rows.length > 0` as the source of truth for RTY Preview and Defect Records visibility.
 - Update `searchMesDashboard()` to set `loading`, then `ready` or `empty`.
+- Add an export-state guard at the top of `searchMesDashboard()` so button clicks, keyboard shortcuts, and auto-refresh all skip while `exporting`.
+- Update auto-refresh to skip or pause during `exporting` and log `mesFetchSkippedExporting` instead of launching a concurrent dashboard request.
 - Update `clearMesR001Panel()` to return to `idle`.
 - Update the MES Daily generate/export path to set `exporting`, then `exportDone` or `exportError`.
+- Store and clear the dashboard loading elapsed-timer interval inside the state helper so every transition out of `loading` clears it.
 - Ensure analytics cleanup runs when transitioning away from `ready`.
 - Keep render functions tolerant of zero rows.
+- Add all new i18n keys listed in this spec to `ui/js/core/globals.js` for English, Chinese, and Vietnamese.
 
 ## Error Handling
 
 If Fetch Dashboard fails:
 
 - Do not show Analytics.
-- Do not leave stale rows/charts visible as if they belong to the failed query.
 - Show the existing toast/log error behavior.
-- Prefer returning to `idle` or the last stable non-ready state unless preserving prior results is intentionally implemented.
+- If there was no previous `ready` dashboard, return to `idle` with the error toast/log.
+- If there was previous `ready` data, keep that data visible, set the stale flag, and show an inline warning such as `mesDashboardRefreshFailedStale` with the `lastSuccessfulQueryAt` time.
+- Do not silently clear data that the user may be reviewing.
+- Do not leave stale rows/charts visible without labeling them as stale.
 
 If a query succeeds but produces no usable data:
 
@@ -283,15 +323,20 @@ Before completion, verify:
 - MES Daily initial view shows Data Query, minimal RTY Preview, minimal Defect Records, Export controls, and a compact disabled Analytics anchor row.
 - Fetch Dashboard loading state keeps result shells visible, shows an indeterminate progress bar, and shows elapsed time.
 - Fetch Dashboard loading text uses only the two frontend-truthful phases: querying request, then processing response.
+- The elapsed timer stops on success, empty, clear, and error.
 - Successful query with data shows full RTY Preview, Defect Records, and Analytics.
 - Analytics reveal does not auto-scroll when the user is already near Analytics or reading Defect Records.
 - Successful query with no rows shows no-data messages and keeps Analytics as a compact disabled anchor row.
+- Fetch error from `idle` returns to idle shell with error toast/log.
+- Fetch error after previous `ready` data keeps the last successful dashboard visible and labels it stale.
 - Clear returns the module to `idle`.
 - Open Log and FAIL Logs do not behave as available actions when there are no rows.
 - Export RTY Excel uses secondary/outline hierarchy, with stronger secondary emphasis allowed in `ready`.
 - Export RTY Excel has a distinct loading state and does not force dashboard state to `loading`.
-- Fetch Dashboard is unavailable during export for the current implementation.
+- Fetch Dashboard, keyboard-triggered fetch, and auto-refresh are unavailable during export for the current implementation.
 - Export RTY Excel behavior is unchanged at the payload/API level.
+- All new visible text uses i18n keys in `ui/js/core/globals.js`.
+- `applyMesDailyFeatureVisibility()` does not re-hide RTY Preview or Defect Records in `idle`, `loading`, or `empty`.
 - No required global element IDs are removed.
 - `node -c` passes for edited JavaScript files.
 
