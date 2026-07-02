@@ -6,3 +6,4 @@ logs/
 .vscode/
 *.log
 desktop-host/wv2-user-data/
+.worktrees/
