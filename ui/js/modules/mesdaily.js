@@ -820,6 +820,71 @@ function clearMesR001Panel(clearInput = false) {
     document.getElementById('mes-defect-records-section')?.classList.add('hidden');
 }
 
+function buildMesR001MockDashboardData(rows) {
+    const items = Array.isArray(rows) ? rows : [];
+    const failRows = items.filter((row) => String(getMesR001Cell(row, 'Result') || '').toUpperCase() === 'FAIL');
+    const output = items.length;
+    const defects = failRows.length;
+    const pass = Math.max(0, output - defects);
+    const totalYield = output ? Number(((pass / output) * 100).toFixed(1)) : 0;
+    const byStation = new Map();
+    const byDefect = new Map();
+    const byDate = new Map();
+
+    items.forEach((row) => {
+        const station = getMesR001Cell(row, 'Station') || 'Unknown';
+        const result = String(getMesR001Cell(row, 'Result') || '').toUpperCase();
+        const stationStats = byStation.get(station) || { station, input: 0, fail: 0 };
+        stationStats.input += 1;
+        if (result === 'FAIL') stationStats.fail += 1;
+        byStation.set(station, stationStats);
+
+        const date = String(getMesR001Cell(row, 'Time') || '').substring(0, 10) || 'Mock';
+        const dateStats = byDate.get(date) || { date, input: 0, fail: 0 };
+        dateStats.input += 1;
+        if (result === 'FAIL') dateStats.fail += 1;
+        byDate.set(date, dateStats);
+    });
+
+    failRows.forEach((row) => {
+        const code = getMesR001Cell(row, 'DefectCode') || 'Unknown';
+        const current = byDefect.get(code) || { code, desc: getMesR001Cell(row, 'Description'), count: 0 };
+        current.count += 1;
+        byDefect.set(code, current);
+    });
+
+    const stationYield = Array.from(byStation.values()).map((station) => ({
+        ...station,
+        yield: station.input ? Number((((station.input - station.fail) / station.input) * 100).toFixed(1)) : 0,
+    }));
+    const yieldTrend = Array.from(byDate.values()).map((item) => ({
+        date: item.date,
+        yield: item.input ? Number((((item.input - item.fail) / item.input) * 100).toFixed(1)) : 0,
+    }));
+    const topDefects = Array.from(byDefect.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map((item) => ({
+            ...item,
+            pct: defects ? Number(((item.count / defects) * 100).toFixed(1)) : 0,
+        }));
+
+    return {
+        success: true,
+        kpis: {
+            totalYield,
+            output,
+            defects,
+            fpy: totalYield,
+        },
+        stationYield,
+        yieldTrend,
+        topDefects,
+        alerts: defects ? [{ level: 'warning', message: `Mock fixture contains ${defects} fail rows.` }] : [],
+        defectRows: items,
+    };
+}
+
 async function searchMesDashboard() {
     ensureMesR001Panel();
     ensureMesR001TimeRange();
@@ -843,9 +908,7 @@ async function searchMesDashboard() {
             }));
             mesR001Rows = mockRows;
             renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', 'MOCK DATA LOADED'); logToConsole('Mock Dashboard data loaded.', 'success');
-            const woList = ['MOCK-WO-999'];
-            if (typeof renderDefectDashboard === 'function') renderDefectDashboard(mesR001Rows, woList);
-            document.getElementById('mes-rty-preview-section')?.classList.remove('hidden');
+            if (typeof renderDashboardOverviewFromData === 'function') renderDashboardOverviewFromData(buildMesR001MockDashboardData(mesR001Rows));
             document.getElementById('mes-bento-dashboard')?.classList.remove('hidden');
             document.getElementById('mes-defect-records-section')?.classList.remove('hidden');
             setMesR001SearchLoading(false);
@@ -858,11 +921,8 @@ async function searchMesDashboard() {
         mesR001Rows = Array.isArray(data.defectRows) ? data.defectRows : [];
         renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', t('statusSuccess')); logToConsole(`Dashboard search done. Defect rows: <b>${mesR001Rows.length}</b>`, 'success');
         saveMesR001History(woText);
-        // Render per-WO charts + overview (KPIs, stationYield, alerts, global charts)
-        const woList = data.summary?.workOrders || parseMesR001WoInput(woText);
-        if (typeof renderDefectDashboard === 'function') renderDefectDashboard(mesR001Rows, woList);
+        if (typeof renderDashboardOverviewFromData === 'function') renderDashboardOverviewFromData(data);
         // Show data sections after successful fetch
-                document.getElementById('mes-rty-preview-section')?.classList.remove('hidden');
         document.getElementById('mes-bento-dashboard')?.classList.remove('hidden');
         document.getElementById('mes-defect-records-section')?.classList.remove('hidden');
     } catch (error) {

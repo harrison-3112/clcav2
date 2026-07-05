@@ -18,77 +18,16 @@ function destroyDefectDashboard() {
     }
 }
 
-function renderDefectDashboard(rows, woList) {
+function renderDefectDashboard(rows, woList, dashboardData) {
     destroyDefectDashboard();
-    const container = document.getElementById('mes-r001-dashboard');
-    if (!container || typeof Chart === 'undefined') return;
+
+    if (dashboardData && dashboardData.success) {
+        renderDashboardOverviewFromData(dashboardData);
+        return;
+    }
+
     if (!Array.isArray(rows) || !rows.length) return;
-
-    const workOrders = Array.isArray(woList) && woList.length ? woList : [...new Set(rows.map((r) => String(r.WorkOrder || '').trim()).filter(Boolean))];
-    if (!workOrders.length) return;
-
-    container.classList.remove('hidden');
-    container.dataset.hasContent = 'true';
-
-    // Build dashboard HTML
-    let html = `
-        <div class="glass-card rounded-xl border border-borderLight dark:border-borderDark overflow-hidden mb-4">
-            <div class="section-header-gradient justify-between !py-2 !px-4">
-                <div class="flex items-center gap-2">
-                    <div class="p-1 rounded-md bg-white/20 shrink-0"><i data-lucide="bar-chart-3" class="w-4 h-4"></i></div>
-                    <span class="text-sm font-semibold">Defect Analytics Dashboard</span>
-                </div>
-                <button id="mes-r001-export-dashboard" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors" title="Export dashboard as HTML">
-                    <i data-lucide="download" class="w-3.5 h-3.5"></i><span>Export</span>
-                </button>
-            </div>
-            <div class="p-4 space-y-6">
-    `;
-
-    workOrders.forEach((wo, idx) => {
-        const woRows = rows.filter((r) => String(r.WorkOrder || '').trim() === wo);
-        if (!woRows.length) return;
-
-        const pieId = `defect-pie-${idx}`;
-        const lineId = `defect-line-${idx}`;
-        const woLabel = wo.length > 20 ? wo.substring(0, 20) + '...' : wo;
-
-        html += `
-            <div class="rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 p-4">
-                <h3 class="text-xs font-bold text-primary dark:text-secondary mb-3 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"></span>
-                    WO: ${_dashEscape(woLabel)} <span class="text-textMuted dark:text-gray-400 font-normal">(${woRows.length} defects)</span>
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="relative" style="min-height:220px; max-height:280px;">
-                        <p class="text-[10px] text-textMuted dark:text-gray-400 font-semibold mb-1 uppercase tracking-wider">Top Defect Codes</p>
-                        <canvas id="${pieId}" style="max-height:250px;"></canvas>
-                    </div>
-                    <div class="relative" style="min-height:220px; max-height:280px;">
-                        <p class="text-[10px] text-textMuted dark:text-gray-400 font-semibold mb-1 uppercase tracking-wider">FAIL Count by Hour</p>
-                        <canvas id="${lineId}" style="max-height:250px;"></canvas>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-
-    html += `</div></div>`;
-    container.innerHTML = html;
-    _refreshIcons(container);
-
-    // Render charts for each WO
-    workOrders.forEach((wo, idx) => {
-        const woRows = rows.filter((r) => String(r.WorkOrder || '').trim() === wo);
-        if (!woRows.length) return;
-        _renderDefectPieChart(`defect-pie-${idx}`, woRows, idx);
-        _renderDefectLineChart(`defect-line-${idx}`, woRows, idx);
-    });
-
-    // Bind export button
-    document.getElementById('mes-r001-export-dashboard')?.addEventListener('click', () => exportDefectDashboardHtml(rows, workOrders));
-
-    // Fetch and render dashboard overview (KPIs + charts + alerts)
+    const workOrders = Array.isArray(woList) && woList.length ? woList : [...new Set(rows.map((r) => String(r.WorkOrder || r.WO || '').trim()).filter(Boolean))];
     _fetchAndRenderOverview(rows, workOrders);
 }
 
@@ -297,6 +236,23 @@ let _lastDashboardAlerts = [];
 let _lastDashboardKpis = null;
 let _dashboardAutoRefreshTimer = null;
 
+function destroyDashboardOverview() {
+    Object.keys(_dashboardOverviewCharts).forEach((key) => {
+        if (_dashboardOverviewCharts[key] && typeof _dashboardOverviewCharts[key].destroy === 'function') {
+            _dashboardOverviewCharts[key].destroy();
+        }
+        delete _dashboardOverviewCharts[key];
+    });
+}
+
+function renderDashboardOverviewFromData(data) {
+    if (!data || data.success === false) return;
+    destroyDashboardOverview();
+    _lastDashboardKpis = data.kpis || null;
+    _renderOverviewContent(data, getDashboardAlertConfig());
+    _lastDashboardAlerts = data.alerts || [];
+}
+
 function getDashboardAlertConfig() {
     try {
         const raw = localStorage.getItem('mesDashboardAlertConfig');
@@ -330,12 +286,7 @@ async function _fetchAndRenderOverview(r001Rows, woList, isAutoRefresh = false) 
 
     if (!woText.trim() || !timefrom || !timeto) return;
 
-    Object.keys(_dashboardOverviewCharts).forEach((key) => {
-        if (_dashboardOverviewCharts[key] && typeof _dashboardOverviewCharts[key].destroy === 'function') {
-            _dashboardOverviewCharts[key].destroy();
-        }
-        delete _dashboardOverviewCharts[key];
-    });
+    destroyDashboardOverview();
 
     try {
         const config = getDashboardAlertConfig();
@@ -766,7 +717,7 @@ function exportDefectDashboardHtml(rows, workOrders) {
 <html><head><meta charset="UTF-8"><title>Defect Dashboard ${dateStr}</title>
 <style>body{font-family:'Segoe UI',Outfit,sans-serif;margin:24px;color:#1e293b;background:#fff;}h1{color:#3b82f6;font-size:20px;margin-bottom:4px;}p.sub{color:#94a3b8;font-size:12px;margin-bottom:24px;}</style>
 </head><body>
-<h1>Defect Analytics Dashboard</h1>
+<h1>Defect Dashboard</h1>
 <p class="sub">Generated: ${now.toLocaleString()} | Total Defects: ${rows.length}</p>
 ${tableHtml}
 </body></html>`;
