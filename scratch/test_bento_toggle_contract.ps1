@@ -44,10 +44,10 @@ Assert-True (-not $source.Contains('dataset.detailsToggleBound')) 'Unexpected da
 
 Assert-Match $source "function\s+getMesR001Columns\s*\(\)\s*\{\s*return\s*\[\s*['""]SN['""]\s*,\s*['""]Terminal['""]\s*,\s*['""]Result['""]\s*,\s*['""]DefectCode['""]\s*,\s*['""]WO['""]\s*,\s*['""]Description['""]\s*,\s*['""]Time['""]\s*\]" 'R001 columns must be SN, Terminal, Result, DefectCode, WO, Description, Time.'
 
-Assert-Match $source "SN:\s*row\?\.(SN|SerialNumber)" 'SN alias mapping is missing.'
-Assert-Match $source "Result:\s*row\?\.(Result|Status)" 'Result alias mapping is missing.'
-Assert-Match $source "WO:\s*row\?\.(WO|WorkOrder)" 'WO alias mapping is missing.'
-Assert-Match $source "Description:\s*row\?\.(Description|DefectDesc)" 'Description alias mapping is missing.'
+Assert-Match $source 'SN:\s*row\?\.SN\s*\|\|\s*row\?\.SerialNumber' 'SN must preserve SN and SerialNumber aliases.'
+Assert-Match $source 'Result:\s*row\?\.Result\s*\|\|\s*row\?\.Status' 'Result must preserve Result and Status aliases.'
+Assert-Match $source 'WO:\s*row\?\.WO\s*\|\|\s*row\?\.WorkOrder' 'WO must preserve WO and WorkOrder aliases.'
+Assert-Match $source 'Description:\s*row\?\.Description\s*\|\|\s*row\?\.DefectDesc' 'Description must preserve Description and DefectDesc aliases.'
 
 Assert-Match $source 'WO:\s*`<td\s+class="[^"]*\bdetail-col\b[^"]*\bfont-mono\b[^"]*\bselect-all\b[^"]*"' 'WO cell must include detail-col, font-mono, and select-all classes.'
 Assert-Match $source 'Description:\s*`<td\s+class="[^"]*\bdetail-col\b[^"]*\bfont-mono\b[^"]*\bselect-all\b[^"]*"' 'Description cell must include detail-col, font-mono, and select-all classes.'
