@@ -601,6 +601,7 @@ function getMesR001Cell(row, key) {
     const map = {
         SN: row?.SN || row?.SerialNumber || '',
         Terminal: row?.Terminal || '',
+        Station: row?.Station || row?.Terminal || '',
         Result: row?.Result || row?.Status || 'FAIL',
         DefectCode: row?.DefectCode || '',
         WO: row?.WO || row?.WorkOrder || '',
@@ -611,7 +612,7 @@ function getMesR001Cell(row, key) {
 }
 
 function getMesR001DisplayRows(rows = mesR001Rows) {
-    let filtered = Array.isArray(rows) ? rows : [];
+    let filtered = (Array.isArray(rows) ? rows : []).map((row, index) => ({ ...row, _MesR001Index: index }));
 
     if (mesR001Filter !== 'ALL') {
         filtered = filtered.filter(row => getQuickLogMesStationFilter(row) === mesR001Filter);
@@ -622,7 +623,7 @@ function getMesR001DisplayRows(rows = mesR001Rows) {
         filtered = filtered.filter(row => Object.values(row).some(val => String(val || '').toLowerCase().includes(lowerSearch)));
     }
 
-    return filtered.map((row, index) => ({ ...row, _MesR001Index: index }));
+    return filtered;
 }
 
 function getMesR001InputCount() { return parseMesR001WoInput(document.getElementById('mes-r001-wo-input')?.value || '').length; }

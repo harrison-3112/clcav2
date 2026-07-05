@@ -48,6 +48,9 @@ Assert-Match $source 'SN:\s*row\?\.SN\s*\|\|\s*row\?\.SerialNumber' 'SN must pre
 Assert-Match $source 'Result:\s*row\?\.Result\s*\|\|\s*row\?\.Status' 'Result must preserve Result and Status aliases.'
 Assert-Match $source 'WO:\s*row\?\.WO\s*\|\|\s*row\?\.WorkOrder' 'WO must preserve WO and WorkOrder aliases.'
 Assert-Match $source 'Description:\s*row\?\.Description\s*\|\|\s*row\?\.DefectDesc' 'Description must preserve Description and DefectDesc aliases.'
+Assert-Match $source 'Station:\s*row\?\.Station\s*\|\|\s*row\?\.Terminal' 'Station label must preserve Station and Terminal aliases.'
+Assert-Match $source 'let\s+filtered\s*=\s*\(Array\.isArray\(rows\)\s*\?\s*rows\s*:\s*\[\]\)\.map\(\(row,\s*index\)\s*=>\s*\(\{\s*\.\.\.row,\s*_MesR001Index:\s*index\s*\}\)\)' 'Rows must preserve source index before filtering/search.'
+Assert-True (-not ([regex]::IsMatch($source, 'return\s+filtered\.map\(\(row,\s*index\)\s*=>\s*\(\{\s*\.\.\.row,\s*_MesR001Index:\s*index\s*\}\)\)'))) 'Filtered rows must not be re-indexed after filtering/search.'
 
 Assert-Match $source 'WO:\s*`<td\s+class="[^"]*\bdetail-col\b[^"]*\bfont-mono\b[^"]*\bselect-all\b[^"]*"' 'WO cell must include detail-col, font-mono, and select-all classes.'
 Assert-Match $source 'Description:\s*`<td\s+class="[^"]*\bdetail-col\b[^"]*\bfont-mono\b[^"]*\bselect-all\b[^"]*"' 'Description cell must include detail-col, font-mono, and select-all classes.'
