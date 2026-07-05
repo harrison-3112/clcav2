@@ -958,7 +958,7 @@ async function searchMesDashboard() {
         setStatus('error', t('reqFailed'));
         logToConsole(`Dashboard search failed: ${message}`, 'error');
         showImportantToast('error', t('reqFailed'), message);
-    } finally { setMesR001SearchLoading(false); setMesBentoDashboardState('error', error.message || String(error)); resetProgress(); }
+    } finally { setMesR001SearchLoading(false); resetProgress(); }
 }
 
 // Keep alias for backward compatibility (auto-refresh, event bindings)
