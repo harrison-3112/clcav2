@@ -595,10 +595,18 @@ function initMesR001TimePickers() {
     ensureMesR001TimeRange();
 }
 
-function getMesR001Columns() { return ['SN', 'Terminal', 'Result', 'DefectCode', 'Description', 'WO', 'Time']; }
+function getMesR001Columns() { return ['SN', 'Terminal', 'Result', 'DefectCode', 'WO', 'Description', 'Time']; }
 
 function getMesR001Cell(row, key) {
-    const map = { SN: row?.SerialNumber || '', Terminal: row?.Terminal || '', Result: row?.Status || 'FAIL', DefectCode: row?.DefectCode || '', Description: row?.DefectDesc || '', WO: row?.WorkOrder || '', Time: row?.Time || '' };
+    const map = {
+        SN: row?.SN || row?.SerialNumber || '',
+        Terminal: row?.Terminal || '',
+        Result: row?.Result || row?.Status || 'FAIL',
+        DefectCode: row?.DefectCode || '',
+        WO: row?.WO || row?.WorkOrder || '',
+        Description: row?.Description || row?.DefectDesc || '',
+        Time: row?.Time || '',
+    };
     return map[key] || '';
 }
 
@@ -656,12 +664,6 @@ function setMesR001ExportLoading(isLoading) {
     _refreshIcons(btn);
 }
 
-function getMesR001DetailsToggleHtml(isHidden) {
-    return isHidden
-        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><span>Show Details</span>`
-        : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Hide Details</span>`;
-}
-
 function ensureMesR001Panel() {
     const mesPanel = document.getElementById('mes-panel');
     if (!mesPanel) return;
@@ -675,15 +677,7 @@ function ensureMesR001Panel() {
         document.getElementById('mes-r001-search')?.addEventListener('click', searchMesDashboard);
         document.getElementById('mes-r001-clear')?.addEventListener('click', () => clearMesR001Panel(true));
         document.getElementById('mes-r001-open-log')?.addEventListener('click', openMesR001SelectedLogUiOnly);
-                document.getElementById('mes-r001-export-csv')?.addEventListener('click', exportMesR001CsvUiOnly);
-        document.getElementById('mes-r001-toggle-details')?.addEventListener('click', () => {
-            const table = document.getElementById('mes-r001-table');
-            const btn = document.getElementById('mes-r001-toggle-details');
-            if (table) {
-                const isHidden = table.classList.toggle('hide-details');
-                if (btn) btn.innerHTML = typeof getMesR001ToggleIcon === 'function' ? getMesR001ToggleIcon(isHidden) : '';
-            }
-        });
+        document.getElementById('mes-r001-export-csv')?.addEventListener('click', exportMesR001CsvUiOnly);
         document.getElementById('mes-r001-wo-input')?.addEventListener('input', () => updateMesR001Summary(mesR001Rows));
         document.getElementById('mes-r001-wo-input')?.addEventListener('keydown', (event) => {
             if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') searchMesDashboard();
@@ -705,7 +699,10 @@ function ensureMesR001Panel() {
             const syncDetailsToggle = () => {
                 const table = document.getElementById('mes-r001-table');
                 const isHidden = !table || table.classList.contains('hide-details');
-                detailsToggle.innerHTML = getMesR001DetailsToggleHtml(isHidden);
+                detailsToggle.setAttribute('aria-expanded', String(!isHidden));
+                detailsToggle.innerHTML = isHidden
+                    ? `<i data-lucide="eye" class="w-3.5 h-3.5"></i><span>Show Details</span>`
+                    : `<i data-lucide="eye-off" class="w-3.5 h-3.5"></i><span>Hide Details</span>`;
                 _refreshIcons(detailsToggle);
             };
             detailsToggle.addEventListener('click', () => {
@@ -791,8 +788,8 @@ function renderMesR001Rows(rows = mesR001Rows) {
             Terminal: `<td class="p-3">${quickLogEscape(getMesR001Cell(row, 'Terminal'))}</td>`,
             Result: `<td class="p-3 font-bold ${resultClass}">${quickLogEscape(getMesR001Cell(row, 'Result'))}</td>`,
             DefectCode: `<td class="p-3 ${resultClass}">${quickLogEscape(getMesR001Cell(row, 'DefectCode'))}</td>`,
-            Description: `<td class="p-3 text-textMuted font-mono text-[11px] max-w-xs truncate detail-col bg-indigo-50/50 dark:bg-indigo-900/20 select-all" title="${quickLogEscape(getMesR001Cell(row, 'Description'))}">${quickLogEscape(getMesR001Cell(row, 'Description'))}</td>`,
-            WO: `<td class="p-3 text-textMuted font-mono text-[11px] detail-col bg-indigo-50/50 dark:bg-indigo-900/20 select-all">${quickLogEscape(getMesR001Cell(row, 'WO'))}</td>`,
+            WO: `<td class="p-3 text-textMuted detail-col font-mono text-[11px] bg-indigo-50/50 dark:bg-indigo-900/20 select-all">${quickLogEscape(getMesR001Cell(row, 'WO'))}</td>`,
+            Description: `<td class="p-3 text-textMuted detail-col font-mono text-[11px] max-w-xs truncate bg-indigo-50/50 dark:bg-indigo-900/20 select-all" title="${quickLogEscape(getMesR001Cell(row, 'Description'))}">${quickLogEscape(getMesR001Cell(row, 'Description'))}</td>`,
             Time: `<td class="p-3 text-textMuted text-right">${quickLogEscape(getMesR001Cell(row, 'Time'))}</td>`,
         };
         const tr = document.createElement('tr');
