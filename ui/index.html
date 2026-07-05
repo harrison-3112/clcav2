@@ -394,15 +394,15 @@
                             <div class="flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 w-full">
                                 <textarea id="mes-r001-wo-input" rows="1" class="flex-1 min-w-[200px] bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark shadow-sm rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-textMain dark:text-textDark placeholder:text-textMuted resize-none" placeholder="Enter WO (comma separated)..."></textarea>
                                 <div class="flex items-center gap-2">
-                                    <div class="grid grid-cols-[minmax(0,1fr)_80px] gap-1.5">
-                                        <input type="text" id="mes-r001-datefrom" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer">
-                                        <input type="text" id="mes-r001-hourfrom" inputmode="numeric" placeholder="HH:MM" class="mes-time-input bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center">
+                                    <div class="flex items-center gap-1.5 w-full lg:w-auto">
+                                        <input type="text" id="mes-r001-datefrom" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                                        <input type="text" id="mes-r001-hourfrom" inputmode="numeric" placeholder="HH:MM" class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
                                     </div>
                                     <input type="hidden" id="mes-r001-timefrom">
                                     <span class="text-textMuted font-medium">-</span>
-                                    <div class="grid grid-cols-[minmax(0,1fr)_80px] gap-1.5">
-                                        <input type="text" id="mes-r001-dateto" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer">
-                                        <input type="text" id="mes-r001-hourto" inputmode="numeric" placeholder="HH:MM" class="mes-time-input bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center">
+                                    <div class="flex items-center gap-1.5 w-full lg:w-auto">
+                                        <input type="text" id="mes-r001-dateto" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                                        <input type="text" id="mes-r001-hourto" inputmode="numeric" placeholder="HH:MM" class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
                                     </div>
                                     <input type="hidden" id="mes-r001-timeto">
                                 </div>
@@ -411,7 +411,7 @@
                                     Fetch Dashboard
                                 </button>
                                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 shrink-0">
-                                    <button id="mes-r001-auto-refresh-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold bg-white/10 text-textMuted dark:text-gray-400 transition-colors" data-active="false" title="Toggle auto-refresh">
+                                    <button id="mes-r001-auto-refresh-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold bg-white/10 text-textMuted dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" data-active="false" title="Toggle auto-refresh">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                                             <path d="M3 3v5h5" />
@@ -435,7 +435,7 @@
                     </section>
 
                     <!-- Tier 2: Bento Dashboard -->
-                    <section id="mes-bento-dashboard" class="grid grid-cols-12 gap-5 hidden">
+                    <section id="mes-bento-dashboard" class="grid grid-cols-12 gap-5">
                         <!-- KPIs (col-span-3) -->
                         <div id="mes-bento-empty" class="col-span-12 rounded-xl border border-dashed border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-900/30 px-4 py-3 text-sm text-textMuted dark:text-gray-400">
                             Search a WO to load dashboard metrics and charts.
@@ -476,7 +476,7 @@
                                 <p class="text-[10px] text-textMuted dark:text-gray-400 uppercase tracking-wider font-bold mb-2">Station Yield</p>
                                 <canvas id="dashboard-station-yield" class="w-full h-full max-h-[180px]"></canvas>
                             </div>
-                            <div id="dashboard-alerts-section" class="glass-card p-4 min-h-[220px] flex flex-col relative rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 overflow-y-auto">
+                            <div id="dashboard-alerts-section" class="glass-card p-4 min-h-[220px] flex flex-col relative rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 overflow-hidden">
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-xs font-bold text-red-500 uppercase tracking-wider">Alerts</span>
                                 </div>

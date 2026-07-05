@@ -679,7 +679,12 @@ function ensureMesR001Panel() {
         document.getElementById('mes-r001-clear')?.addEventListener('click', () => clearMesR001Panel(true));
         document.getElementById('mes-r001-open-log')?.addEventListener('click', openMesR001SelectedLogUiOnly);
         document.getElementById('mes-r001-export-csv')?.addEventListener('click', exportMesR001CsvUiOnly);
-        document.getElementById('mes-r001-wo-input')?.addEventListener('input', () => updateMesR001Summary(mesR001Rows));
+        document.getElementById('mes-r001-wo-input')?.addEventListener('input', () => {
+            updateMesR001Summary(mesR001Rows);
+            const inputCount = getMesR001InputCount();
+            const countEl = document.getElementById('wo-count');
+            if (countEl) countEl.textContent = inputCount + (inputCount === 1 ? ' WO' : ' WOs');
+        });
         document.getElementById('mes-r001-wo-input')?.addEventListener('keydown', (event) => {
             if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') searchMesDashboard();
         });
@@ -785,10 +790,10 @@ function renderMesR001Rows(rows = mesR001Rows) {
         const resultClass = isPass ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
         const borderClass = isPass ? 'border-l-green-500/50' : 'border-l-red-500';
         const cellHtml = {
-            SN: `<td class="p-3 font-medium text-secondary break-all">${quickLogEscape(getMesR001Cell(row, 'SN'))}</td>`,
+            SN: `<td class="p-3 font-medium text-textMain dark:text-textDark break-all">${quickLogEscape(getMesR001Cell(row, 'SN'))}</td>`,
             Terminal: `<td class="p-3">${quickLogEscape(getMesR001Cell(row, 'Terminal'))}</td>`,
             Result: `<td class="p-3 font-bold ${resultClass}">${quickLogEscape(getMesR001Cell(row, 'Result'))}</td>`,
-            DefectCode: `<td class="p-3 ${resultClass}">${quickLogEscape(getMesR001Cell(row, 'DefectCode'))}</td>`,
+            DefectCode: `<td class="p-3 ${resultClass} whitespace-nowrap">${quickLogEscape(getMesR001Cell(row, 'DefectCode'))}</td>`,
             WO: `<td class="p-3 text-textMuted detail-col font-mono text-[11px] bg-indigo-50/50 dark:bg-indigo-900/20 select-all">${quickLogEscape(getMesR001Cell(row, 'WO'))}</td>`,
             Description: `<td class="p-3 text-textMuted detail-col font-mono text-[11px] max-w-xs truncate bg-indigo-50/50 dark:bg-indigo-900/20 select-all" title="${quickLogEscape(getMesR001Cell(row, 'Description'))}">${quickLogEscape(getMesR001Cell(row, 'Description'))}</td>`,
             Time: `<td class="p-3 text-textMuted text-right">${quickLogEscape(getMesR001Cell(row, 'Time'))}</td>`,
@@ -810,7 +815,6 @@ function setMesBentoDashboardState(state, message = '') {
 
     const normalized = ['idle', 'loading', 'ready', 'error'].includes(state) ? state : 'idle';
     dashboard.dataset.state = normalized;
-    dashboard.classList.toggle('hidden', normalized === 'idle');
 
     if (empty) {
         empty.classList.toggle('hidden', normalized === 'ready');
