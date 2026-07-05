@@ -19,6 +19,13 @@ foreach ($legacyId in @('mes-r001-dashboard', 'mes-rty-preview-section', 'mes-de
     if ($bento -match "id=`"$legacyId`"") {
         throw "Legacy container $legacyId must not live inside Bento dashboard grid"
     }
+    if ($html -notmatch "id=`"$legacyId`"") {
+        throw "Legacy compatibility container $legacyId must still exist outside Bento"
+    }
+}
+
+if ($html -notmatch '<section id="mes-rty-preview-section"[\s\S]*<table>[\s\S]*<tbody id="mes-rty-preview-body"') {
+    throw "mes-rty-preview-body must be inside a valid table"
 }
 
 foreach ($id in @('dashboard-kpi-yield', 'dashboard-kpi-output', 'dashboard-kpi-defects', 'dashboard-kpi-fpy', 'dashboard-yield-trend', 'dashboard-top-defects', 'dashboard-station-yield', 'dashboard-alerts-section')) {
@@ -41,6 +48,18 @@ if ($css -notmatch '\.mes-time-input\s*\{[\s\S]*min-width:\s*7\.5rem;') {
 
 if ($css -notmatch '#mes-r001-table\.hide-details\s+\.detail-col\s*\{[\s\S]*display:\s*none;') {
     throw "Missing detail column hide rule"
+}
+
+if ($css -notmatch '#mes-panel\s+\.quicklog-table-scroll\s*\{[\s\S]*overflow-x:\s*auto;') {
+    throw "MES table scroll override must be scoped to mes-panel"
+}
+
+if ($css -match '(?m)^\s*\.quicklog-table-scroll\s*\{') {
+    throw "MES CSS must not override quicklog-table-scroll globally"
+}
+
+if ($css -match '(?m)^\s*thead\s+th\s*\{') {
+    throw "MES CSS must not override all table headers globally"
 }
 
 foreach ($id in @('mes-r001-datefrom', 'mes-r001-dateto')) {

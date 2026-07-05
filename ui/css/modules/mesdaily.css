@@ -1,5 +1,5 @@
 /* Override legacy QuickLog fixed table CSS for MES Travel Card. Inline JS styles remain the source of truth. */
-.quicklog-table-scroll {
+#mes-panel .quicklog-table-scroll {
   overflow-x: auto;
 }
 
@@ -21,6 +21,9 @@
   display: none;
 }
 
-thead th { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+#mes-panel thead th {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
 
 
