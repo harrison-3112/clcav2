@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MES Daily Bento Mockup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@200,300,400,500,600,700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['General Sans', 'sans-serif'], display: ['Outfit', 'sans-serif'] },
+                    colors: { primary: '#0076B6', secondary: '#38BDF8', borderLight: '#C7DFF0', borderDark: '#1E3A4F', textMain: '#1e293b', textDark: '#f8fafc', textMuted: '#64748b' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'General Sans', sans-serif; background-color: #0f172a; }
+        .glass-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; }
+        .section-header-gradient { background: linear-gradient(135deg, #0076B6 0%, #38BDF8 40%, #818CF8 100%); color: white; padding: 0.5rem 1rem; border-radius: 0.75rem 0.75rem 0 0; }
+        .hover-highlight:hover { background-color: rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body class="p-8 text-textDark">
+    <div id="mes-panel" class="flex flex-col gap-5 w-full max-w-[1400px] mx-auto">
+        <!-- Tier 1: Control Bar -->
+        <section class="glass-card flex items-center justify-between p-3">
+            <div class="flex items-center gap-3 w-full">
+                <input type="text" id="mes-r001-wo-input" placeholder="Enter WO (comma separated)..." class="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-textDark placeholder:text-textMuted">
+                <div class="flex items-center gap-2">
+                    <input type="date" id="mes-r001-datefrom" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-textDark [color-scheme:dark]">
+                    <span class="text-textMuted font-medium">-</span>
+                    <input type="date" id="mes-r001-dateto" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-textDark [color-scheme:dark]">
+                </div>
+                <button id="mes-r001-search" class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-lg font-semibold text-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    Fetch Dashboard
+                </button>
+            </div>
+        </section>
+
+        <!-- Tier 2: Bento Dashboard -->
+        <section id="mes-bento-dashboard" class="grid grid-cols-12 gap-5">
+            <!-- KPIs (col-span-3) -->
+            <div class="col-span-12 md:col-span-3 grid grid-cols-2 gap-4">
+                <div class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-green-500/30 transition-colors">
+                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl group-hover:bg-green-500/20 transition-colors"></div>
+                    <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Yield</span>
+                    <span class="text-3xl font-display font-bold text-green-400">98.5%</span>
+                </div>
+                <div class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-secondary/30 transition-colors">
+                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/20 transition-colors"></div>
+                    <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Output</span>
+                    <span class="text-3xl font-display font-bold text-secondary">1,204</span>
+                </div>
+                <div class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-red-500/30 transition-colors">
+                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-red-500/10 rounded-full blur-xl group-hover:bg-red-500/20 transition-colors"></div>
+                    <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Defects</span>
+                    <span class="text-3xl font-display font-bold text-red-400">18</span>
+                </div>
+                <div class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-blue-500/30 transition-colors">
+                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-colors"></div>
+                    <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">FPY</span>
+                    <span class="text-3xl font-display font-bold text-blue-400">95.2%</span>
+                </div>
+            </div>
+            <!-- Analytics (col-span-9) -->
+            <div class="col-span-12 md:col-span-9 grid grid-cols-2 gap-4">
+                <div class="glass-card p-4 col-span-2 min-h-[160px] flex flex-col justify-center border-l-2 border-l-primary/50 relative overflow-hidden">
+                    <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-2">Yield Trend</span>
+                    <div class="flex-1 flex items-center justify-center text-textMuted/50 border border-dashed border-white/10 rounded">Yield Trend Chart Area (Canvas)</div>
+                </div>
+                <div class="glass-card p-4 min-h-[160px] flex flex-col justify-center relative">
+                    <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-2">Top Defects Pareto</span>
+                    <div class="flex-1 flex items-center justify-center text-textMuted/50 border border-dashed border-white/10 rounded">Pareto Chart Area</div>
+                </div>
+                <div class="glass-card p-4 min-h-[160px] flex flex-col justify-center relative">
+                    <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-2">Station Yield</span>
+                    <div class="flex-1 flex items-center justify-center text-textMuted/50 border border-dashed border-white/10 rounded">Station Yield Chart Area</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tier 3: Condensed Table -->
+        <section class="glass-card overflow-hidden flex flex-col gap-0">
+            <div class="section-header-gradient flex justify-between items-center">
+                <span class="text-sm font-semibold flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18"/><path d="M3 15h18"/><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+                    Defect Records
+                </span>
+                <span class="text-xs bg-black/20 px-2 py-0.5 rounded-full">18 FAIL rows found</span>
+            </div>
+            <div class="p-0 overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-black/20 text-textMuted text-xs">
+                        <tr>
+                            <th class="p-3 font-semibold uppercase tracking-wider w-48">SN</th>
+                            <th class="p-3 font-semibold uppercase tracking-wider w-40">Terminal</th>
+                            <th class="p-3 font-semibold uppercase tracking-wider w-24">Result</th>
+                            <th class="p-3 font-semibold uppercase tracking-wider w-40">Defect Code</th>
+                            <th class="p-3 font-semibold uppercase tracking-wider w-32 text-right">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        <tr class="hover-highlight cursor-pointer border-l-2 border-l-red-500 group transition-colors">
+                            <td class="p-3 font-medium text-secondary">SN123456789</td>
+                            <td class="p-3">FATP_TEST_01</td>
+                            <td class="p-3 text-red-400 font-bold">FAIL</td>
+                            <td class="p-3 text-red-400">ERR_001</td>
+                            <td class="p-3 text-textMuted text-right">10:45:00</td>
+                        </tr>
+                        <!-- Accordion Row (Expanded) -->
+                        <tr class="bg-black/30 text-xs">
+                            <td colspan="5" class="p-4 border-l-2 border-l-red-500 shadow-inner">
+                                <div class="flex flex-col gap-3">
+                                    <div class="grid grid-cols-[100px_1fr] gap-2 items-start">
+                                        <span class="text-textMuted font-semibold">Description:</span>
+                                        <span class="text-textDark/90">Display panel scratch detected during visual inspection. Requires rework at station R02.</span>
+                                    </div>
+                                    <div class="grid grid-cols-[100px_1fr] gap-2 items-center">
+                                        <span class="text-textMuted font-semibold">WO:</span>
+                                        <span class="text-textDark/90 bg-white/5 px-2 py-1 rounded inline-block w-fit">WO987654321</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="hover-highlight cursor-pointer border-l-2 border-l-green-500/50 group transition-colors">
+                            <td class="p-3 font-medium text-secondary">SN987654321</td>
+                            <td class="p-3">FATP_TEST_02</td>
+                            <td class="p-3 text-green-400 font-bold">PASS</td>
+                            <td class="p-3 text-green-400">-</td>
+                            <td class="p-3 text-textMuted text-right">10:46:12</td>
+                        </tr>
+                        <!-- Accordion Row (Hidden) -->
+                        <tr class="bg-black/30 text-xs hidden">
+                            <td colspan="5" class="p-4 border-l-2 border-l-green-500/50 shadow-inner">
+                                <div class="flex flex-col gap-3">
+                                    <div class="grid grid-cols-[100px_1fr] gap-2 items-start">
+                                        <span class="text-textMuted font-semibold">Description:</span>
+                                        <span class="text-textDark/90">Passed all checks.</span>
+                                    </div>
+                                    <div class="grid grid-cols-[100px_1fr] gap-2 items-center">
+                                        <span class="text-textMuted font-semibold">WO:</span>
+                                        <span class="text-textDark/90 bg-white/5 px-2 py-1 rounded inline-block w-fit">WO987654321</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
