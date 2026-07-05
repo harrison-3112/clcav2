@@ -767,8 +767,8 @@ function renderMesR001Rows(rows = mesR001Rows) {
         Terminal: 'w-32',
         Result: 'w-24',
         DefectCode: 'w-32',
-        Description: 'min-w-[200px] detail-col',
-        WO: 'w-32 detail-col',
+        Description: 'min-w-[200px] detail-col bg-indigo-50/50 dark:bg-indigo-900/20',
+        WO: 'w-32 detail-col bg-indigo-50/50 dark:bg-indigo-900/20',
         Time: 'w-24 text-right',
     };
     head.innerHTML = `<tr>${columns.map((col) => `<th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider ${headerClasses[col] || ''}">${quickLogEscape(getQuickLogColumnDisplayName(col))}</th>`).join('')}</tr>`;
@@ -791,8 +791,8 @@ function renderMesR001Rows(rows = mesR001Rows) {
             Terminal: `<td class="p-3">${quickLogEscape(getMesR001Cell(row, 'Terminal'))}</td>`,
             Result: `<td class="p-3 font-bold ${resultClass}">${quickLogEscape(getMesR001Cell(row, 'Result'))}</td>`,
             DefectCode: `<td class="p-3 ${resultClass}">${quickLogEscape(getMesR001Cell(row, 'DefectCode'))}</td>`,
-            Description: `<td class="p-3 text-textMuted font-mono text-[11px] max-w-xs truncate detail-col select-all" title="${quickLogEscape(getMesR001Cell(row, 'Description'))}">${quickLogEscape(getMesR001Cell(row, 'Description'))}</td>`,
-            WO: `<td class="p-3 text-textMuted font-mono text-[11px] detail-col select-all">${quickLogEscape(getMesR001Cell(row, 'WO'))}</td>`,
+            Description: `<td class="p-3 text-textMuted font-mono text-[11px] max-w-xs truncate detail-col bg-indigo-50/50 dark:bg-indigo-900/20 select-all" title="${quickLogEscape(getMesR001Cell(row, 'Description'))}">${quickLogEscape(getMesR001Cell(row, 'Description'))}</td>`,
+            WO: `<td class="p-3 text-textMuted font-mono text-[11px] detail-col bg-indigo-50/50 dark:bg-indigo-900/20 select-all">${quickLogEscape(getMesR001Cell(row, 'WO'))}</td>`,
             Time: `<td class="p-3 text-textMuted text-right">${quickLogEscape(getMesR001Cell(row, 'Time'))}</td>`,
         };
         const tr = document.createElement('tr');
@@ -832,6 +832,27 @@ async function searchMesDashboard() {
     if (!inputCount) { const summary = document.getElementById('mes-r001-summary'); if (summary) summary.textContent = t('mesR001NeedWo'); logToConsole(t('mesR001NeedWo'), 'warning'); showImportantToast('warning', t('reqFailed'), t('mesR001NeedWo')); return; }
     try {
         setMesR001SearchLoading(true); setStatus('generating', 'Searching...'); showProgress(); mesR001Rows = []; mesR001SelectedIndex = -1; renderMesR001Rows([]);
+        if (woText.toUpperCase() === 'MOCK') {
+            const mockRows = Array.from({length: 12}).map((_, i) => ({
+                SN: 'MOCK-SN-100' + i,
+                Terminal: 'FCT-0' + ((i % 3) + 1),
+                Result: i % 4 === 0 ? 'FAIL' : 'PASS',
+                DefectCode: i % 4 === 0 ? 'DEF-' + (200 + i) : '',
+                Description: i % 4 === 0 ? 'Simulated defect description that is intentionally long to test how the UI wraps or truncates text in the new Bento design.' : '',
+                WO: 'MOCK-WO-999',
+                Time: '2026-07-05 10:' + String(i * 5).padStart(2, '0') + ':00',
+                _MesR001Index: i
+            }));
+            mesR001Rows = mockRows;
+            renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', 'MOCK DATA LOADED'); logToConsole('Mock Dashboard data loaded.', 'success');
+            const woList = ['MOCK-WO-999'];
+            if (typeof renderDefectDashboard === 'function') renderDefectDashboard(mesR001Rows, woList);
+            document.getElementById('mes-rty-preview-section')?.classList.remove('hidden');
+            document.getElementById('mes-bento-dashboard')?.classList.remove('hidden');
+            document.getElementById('mes-defect-records-section')?.classList.remove('hidden');
+            setMesR001SearchLoading(false);
+            return;
+        }
         const selectedStations = typeof getSelectedStations === 'function' ? Array.from(getSelectedStations()) : [];
         const response = await fetchRetry('/api/mesdaily/dashboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ woText, timefrom: document.getElementById('mes-r001-timefrom')?.value || '', timeto: document.getElementById('mes-r001-timeto')?.value || '', selected_stations: selectedStations }) }, MAX_RETRIES);
         const data = await response.json();
