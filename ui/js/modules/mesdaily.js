@@ -656,6 +656,12 @@ function setMesR001ExportLoading(isLoading) {
     _refreshIcons(btn);
 }
 
+function getMesR001DetailsToggleHtml(isHidden) {
+    return isHidden
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><span>Show Details</span>`
+        : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Hide Details</span>`;
+}
+
 function ensureMesR001Panel() {
     const mesPanel = document.getElementById('mes-panel');
     if (!mesPanel) return;
@@ -686,6 +692,22 @@ function ensureMesR001Panel() {
             mesR001SelectedIndex = -1;
             renderMesR001Rows();
         });
+        const detailsToggle = document.getElementById('mes-r001-toggle-details');
+        if (detailsToggle) {
+            const syncDetailsToggle = () => {
+                const table = document.getElementById('mes-r001-table');
+                const isHidden = !table || table.classList.contains('hide-details');
+                detailsToggle.innerHTML = getMesR001DetailsToggleHtml(isHidden);
+                _refreshIcons(detailsToggle);
+            };
+            detailsToggle.addEventListener('click', () => {
+                const table = document.getElementById('mes-r001-table');
+                if (!table) return;
+                table.classList.toggle('hide-details');
+                syncDetailsToggle();
+            });
+            syncDetailsToggle();
+        }
         document.getElementById('mes-r001-download-zip')?.addEventListener('click', downloadMesR001LogsZip);
         // Auto-refresh toggle + interval
         document.getElementById('mes-r001-auto-refresh-toggle')?.addEventListener('click', toggleDashboardAutoRefresh);
@@ -732,7 +754,16 @@ function renderMesR001Rows(rows = mesR001Rows) {
     const body = document.getElementById('mes-r001-body');
     if (!head || !body) return;
     const columns = getMesR001Columns();
-    head.innerHTML = `<tr>${columns.map((col) => `<th class="border-b border-borderLight dark:border-borderDark text-xs leading-tight whitespace-nowrap" style="min-width:120px;padding:8px 10px;white-space:nowrap;">${quickLogEscape(getQuickLogColumnDisplayName(col))}</th>`).join('')}</tr>`;
+    const headerClasses = {
+        SN: 'w-40',
+        Terminal: 'w-32',
+        Result: 'w-24',
+        DefectCode: 'w-32',
+        Description: 'min-w-[200px] detail-col',
+        WO: 'w-32 detail-col',
+        Time: 'w-24 text-right',
+    };
+    head.innerHTML = `<tr>${columns.map((col) => `<th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider ${headerClasses[col] || ''}">${quickLogEscape(getQuickLogColumnDisplayName(col))}</th>`).join('')}</tr>`;
     const displayRows = getMesR001DisplayRows(rows);
     if (!displayRows.length) {
         body.innerHTML = ``;
@@ -743,9 +774,22 @@ function renderMesR001Rows(rows = mesR001Rows) {
     }
     body.innerHTML = '';
     displayRows.forEach((row) => {
+        const result = String(getMesR001Cell(row, 'Result') || '').toUpperCase();
+        const isPass = result === 'PASS';
+        const resultClass = isPass ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+        const borderClass = isPass ? 'border-l-green-500/50' : 'border-l-red-500';
+        const cellHtml = {
+            SN: `<td class="p-3 font-medium text-secondary break-all">${quickLogEscape(getMesR001Cell(row, 'SN'))}</td>`,
+            Terminal: `<td class="p-3">${quickLogEscape(getMesR001Cell(row, 'Terminal'))}</td>`,
+            Result: `<td class="p-3 font-bold ${resultClass}">${quickLogEscape(getMesR001Cell(row, 'Result'))}</td>`,
+            DefectCode: `<td class="p-3 ${resultClass}">${quickLogEscape(getMesR001Cell(row, 'DefectCode'))}</td>`,
+            Description: `<td class="p-3 text-textMuted font-mono text-[11px] max-w-xs truncate detail-col select-all" title="${quickLogEscape(getMesR001Cell(row, 'Description'))}">${quickLogEscape(getMesR001Cell(row, 'Description'))}</td>`,
+            WO: `<td class="p-3 text-textMuted font-mono text-[11px] detail-col select-all">${quickLogEscape(getMesR001Cell(row, 'WO'))}</td>`,
+            Time: `<td class="p-3 text-textMuted text-right">${quickLogEscape(getMesR001Cell(row, 'Time'))}</td>`,
+        };
         const tr = document.createElement('tr');
-        tr.className = 'quicklog-result-row cursor-pointer transition-colors';
-        tr.innerHTML = columns.map((col) => { const value = getMesR001Cell(row, col); const safe = quickLogEscape(value); const resultClass = col === 'Result' ? 'text-red-600 dark:text-red-400 font-bold' : ''; return `<td class="border-b border-borderLight dark:border-borderDark text-xs leading-tight whitespace-nowrap ${resultClass}" style="min-width:120px;padding:7px 10px;white-space:nowrap;" title="${safe}">${safe}</td>`; }).join('');
+        tr.className = `quicklog-result-row hover-highlight cursor-pointer border-l-2 ${borderClass} transition-colors`;
+        tr.innerHTML = columns.map((col) => cellHtml[col] || `<td class="p-3">${quickLogEscape(getMesR001Cell(row, col))}</td>`).join('');
         tr.addEventListener('click', () => { mesR001SelectedIndex = Number.isInteger(row._MesR001Index) ? row._MesR001Index : -1; body.querySelectorAll('tr').forEach((item) => item.classList.remove('quicklog-row-selected')); tr.classList.add('quicklog-row-selected'); updateMesR001SelectedRowLabel(); });
         body.appendChild(tr);
     });
