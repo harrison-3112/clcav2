@@ -390,26 +390,24 @@
                                 <div id="mes-panel" class="hidden flex-col gap-5 w-full max-w-[1400px] mx-auto">
                     <!-- Tier 1: Control Bar -->
                     <section class="glass-card flex items-center justify-between p-3 rounded-xl border border-borderLight dark:border-borderDark">
-                        <div class="flex flex-col gap-2 w-full">
+                        <div class="flex flex-col gap-3 w-full">
                             <div class="flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 w-full">
-                                <textarea id="mes-r001-wo-input" rows="1" class="flex-1 min-w-[200px] bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark shadow-sm rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-textMain dark:text-textDark placeholder:text-textMuted resize-none" placeholder="Enter WO (comma separated)..."></textarea>
+                                <textarea id="mes-r001-wo-input" rows="1" class="flex-1 min-w-[200px] bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark shadow-sm rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors text-textMain dark:text-textDark placeholder:text-textMuted resize-none" placeholder="Enter WO (comma separated)..."></textarea>
                                 <div class="flex items-center gap-2">
                                     <div class="flex items-center gap-1.5 w-full lg:w-auto">
-                                        <input type="text" id="mes-r001-datefrom" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                                        <input type="text" id="mes-r001-hourfrom" inputmode="numeric" placeholder="HH:MM" class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                                        <input type="text" id="mes-r001-datefrom" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
+                                        <input type="text" id="mes-r001-hourfrom" inputmode="numeric" placeholder="HH:MM" class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
                                     </div>
                                     <input type="hidden" id="mes-r001-timefrom">
                                     <span class="text-textMuted font-medium">-</span>
                                     <div class="flex items-center gap-1.5 w-full lg:w-auto">
-                                        <input type="text" id="mes-r001-dateto" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                                        <input type="text" id="mes-r001-hourto" inputmode="numeric" placeholder="HH:MM" class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                                        <input type="text" id="mes-r001-dateto" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
+                                        <input type="text" id="mes-r001-hourto" inputmode="numeric" placeholder="HH:MM" class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
                                     </div>
                                     <input type="hidden" id="mes-r001-timeto">
                                 </div>
-                                <button id="mes-r001-search" type="button" class="quicklog-generate-btn bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-lg font-semibold text-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-primary/20 shrink-0">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                                    Fetch Dashboard
-                                </button>
+                            </div>
+                            <div class="flex flex-wrap items-center justify-end gap-3 w-full">
                                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 shrink-0">
                                     <button id="mes-r001-auto-refresh-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold bg-white/10 text-textMuted dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" data-active="false" title="Toggle auto-refresh">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -419,13 +417,16 @@
                                         <span>Auto</span>
                                     </button>
                                     <select id="mes-r001-auto-refresh-interval" class="text-xs rounded-md border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 px-2 py-1 text-textMain dark:text-textDark focus:outline-none">
-                                        <option value="1">1m</option>
-                                        <option value="3">3m</option>
-                                        <option value="5" selected>5m</option>
-                                        <option value="10">10m</option>
-                                        <option value="15">15m</option>
+                                        <option value="60000">1m</option>
+                                        <option value="300000" selected>5m</option>
+                                        <option value="600000">10m</option>
+                                        <option value="1800000">30m</option>
                                     </select>
                                 </div>
+                                <button id="mes-r001-search" type="button" class="quicklog-generate-btn bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-lg font-semibold text-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-primary/20 shrink-0">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                    Fetch Dashboard
+                                </button>
                             </div>
                             <div class="flex items-center justify-between px-2">
                                 <span id="wo-count" class="text-xs text-primary dark:text-secondary font-medium">0 WOs</span>

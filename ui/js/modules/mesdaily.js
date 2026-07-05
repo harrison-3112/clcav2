@@ -220,7 +220,9 @@ function initMesTimePickers() {
         const locale = MES_DATEPICKER_LOCALES[currentLang] || MES_DATEPICKER_LOCALES.en;
         const initDatePicker = (input, trigger, onSelect) => {
             if (input._airDatepicker) {
-                input._airDatepicker.update({ locale }, { silent: true });
+                if (input._airDatepicker.opts.locale !== locale) {
+                    input._airDatepicker.update({ locale }, { silent: true });
+                }
                 return;
             }
 
@@ -566,7 +568,9 @@ function initMesR001TimePickers() {
         const locale = MES_DATEPICKER_LOCALES[currentLang] || MES_DATEPICKER_LOCALES.en;
         const initDatePicker = (input, trigger, onSelect) => {
             if (input._airDatepicker) {
-                input._airDatepicker.update({ locale }, { silent: true });
+                if (input._airDatepicker.opts.locale !== locale) {
+                    input._airDatepicker.update({ locale }, { silent: true });
+                }
                 return;
             }
             const picker = new window.AirDatepicker(input, {
@@ -769,7 +773,7 @@ function renderMesR001Rows(rows = mesR001Rows) {
         SN: 'w-40',
         Terminal: 'w-32',
         Result: 'w-24',
-        DefectCode: 'w-32',
+        DefectCode: 'min-w-[120px]',
         Description: 'min-w-[200px] detail-col bg-indigo-50/50 dark:bg-indigo-900/20',
         WO: 'w-32 detail-col bg-indigo-50/50 dark:bg-indigo-900/20',
         Time: 'w-24 text-right',

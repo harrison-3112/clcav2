@@ -594,23 +594,23 @@ function _openAlertConfigPopup() {
     overlay.id = 'dashboard-alert-config-overlay';
     overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm';
     overlay.innerHTML = `
-        <div class="glass-card rounded-xl p-6 w-full max-w-md mx-4">
-            <div class="flex items-center justify-between mb-4">
+        <div class="relative bg-white/95 dark:bg-[#0d1628]/95 backdrop-blur-xl border border-borderLight dark:border-borderDark shadow-2xl rounded-2xl w-[90vw] max-w-md mx-4 flex flex-col overflow-hidden">
+            <div class="px-6 py-5 border-b border-borderLight dark:border-borderDark bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-primary dark:text-secondary">Alert Thresholds</h3>
                 <button id="alert-config-close" type="button" class="text-textMuted dark:text-gray-400 hover:text-textPrimary dark:hover:text-white transition-colors">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="space-y-4">
+            <div class="p-6 space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-textMuted dark:text-gray-400 mb-1 uppercase tracking-wider">Yield Warning (%)</label>
                     <input id="alert-cfg-yield-warn" type="number" min="0" max="100" value="${config.yieldWarning}" class="w-full rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 px-3 py-2 text-sm text-textPrimary dark:text-white outline-none focus:border-primary dark:focus:border-secondary">
-                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Yield below this → warning alert</p>
+                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Yield below this &rarr; warning alert</p>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-textMuted dark:text-gray-400 mb-1 uppercase tracking-wider">Yield Critical (%)</label>
                     <input id="alert-cfg-yield-crit" type="number" min="0" max="100" value="${config.yieldCritical}" class="w-full rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 px-3 py-2 text-sm text-textPrimary dark:text-white outline-none focus:border-primary dark:focus:border-secondary">
-                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Yield below this → critical alert</p>
+                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Yield below this &rarr; critical alert</p>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-textMuted dark:text-gray-400 mb-1 uppercase tracking-wider">Defect Spike (%)</label>
@@ -620,12 +620,12 @@ function _openAlertConfigPopup() {
                 <div>
                     <label class="block text-xs font-semibold text-textMuted dark:text-gray-400 mb-1 uppercase tracking-wider">Consecutive Fails</label>
                     <input id="alert-cfg-fails" type="number" min="1" max="100" value="${config.consecutiveFails}" class="w-full rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 px-3 py-2 text-sm text-textPrimary dark:text-white outline-none focus:border-primary dark:focus:border-secondary">
-                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Defects per WO above this → alert</p>
+                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Defects per WO above this &rarr; alert</p>
                 </div>
             </div>
-            <div class="flex gap-2 mt-5">
-                <button id="alert-config-save" type="button" class="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 transition-all">Save</button>
-                <button id="alert-config-cancel" type="button" class="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-textMuted dark:text-gray-400 border border-borderLight dark:border-borderDark hover:bg-white/5 transition-colors">Cancel</button>
+            <div class="px-6 py-4 border-t border-borderLight dark:border-borderDark bg-gray-50/50 dark:bg-black/20 flex gap-3 justify-end">
+                <button id="alert-config-cancel" type="button" class="px-4 py-2 text-sm font-semibold rounded-lg border border-borderLight dark:border-borderDark hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-textMain dark:text-textDark">Cancel</button>
+                <button id="alert-config-save" type="button" class="px-5 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 transition-opacity">Save</button>
             </div>
         </div>
     `;
