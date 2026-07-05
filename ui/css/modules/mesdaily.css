@@ -1,4 +1,4 @@
-MES Travel Card. Inline JS styles remain the source of truth. */
+/* Override legacy QuickLog fixed table CSS for MES Travel Card. Inline JS styles remain the source of truth. */
 .quicklog-table-scroll {
   overflow-x: auto;
 }
@@ -14,7 +14,7 @@ MES Travel Card. Inline JS styles remain the source of truth. */
 }
 
 .mes-time-input {
-  width: 5rem;
+  min-width: 7.5rem;
 }
 
 #mes-r001-table.hide-details .detail-col {
