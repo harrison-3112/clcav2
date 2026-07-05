@@ -675,7 +675,15 @@ function ensureMesR001Panel() {
         document.getElementById('mes-r001-search')?.addEventListener('click', searchMesDashboard);
         document.getElementById('mes-r001-clear')?.addEventListener('click', () => clearMesR001Panel(true));
         document.getElementById('mes-r001-open-log')?.addEventListener('click', openMesR001SelectedLogUiOnly);
-        document.getElementById('mes-r001-export-csv')?.addEventListener('click', exportMesR001CsvUiOnly);
+                document.getElementById('mes-r001-export-csv')?.addEventListener('click', exportMesR001CsvUiOnly);
+        document.getElementById('mes-r001-toggle-details')?.addEventListener('click', () => {
+            const table = document.getElementById('mes-r001-table');
+            const btn = document.getElementById('mes-r001-toggle-details');
+            if (table) {
+                const isHidden = table.classList.toggle('hide-details');
+                if (btn) btn.innerHTML = typeof getMesR001ToggleIcon === 'function' ? getMesR001ToggleIcon(isHidden) : '';
+            }
+        });
         document.getElementById('mes-r001-wo-input')?.addEventListener('input', () => updateMesR001Summary(mesR001Rows));
         document.getElementById('mes-r001-wo-input')?.addEventListener('keydown', (event) => {
             if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') searchMesDashboard();
@@ -809,7 +817,8 @@ function clearMesR001Panel(clearInput = false) {
     const zipStatus = document.getElementById('mes-r001-zip-status');
     if (zipStatus) zipStatus.classList.add('hidden');
     // Hide data sections
-    document.getElementById('mes-rty-preview-section')?.classList.add('hidden');
+        document.getElementById('mes-rty-preview-section')?.classList.add('hidden');
+    document.getElementById('mes-bento-dashboard')?.classList.add('hidden');
     document.getElementById('mes-defect-records-section')?.classList.add('hidden');
 }
 
@@ -834,7 +843,8 @@ async function searchMesDashboard() {
         const woList = data.summary?.workOrders || parseMesR001WoInput(woText);
         if (typeof renderDefectDashboard === 'function') renderDefectDashboard(mesR001Rows, woList);
         // Show data sections after successful fetch
-        document.getElementById('mes-rty-preview-section')?.classList.remove('hidden');
+                document.getElementById('mes-rty-preview-section')?.classList.remove('hidden');
+        document.getElementById('mes-bento-dashboard')?.classList.remove('hidden');
         document.getElementById('mes-defect-records-section')?.classList.remove('hidden');
     } catch (error) {
         resetProgress();
