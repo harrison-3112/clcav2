@@ -494,14 +494,14 @@
                     </section>
                     <section id="mes-defect-analytics-section" class="hidden"></section>
                     <section id="mes-defect-records-section" class="glass-card overflow-hidden flex flex-col gap-0 rounded-xl border border-borderLight dark:border-borderDark hidden">
-                        <div class="section-header-gradient flex justify-between items-center !py-2 !px-4">
-                            <span class="text-sm font-semibold flex items-center gap-2">
+                        <div class="px-5 py-3 border-b border-borderLight dark:border-borderDark bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center">
+                            <span class="text-sm font-bold text-primary dark:text-secondary flex items-center gap-2">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18"/><path d="M3 15h18"/><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
                                 Defect Records
                             </span>
                             
                             <div class="flex items-center gap-2">
-                                <button id="mes-r001-download-zip" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors" title="Download FAIL log files as ZIP">
+                                <button id="mes-r001-download-zip" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark hover:bg-gray-50 dark:hover:bg-gray-700 text-textMain dark:text-textDark shadow-sm transition-colors" title="Download FAIL log files as ZIP">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                     <span>Logs</span>
                                 </button>
@@ -509,15 +509,15 @@
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                                     <span id="mes-r001-zip-tooltip" class="absolute bottom-full right-0 mb-2 hidden w-72 max-h-48 overflow-y-auto p-3 text-[10px] leading-relaxed rounded-lg bg-gray-900/95 text-gray-200 border border-gray-700 shadow-xl backdrop-blur-sm z-50 whitespace-pre-wrap"></span>
                                 </span>
-                                <button id="mes-r001-export-csv" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white">
+                                <button id="mes-r001-export-csv" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark hover:bg-gray-50 dark:hover:bg-gray-700 text-textMain dark:text-textDark shadow-sm transition-colors">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                     <span>CSV</span>
                                 </button>
-                                <button id="mes-r001-open-log" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white">
+                                <button id="mes-r001-open-log" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark hover:bg-gray-50 dark:hover:bg-gray-700 text-textMain dark:text-textDark shadow-sm transition-colors">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                     <span>Open</span>
                                 </button>
-                                <button id="mes-r001-toggle-details" type="button" class="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg font-medium transition-colors flex items-center gap-1.5 ml-2">
+                                <button id="mes-r001-toggle-details" type="button" class="inline-flex items-center gap-1.5 ml-2 rounded-lg px-3 py-1.5 text-xs font-semibold bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark hover:bg-gray-50 dark:hover:bg-gray-700 text-textMain dark:text-textDark shadow-sm transition-colors">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                     Show Details
                                 </button>
@@ -556,11 +556,11 @@
                     <!-- 5. RTY Export (restored to original layout) -->
                     <section
                         class="glass-card rounded-xl border border-borderLight dark:border-borderDark overflow-hidden">
-                        <div class="section-header-gradient">
-                            <div class="p-1.5 rounded-lg bg-white/20 shrink-0">
+                        <div class="px-5 py-3 border-b border-borderLight dark:border-borderDark bg-gray-50/50 dark:bg-gray-900/50 flex items-center gap-2">
+                            <div class="p-1.5 rounded-lg bg-black/5 dark:bg-white/10 shrink-0 text-primary dark:text-secondary">
                                 <i data-lucide="save" class="w-5 h-5"></i>
                             </div>
-                            <p class="text-sm font-semibold" data-i18n="saveOutput">Save Output As</p>
+                            <p class="text-sm font-bold text-primary dark:text-secondary" data-i18n="saveOutput">Save Output As</p>
                         </div>
                         <div class="p-5 flex flex-col gap-4">
                             <div class="flex items-center gap-2.5">
