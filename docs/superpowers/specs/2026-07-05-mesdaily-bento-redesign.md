@@ -21,11 +21,11 @@ The current stacked layout will be overhauled into a full-width 3-tier architect
   - **KPI Cards (col-span-12 md:col-span-3):** 4 key metrics (Yield, Output, Defects, FPY) stacked in a 2x2 grid. Rendered with large `font-display` (Outfit) typography.
   - **Analytics (col-span-12 md:col-span-9):** The 3 charts (Pareto, Trend, Station Yield) elegantly fit into the remaining grid space.
 
-### Tier 3: Condensed Expandable Tables
+### Tier 3: Toggleable 7-Column Table
 - **Current:** A 7-column table forced to `min-width: 1000px`, breaking mobile/tablet views and looking cluttered.
 - **New:** 
-  - Reduced to 5 critical columns: `SN`, `Terminal`, `Result`, `DefectCode`, `Time`.
-  - **Accordion Details:** Clicking any row smoothly slides out a secondary panel directly beneath it to reveal the lengthy `Description` and `WO` fields.
+  - Retains all 7 columns (`SN`, `Terminal`, `Result`, `DefectCode`, `WO`, `Description`, `Time`) to allow easy copy-pasting of full rows.
+  - **Toggle Details:** The `WO` and `Description` columns are hidden by default. A "Show Details" button in the table header allows engineers to toggle their visibility globally for all rows, keeping the table clean when details aren't needed.
 
 ## 3. Micro-Interactions & States
 - **Loading (Skeletal):** Instead of wiping the screen blank and showing a tiny spinner, the layout transitions to a "Skeletal Loading" state (shimmer effect matching the Bento shapes) to reduce Cumulative Layout Shift (CLS) and feel premium.

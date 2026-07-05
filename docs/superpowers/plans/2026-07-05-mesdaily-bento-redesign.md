@@ -2,12 +2,12 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Overhaul the MES Daily dashboard into a 3-tier Bento layout (Control Bar, Bento Grid, Condensed Table) with glassmorphism and micro-interactions.
+**Goal:** Overhaul the MES Daily dashboard into a 3-tier Bento layout (Control Bar, Bento Grid, Toggleable Table) with glassmorphism and micro-interactions.
 
 **Architecture:** 
 1. Build a static HTML mockup (`ui/mesdaily-bento-mockup.html`) for visual review.
 2. Integrate the approved mockup into `ui/index.html`.
-3. Refactor `ui/js/modules/mesdaily.js` to render the condensed table with accordion details.
+3. Refactor `ui/js/modules/mesdaily.js` to render the 7-column table with a global column toggle.
 4. Ensure charts in `ui/js/modules/defectDashboard.js` render correctly in the new grid.
 
 **Tech Stack:** Vanilla HTML, Tailwind CSS, Vanilla JS, Chart.js.
@@ -231,22 +231,22 @@ git commit -m "feat: integrate bento layout into index.html"
 
 ---
 
-### Task 3: Implement Condensed Table & Accordion Logic
+### Task 3: Implement Toggleable Table Logic
 
 **Files:**
 - Modify: `ui/js/modules/mesdaily.js`
 - Test: `scratch/test_task3.ps1`
 
 **Interfaces:**
-- Consumes: `#mes-r001-body` element in `ui/index.html`.
-- Produces: 5-column rows with click listeners to toggle adjacent accordion rows.
+- Consumes: `#mes-r001-body` and `#mes-r001-toggle-details` elements in `ui/index.html`.
+- Produces: 7-column rows and toggle event listener for `hide-details` class on the table.
 
 - [ ] **Step 1: Write the failing test**
 
 Create `scratch/test_task3.ps1`:
 ```powershell
 $js = Get-Content -Path "ui/js/modules/mesdaily.js" -Raw
-if ($js -notmatch "function toggleMesR001Accordion") { throw "Missing toggle function" }
+if ($js -notmatch "hide-details") { throw "Missing toggle logic" }
 Write-Output "PASS"
 ```
 
@@ -257,18 +257,22 @@ Expected: FAIL
 
 - [ ] **Step 3: Write minimal implementation**
 
-In `ui/js/modules/mesdaily.js`, update `renderMesR001Rows` and add `toggleMesR001Accordion`:
+In `ui/js/modules/mesdaily.js`:
+1. Bind click listener to `#mes-r001-toggle-details` during initialization to toggle `hide-details` class on `#mes-r001-table`.
+2. Update `renderMesR001Rows` to output 7 columns (including WO and Description with `.detail-col`).
 
 ```javascript
-// Add before renderMesR001Rows
-function toggleMesR001Accordion(rowId) {
-    const detailRow = document.getElementById(`mes-detail-${rowId}`);
-    if (detailRow) {
-        detailRow.classList.toggle('hidden');
-    }
-}
+// Example logic to add to initialization
+document.getElementById('mes-r001-toggle-details')?.addEventListener('click', function() {
+    const table = document.getElementById('mes-r001-table');
+    table.classList.toggle('hide-details');
+    const isHidden = table.classList.contains('hide-details');
+    this.innerHTML = isHidden 
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Show Details`
+        : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg> Hide Details`;
+});
 
-// Update renderMesR001Rows inner loop to output 5 columns + accordion row
+// Update renderMesR001Rows inner loop to output 7 columns
 function renderMesR001Rows(rows) {
     // ... setup ...
     let html = '';
@@ -277,22 +281,16 @@ function renderMesR001Rows(rows) {
         const isSelected = i === mesR001SelectedIndex;
         const bgClass = isSelected ? 'bg-primary/20 dark:bg-secondary/20' : 'hover-highlight';
         const resultColor = row.result === 'PASS' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
-        const borderClass = row.result === 'PASS' ? 'border-l-green-500/50' : 'border-l-red-500/50';
+        const borderClass = row.result === 'PASS' ? 'border-l-green-500/50' : 'border-l-red-500';
         
-        html += `<tr class="${bgClass} cursor-pointer border-l-2 ${borderClass} group" onclick="toggleMesR001Accordion(${i})">
-            <td class="p-2.5 break-all">${quickLogEscape(row.sn)}</td>
-            <td class="p-2.5">${quickLogEscape(row.terminal)}</td>
-            <td class="p-2.5 font-medium ${resultColor}">${quickLogEscape(row.result)}</td>
-            <td class="p-2.5 text-red-500">${quickLogEscape(row.defectCode)}</td>
-            <td class="p-2.5 text-textMuted">${quickLogEscape(row.time)}</td>
-        </tr>
-        <tr id="mes-detail-${i}" class="bg-black/5 dark:bg-white/5 text-xs hidden">
-            <td colspan="5" class="p-3 border-l-2 ${borderClass}">
-                <div class="flex flex-col gap-1 text-textMuted">
-                    <p><strong class="text-textMain dark:text-textDark">Description:</strong> ${quickLogEscape(row.description)}</p>
-                    <p><strong class="text-textMain dark:text-textDark">WO:</strong> ${quickLogEscape(row.wo)}</p>
-                </div>
-            </td>
+        html += `<tr class="${bgClass} border-l-2 ${borderClass} transition-colors">
+            <td class="p-3 font-medium text-secondary break-all">${quickLogEscape(row.sn)}</td>
+            <td class="p-3">${quickLogEscape(row.terminal)}</td>
+            <td class="p-3 font-bold ${resultColor}">${quickLogEscape(row.result)}</td>
+            <td class="p-3 ${resultColor}">${quickLogEscape(row.defectCode)}</td>
+            <td class="p-3 text-textMuted font-mono text-[11px] detail-col">${quickLogEscape(row.wo)}</td>
+            <td class="p-3 text-textMuted font-mono text-[11px] max-w-xs truncate detail-col" title="${quickLogEscape(row.description)}">${quickLogEscape(row.description)}</td>
+            <td class="p-3 text-textMuted text-right">${quickLogEscape(row.time)}</td>
         </tr>`;
     }
     body.innerHTML = html;
@@ -309,5 +307,5 @@ Expected: PASS
 
 ```bash
 git add ui/js/modules/mesdaily.js scratch/test_task3.ps1
-git commit -m "feat: implement condensed table and accordion in mesdaily.js"
+git commit -m "feat: implement toggleable table in mesdaily.js"
 ```
