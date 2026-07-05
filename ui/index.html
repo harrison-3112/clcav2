@@ -395,14 +395,14 @@
                                 <textarea id="mes-r001-wo-input" rows="1" class="flex-1 min-w-[200px] bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark shadow-sm rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-textMain dark:text-textDark placeholder:text-textMuted resize-none" placeholder="Enter WO (comma separated)..."></textarea>
                                 <div class="flex items-center gap-2">
                                     <div class="grid grid-cols-[minmax(0,1fr)_80px] gap-1.5">
-                                        <input type="text" id="mes-r001-datefrom" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer">
-                                        <input type="text" id="mes-r001-hourfrom" inputmode="numeric" placeholder="HH:MM" class="bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center">
+                                        <input type="text" id="mes-r001-datefrom" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer">
+                                        <input type="text" id="mes-r001-hourfrom" inputmode="numeric" placeholder="HH:MM" class="mes-time-input bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center">
                                     </div>
                                     <input type="hidden" id="mes-r001-timefrom">
                                     <span class="text-textMuted font-medium">-</span>
                                     <div class="grid grid-cols-[minmax(0,1fr)_80px] gap-1.5">
-                                        <input type="text" id="mes-r001-dateto" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer">
-                                        <input type="text" id="mes-r001-hourto" inputmode="numeric" placeholder="HH:MM" class="bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center">
+                                        <input type="text" id="mes-r001-dateto" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark cursor-pointer">
+                                        <input type="text" id="mes-r001-hourto" inputmode="numeric" placeholder="HH:MM" class="mes-time-input bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center">
                                     </div>
                                     <input type="hidden" id="mes-r001-timeto">
                                 </div>
@@ -479,12 +479,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="mes-r001-dashboard" class="hidden"></div>
-                        <section id="mes-rty-preview-section" class="hidden"><tbody id="mes-rty-preview-body"></tbody></section>
-                        <section id="mes-defect-analytics-section" class="hidden"></section>
                     </section>
 
                     <!-- Tier 3: Condensed Table -->
+                    <div id="mes-r001-dashboard" class="hidden"></div>
+                    <section id="mes-rty-preview-section" class="hidden"><tbody id="mes-rty-preview-body"></tbody></section>
+                    <section id="mes-defect-analytics-section" class="hidden"></section>
                     <section id="mes-defect-records-section" class="glass-card overflow-hidden flex flex-col gap-0 rounded-xl border border-borderLight dark:border-borderDark hidden">
                         <div class="section-header-gradient flex justify-between items-center !py-2 !px-4">
                             <span class="text-sm font-semibold flex items-center gap-2">

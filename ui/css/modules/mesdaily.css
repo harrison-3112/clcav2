@@ -3,6 +3,24 @@ MES Travel Card. Inline JS styles remain the source of truth. */
   overflow-x: auto;
 }
 
+#mes-panel:not(.hidden) {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mes-date-input {
+  min-width: 9.5rem;
+}
+
+.mes-time-input {
+  width: 5rem;
+}
+
+#mes-r001-table.hide-details .detail-col {
+  display: none;
+}
+
 thead th { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 
 
