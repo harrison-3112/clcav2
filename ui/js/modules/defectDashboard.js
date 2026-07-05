@@ -246,7 +246,13 @@ function destroyDashboardOverview() {
 }
 
 function renderDashboardOverviewFromData(data) {
-    if (!data || data.success === false) return;
+    if (!data || data.success === false || !data.kpis) {
+        const alertsContainer = document.getElementById('dashboard-alerts-section');
+        if (alertsContainer) {
+            alertsContainer.innerHTML = '<div class="text-[11px] text-textMuted dark:text-gray-400">No dashboard data available.</div>';
+        }
+        return;
+    }
     destroyDashboardOverview();
     _lastDashboardKpis = data.kpis || null;
     _renderOverviewContent(data, getDashboardAlertConfig());

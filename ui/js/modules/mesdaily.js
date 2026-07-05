@@ -803,6 +803,27 @@ function renderMesR001Rows(rows = mesR001Rows) {
     updateMesR001SelectedRowLabel();
 }
 
+function setMesBentoDashboardState(state, message = '') {
+    const dashboard = document.getElementById('mes-bento-dashboard');
+    const empty = document.getElementById('mes-bento-empty');
+    if (!dashboard) return;
+
+    const normalized = ['idle', 'loading', 'ready', 'error'].includes(state) ? state : 'idle';
+    dashboard.dataset.state = normalized;
+    dashboard.classList.toggle('hidden', normalized === 'idle');
+
+    if (empty) {
+        empty.classList.toggle('hidden', normalized === 'ready');
+        empty.textContent = message || (
+            normalized === 'loading'
+                ? 'Loading dashboard metrics...'
+                : normalized === 'error'
+                    ? 'Dashboard data could not be loaded. Try again.'
+                    : 'Search a WO to load dashboard metrics and charts.'
+        );
+    }
+}
+
 function clearMesR001Panel(clearInput = false) {
     mesR001Rows = [];
     mesR001SelectedIndex = -1;
@@ -817,6 +838,7 @@ function clearMesR001Panel(clearInput = false) {
     // Hide data sections
         document.getElementById('mes-rty-preview-section')?.classList.add('hidden');
     document.getElementById('mes-bento-dashboard')?.classList.add('hidden');
+    setMesBentoDashboardState('idle');
     document.getElementById('mes-defect-records-section')?.classList.add('hidden');
 }
 
@@ -894,7 +916,7 @@ async function searchMesDashboard() {
     const inputCount = parseMesR001WoInput(woText).length;
     if (!inputCount) { const summary = document.getElementById('mes-r001-summary'); if (summary) summary.textContent = t('mesR001NeedWo'); logToConsole(t('mesR001NeedWo'), 'warning'); showImportantToast('warning', t('reqFailed'), t('mesR001NeedWo')); return; }
     try {
-        setMesR001SearchLoading(true); setStatus('generating', 'Searching...'); showProgress(); mesR001Rows = []; mesR001SelectedIndex = -1; renderMesR001Rows([]);
+        setMesBentoDashboardState('loading'); setMesR001SearchLoading(true); setStatus('generating', 'Searching...'); showProgress(); mesR001Rows = []; mesR001SelectedIndex = -1; renderMesR001Rows([]);
         if (woText.toUpperCase() === 'MOCK') {
             const mockRows = Array.from({length: 12}).map((_, i) => ({
                 SN: 'MOCK-SN-100' + i,
@@ -908,7 +930,7 @@ async function searchMesDashboard() {
             }));
             mesR001Rows = mockRows;
             renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', 'MOCK DATA LOADED'); logToConsole('Mock Dashboard data loaded.', 'success');
-            if (typeof renderDashboardOverviewFromData === 'function') renderDashboardOverviewFromData(buildMesR001MockDashboardData(mesR001Rows));
+            if (typeof renderDashboardOverviewFromData === 'function') renderDashboardOverviewFromData(buildMesR001MockDashboardData(mesR001Rows)); setMesBentoDashboardState('ready');
             document.getElementById('mes-bento-dashboard')?.classList.remove('hidden');
             document.getElementById('mes-defect-records-section')?.classList.remove('hidden');
             setMesR001SearchLoading(false);
@@ -921,12 +943,12 @@ async function searchMesDashboard() {
         mesR001Rows = Array.isArray(data.defectRows) ? data.defectRows : [];
         renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', t('statusSuccess')); logToConsole(`Dashboard search done. Defect rows: <b>${mesR001Rows.length}</b>`, 'success');
         saveMesR001History(woText);
-        if (typeof renderDashboardOverviewFromData === 'function') renderDashboardOverviewFromData(data);
+        if (typeof renderDashboardOverviewFromData === 'function') renderDashboardOverviewFromData(data); setMesBentoDashboardState('ready');
         // Show data sections after successful fetch
         document.getElementById('mes-bento-dashboard')?.classList.remove('hidden');
         document.getElementById('mes-defect-records-section')?.classList.remove('hidden');
     } catch (error) {
-        resetProgress();
+        setMesBentoDashboardState('error', error.message || String(error)); resetProgress();
         let message = error.message || String(error);
         if (message.includes('ERR_MES_API_UNREACHABLE')) {
             const tMsg = t('mesApiUnreachable');
@@ -936,7 +958,7 @@ async function searchMesDashboard() {
         setStatus('error', t('reqFailed'));
         logToConsole(`Dashboard search failed: ${message}`, 'error');
         showImportantToast('error', t('reqFailed'), message);
-    } finally { setMesR001SearchLoading(false); resetProgress(); }
+    } finally { setMesR001SearchLoading(false); setMesBentoDashboardState('error', error.message || String(error)); resetProgress(); }
 }
 
 // Keep alias for backward compatibility (auto-refresh, event bindings)
