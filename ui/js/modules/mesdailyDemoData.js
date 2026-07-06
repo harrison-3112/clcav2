@@ -133,6 +133,13 @@ function buildMesDailyDemoDashboardData(rows) {
         input: v.input,
         fail: v.fail,
         yield: v.input > 0 ? parseFloat(((1 - v.fail / v.input) * 100).toFixed(1)) : 100,
+        model: 'M-X' + Math.floor(_random() * 10),
+        defectQty: v.fail + Math.floor(_random() * 2),
+        failD: parseFloat(((v.fail / (v.input || 1)) * 100).toFixed(1)),
+        passD: parseFloat((100 - ((v.fail / (v.input || 1)) * 100)).toFixed(1)),
+        output: v.input - v.fail,
+        failP: parseFloat(((v.fail / (v.input || 1)) * 100).toFixed(1)),
+        passP: parseFloat((100 - ((v.fail / (v.input || 1)) * 100)).toFixed(1))
     }));
 
     const sortedDefects = Object.entries(defectCounts)
@@ -160,10 +167,20 @@ function buildMesDailyDemoDashboardData(rows) {
         });
     }
 
+    const stationHourlyTrend = {};
+    _DEMO_STATIONS.forEach(st => {
+        stationHourlyTrend[st] = Array.from({length: 12}).map((_, i) => ({
+            hour: `${8 + i}:00`,
+            input: 20 + Math.floor(_random() * 10),
+            fail: Math.floor(_random() * 3),
+            fpy: 90 + _random() * 10
+        }));
+    });
+
     return {
         success: true,
         kpis: {
-            totalYield,
+            yield: totalYield,
             output,
             defects: total,
             fpy: parseFloat((_random() * 5 + 82).toFixed(1)),
@@ -171,7 +188,11 @@ function buildMesDailyDemoDashboardData(rows) {
         topDefects: sortedDefects,
         stationYield,
         yieldTrend,
-        alerts: [],
+        stationHourlyTrend,
+        alerts: [
+            { id: 1, type: 'warning', msg: 'Yield dropped below 90% on FPC02', time: '10:15 AM' },
+            { id: 2, type: 'critical', msg: 'Top defect MISSING_SCREW limit reached on ICT', time: '11:30 AM' },
+        ],
     };
 }
 

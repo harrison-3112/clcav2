@@ -387,49 +387,72 @@
                     class="hidden glass-card rounded-xl border border-borderLight dark:border-borderDark overflow-hidden">
                 </section>
 
-                                <div id="mes-panel" class="hidden flex-col gap-5 w-full max-w-[1400px] mx-auto">
+                <div id="mes-panel" class="hidden flex-col gap-5 w-full max-w-[1400px] mx-auto">
                     <!-- Tier 1: Control Bar -->
-                    <section class="glass-card flex items-center justify-between p-3 rounded-xl border border-borderLight dark:border-borderDark">
+                    <section
+                        class="glass-card flex items-center justify-between p-3 rounded-xl border border-borderLight dark:border-borderDark">
                         <div class="flex flex-col gap-3 w-full">
                             <div class="flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 w-full">
-                                <textarea id="mes-r001-wo-input" rows="1" class="flex-1 min-w-[200px] bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark shadow-sm rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors text-textMain dark:text-textDark placeholder:text-textMuted resize-none" placeholder="Enter WO (comma separated)..."></textarea>
+                                <textarea id="mes-r001-wo-input" rows="1"
+                                    class="flex-1 min-w-[200px] bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark shadow-sm rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors text-textMain dark:text-textDark placeholder:text-textMuted resize-none"
+                                    placeholder="Enter WO (comma separated)..."></textarea>
                                 <div class="flex flex-wrap items-center justify-end gap-2 w-full lg:w-auto shrink-0">
                                     <div class="flex items-center gap-1.5 w-auto">
-                                        <input type="text" id="mes-r001-datefrom" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
-                                        <input type="text" id="mes-r001-hourfrom" inputmode="numeric" placeholder="HH:MM" class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
+                                        <input type="text" id="mes-r001-datefrom" readonly autocomplete="off"
+                                            placeholder="YYYY-MM-DD"
+                                            class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
+                                        <input type="text" id="mes-r001-hourfrom" inputmode="numeric"
+                                            placeholder="HH:MM"
+                                            class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
                                     </div>
                                     <input type="hidden" id="mes-r001-timefrom">
                                     <span class="text-textMuted font-medium hidden sm:inline">-</span>
                                     <div class="flex items-center gap-1.5 w-auto">
-                                        <input type="text" id="mes-r001-dateto" readonly autocomplete="off" placeholder="YYYY-MM-DD" class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
-                                        <input type="text" id="mes-r001-hourto" inputmode="numeric" placeholder="HH:MM" class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
+                                        <input type="text" id="mes-r001-dateto" readonly autocomplete="off"
+                                            placeholder="YYYY-MM-DD"
+                                            class="mes-date-input w-[130px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
+                                        <input type="text" id="mes-r001-hourto" inputmode="numeric" placeholder="HH:MM"
+                                            class="mes-time-input w-[70px] bg-white dark:bg-gray-800 shadow-sm border border-borderLight dark:border-borderDark rounded-lg px-3 py-2 text-sm text-textMain dark:text-textDark text-center focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
                                     </div>
                                     <input type="hidden" id="mes-r001-timeto">
                                 </div>
                             </div>
                             <div class="flex flex-wrap items-center justify-between gap-3 w-full">
                                 <div class="flex items-center gap-3 flex-1 min-w-[200px] px-1">
-                                    <span id="wo-count" class="text-xs text-primary dark:text-secondary font-medium whitespace-nowrap">0 WOs</span>
-                                    <div id="mes-r001-history-container" class="flex flex-wrap gap-2 empty:hidden"></div>
+                                    <span id="wo-count"
+                                        class="text-xs text-primary dark:text-secondary font-medium whitespace-nowrap">0
+                                        WOs</span>
+                                    <div id="mes-r001-history-container" class="flex flex-wrap gap-2 empty:hidden">
+                                    </div>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
-                                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30">
-                                        <button id="mes-r001-auto-refresh-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold bg-white/10 text-textMuted dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" data-active="false" title="Toggle auto-refresh">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <div
+                                        class="flex items-center gap-2 px-3 py-2 rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30">
+                                        <button id="mes-r001-auto-refresh-toggle" type="button"
+                                            class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold bg-white/10 text-textMuted dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                            data-active="false" title="Toggle auto-refresh">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
                                                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                                                 <path d="M3 3v5h5" />
                                             </svg>
                                             <span>Auto</span>
                                         </button>
-                                        <select id="mes-r001-auto-refresh-interval" class="text-xs rounded-md border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 px-2 py-1 text-textMain dark:text-textDark focus:outline-none">
+                                        <select id="mes-r001-auto-refresh-interval"
+                                            class="text-xs rounded-md border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 px-2 py-1 text-textMain dark:text-textDark focus:outline-none">
                                             <option value="60000">1m</option>
                                             <option value="300000" selected>5m</option>
                                             <option value="600000">10m</option>
                                             <option value="1800000">30m</option>
                                         </select>
                                     </div>
-                                    <button id="mes-r001-search" type="button" class="quicklog-generate-btn bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-lg font-semibold text-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-primary/20 shrink-0">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                    <button id="mes-r001-search" type="button"
+                                        class="quicklog-generate-btn bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-lg font-semibold text-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-primary/20 shrink-0">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <circle cx="11" cy="11" r="8" />
+                                            <path d="m21 21-4.3-4.3" />
+                                        </svg>
                                         <span data-i18n="mesR001Search">Search</span>
                                     </button>
                                 </div>
@@ -440,49 +463,126 @@
                     <!-- Tier 2: Bento Dashboard -->
                     <section id="mes-bento-dashboard" class="grid grid-cols-12 gap-5">
                         <!-- KPIs (col-span-3) -->
-                        <div id="mes-bento-empty" class="col-span-12 rounded-xl border border-dashed border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-900/30 px-4 py-3 text-sm text-textMuted dark:text-gray-400">
+                        <div id="mes-bento-empty"
+                            class="col-span-12 rounded-xl border border-dashed border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-900/30 px-4 py-3 text-sm text-textMuted dark:text-gray-400">
                             Search a WO to load dashboard metrics and charts.
                         </div>
                         <div class="col-span-12 lg:col-span-3 grid grid-cols-2 gap-4">
-                            <div class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-green-500/30 transition-colors rounded-xl border border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-800/50">
-                                <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl group-hover:bg-green-500/20 transition-colors"></div>
-                                <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Yield</span>
-                                <span id="dashboard-kpi-yield" class="text-3xl font-display font-bold text-green-600 dark:text-green-400">-%</span>
+                            <div
+                                class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-green-500/30 transition-colors rounded-xl border border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-800/50">
+                                <div
+                                    class="absolute -right-4 -bottom-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl group-hover:bg-green-500/20 transition-colors">
+                                </div>
+                                <span
+                                    class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Yield</span>
+                                <span id="dashboard-kpi-yield"
+                                    class="text-3xl font-display font-bold text-green-600 dark:text-green-400">-%</span>
                             </div>
-                            <div class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-secondary/30 transition-colors rounded-xl border border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-800/50">
-                                <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/20 transition-colors"></div>
-                                <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Output</span>
-                                <span id="dashboard-kpi-output" class="text-3xl font-display font-bold text-primary dark:text-secondary">-</span>
+                            <div
+                                class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-secondary/30 transition-colors rounded-xl border border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-800/50">
+                                <div
+                                    class="absolute -right-4 -bottom-4 w-16 h-16 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/20 transition-colors">
+                                </div>
+                                <span
+                                    class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Output</span>
+                                <span id="dashboard-kpi-output"
+                                    class="text-3xl font-display font-bold text-primary dark:text-secondary">-</span>
                             </div>
-                            <div class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-red-500/30 transition-colors rounded-xl border border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-800/50">
-                                <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-red-500/10 rounded-full blur-xl group-hover:bg-red-500/20 transition-colors"></div>
-                                <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Defects</span>
-                                <span id="dashboard-kpi-defects" class="text-3xl font-display font-bold text-red-600 dark:text-red-400">-</span>
+                            <div
+                                class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-red-500/30 transition-colors rounded-xl border border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-800/50">
+                                <div
+                                    class="absolute -right-4 -bottom-4 w-16 h-16 bg-red-500/10 rounded-full blur-xl group-hover:bg-red-500/20 transition-colors">
+                                </div>
+                                <span
+                                    class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">Defects</span>
+                                <span id="dashboard-kpi-defects"
+                                    class="text-3xl font-display font-bold text-red-600 dark:text-red-400">-</span>
                             </div>
-                            <div class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-blue-500/30 transition-colors rounded-xl border border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-800/50">
-                                <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-colors"></div>
-                                <span class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">FPY</span>
-                                <span id="dashboard-kpi-fpy" class="text-3xl font-display font-bold text-blue-600 dark:text-blue-400">-%</span>
+                            <div
+                                class="glass-card p-4 flex flex-col justify-center relative overflow-hidden group hover:border-blue-500/30 transition-colors rounded-xl border border-borderLight dark:border-borderDark bg-white/40 dark:bg-gray-800/50">
+                                <div
+                                    class="absolute -right-4 -bottom-4 w-16 h-16 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-colors">
+                                </div>
+                                <span
+                                    class="text-[10px] text-textMuted uppercase tracking-wider font-bold mb-1">FPY</span>
+                                <span id="dashboard-kpi-fpy"
+                                    class="text-3xl font-display font-bold text-blue-600 dark:text-blue-400">-%</span>
                             </div>
                         </div>
                         <!-- Analytics (col-span-9) -->
-                        <div class="col-span-12 lg:col-span-9 grid grid-cols-4 gap-4">
-                            <div class="glass-card p-4 min-h-[220px] flex flex-col justify-center border-l-2 border-l-primary/50 relative overflow-hidden rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30">
-                                <p class="text-[10px] text-textMuted dark:text-gray-400 uppercase tracking-wider font-bold mb-2">Yield Trend</p>
-                                <canvas id="dashboard-yield-trend" class="w-full h-full max-h-[180px]"></canvas>
-                            </div>
-                            <div class="glass-card p-4 min-h-[220px] flex flex-col justify-center relative rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30">
-                                <p class="text-[10px] text-textMuted dark:text-gray-400 uppercase tracking-wider font-bold mb-2">Top Defects Pareto</p>
+                        <div class="col-span-12 lg:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div
+                                class="glass-card p-4 min-h-[220px] flex flex-col justify-center relative rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30">
+                                <p
+                                    class="text-[10px] text-textMuted dark:text-gray-400 uppercase tracking-wider font-bold mb-2">
+                                    Top Defects Pareto</p>
                                 <canvas id="dashboard-top-defects" class="w-full h-full max-h-[180px]"></canvas>
                             </div>
-                            <div class="glass-card p-4 min-h-[220px] flex flex-col justify-center relative rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30">
-                                <p class="text-[10px] text-textMuted dark:text-gray-400 uppercase tracking-wider font-bold mb-2">Station Yield</p>
-                                <canvas id="dashboard-station-yield" class="w-full h-full max-h-[180px]"></canvas>
-                            </div>
-                            <div id="dashboard-alerts-section" class="glass-card p-4 min-h-[220px] flex flex-col relative rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 overflow-hidden">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-bold text-red-500 uppercase tracking-wider">Alerts</span>
+                            <div id="dashboard-alert-config-inline"
+                                class="glass-card p-4 min-h-[220px] flex flex-col relative rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30">
+                                <p
+                                    class="text-[10px] text-textMuted dark:text-gray-400 uppercase tracking-wider font-bold mb-2">
+                                    Alert Configuration</p>
+                                <div class="flex flex-col gap-3 text-sm text-textMuted dark:text-gray-300 mt-2">
+                                    <label class="flex justify-between items-center">
+                                        <span>Yield Threshold (%):</span>
+                                        <input type="number" id="dashboard-cfg-yield" value="95"
+                                            class="w-20 bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark rounded px-2 py-1 text-right outline-none focus:border-primary transition-colors">
+                                    </label>
+                                    <label class="flex justify-between items-center">
+                                        <span>Defect Limit:</span>
+                                        <input type="number" id="dashboard-cfg-defect" value="10"
+                                            class="w-20 bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark rounded px-2 py-1 text-right outline-none focus:border-primary transition-colors">
+                                    </label>
+                                    <div class="mt-4">
+                                        <button id="dashboard-cfg-save-btn"
+                                            class="w-full bg-primary hover:bg-blue-600 text-white rounded py-2 transition-colors text-xs font-bold uppercase shadow-sm">Apply
+                                            Rules</button>
+                                    </div>
                                 </div>
+                            </div>
+                            <div id="dashboard-alerts-section"
+                                class="glass-card p-4 min-h-[220px] flex flex-col relative rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 overflow-hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span
+                                        class="text-[10px] font-bold text-red-500 uppercase tracking-wider">Alerts</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Station Charts Container -->
+                        <div id="dashboard-station-charts" class="col-span-12 flex flex-col gap-5 mt-2"></div>
+
+                        <!-- Summary Table Container -->
+                        <div id="dashboard-summary-table-section"
+                            class="col-span-12 glass-card rounded-xl border border-borderLight dark:border-borderDark overflow-hidden mt-2">
+                            <div
+                                class="px-4 py-3 border-b border-borderLight dark:border-borderDark bg-gray-50/50 dark:bg-gray-900/50">
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-primary dark:text-secondary">Summary
+                                    Data</span>
+                            </div>
+                            <div class="w-full overflow-x-auto">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead
+                                        class="bg-gray-100/50 dark:bg-gray-800/50 text-[10px] uppercase text-textMuted dark:text-gray-400 tracking-wider">
+                                        <tr>
+                                            <th class="px-4 py-3 font-semibold">MODEL</th>
+                                            <th class="px-4 py-3 font-semibold">PROCESS_NAME</th>
+                                            <th class="px-4 py-3 font-semibold">INPUT_QTY</th>
+                                            <th class="px-4 py-3 font-semibold">FAIL_QTY</th>
+                                            <th class="px-4 py-3 font-semibold">FAIL_P</th>
+                                            <th class="px-4 py-3 font-semibold">PASS_P</th>
+                                            <th class="px-4 py-3 font-semibold">DEFECT_QTY</th>
+                                            <th class="px-4 py-3 font-semibold">FAIL_D</th>
+                                            <th class="px-4 py-3 font-semibold">PASS_D</th>
+                                            <th class="px-4 py-3 font-semibold">OUTPUT_QTY</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashboard-summary-table"
+                                        class="divide-y divide-borderLight dark:divide-borderDark">
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </section>
@@ -495,58 +595,119 @@
                         </table>
                     </section>
                     <section id="mes-defect-analytics-section" class="hidden"></section>
-                    <section id="mes-defect-records-section" class="glass-card overflow-hidden flex flex-col gap-0 rounded-xl border border-borderLight dark:border-borderDark hidden">
+                    <section id="mes-defect-records-section"
+                        class="glass-card overflow-hidden flex flex-col gap-0 rounded-xl border border-borderLight dark:border-borderDark hidden">
                         <div class="section-header-gradient flex justify-between items-center !py-2 !px-4">
                             <span class="text-sm font-semibold flex items-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18"/><path d="M3 15h18"/><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M3 9h18" />
+                                    <path d="M3 15h18" />
+                                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                                </svg>
                                 Defect Records
                             </span>
-                            
+
                             <div class="flex items-center gap-2">
-                                <button id="mes-r001-download-zip" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors" title="Download FAIL log files as ZIP">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                <button id="mes-r001-download-zip" type="button"
+                                    class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors"
+                                    title="Download FAIL log files as ZIP">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" y1="15" x2="12" y2="3" />
+                                    </svg>
                                     <span>Logs</span>
                                 </button>
                                 <span id="mes-r001-zip-status" class="relative hidden cursor-pointer" title="">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                                    <span id="mes-r001-zip-tooltip" class="absolute bottom-full right-0 mb-2 hidden w-72 max-h-48 overflow-y-auto p-3 text-[10px] leading-relaxed rounded-lg bg-gray-900/95 text-gray-200 border border-gray-700 shadow-xl backdrop-blur-sm z-50 whitespace-pre-wrap"></span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M12 16v-4" />
+                                        <path d="M12 8h.01" />
+                                    </svg>
+                                    <span id="mes-r001-zip-tooltip"
+                                        class="absolute bottom-full right-0 mb-2 hidden w-72 max-h-48 overflow-y-auto p-3 text-[10px] leading-relaxed rounded-lg bg-gray-900/95 text-gray-200 border border-gray-700 shadow-xl backdrop-blur-sm z-50 whitespace-pre-wrap"></span>
                                 </span>
-                                <button id="mes-r001-export-csv" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                <button id="mes-r001-export-csv" type="button"
+                                    class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" y1="15" x2="12" y2="3" />
+                                    </svg>
                                     <span>CSV</span>
                                 </button>
-                                <button id="mes-r001-open-log" type="button" class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                <button id="mes-r001-open-log" type="button"
+                                    class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                    </svg>
                                     <span>Open</span>
                                 </button>
-                                <button id="mes-r001-toggle-details" type="button" class="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg font-medium transition-colors flex items-center gap-1.5 ml-2">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <button id="mes-r001-toggle-details" type="button"
+                                    class="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg font-medium transition-colors flex items-center gap-1.5 ml-2">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
                                     Show Details
                                 </button>
                             </div>
                         </div>
-                        <div class="p-3 bg-black/5 dark:bg-white/5 flex items-center justify-between border-b border-borderLight dark:border-borderDark">
-                            <span id="mes-r001-summary" class="text-[11px] text-textMuted font-medium">0 FAIL rows found</span>
+                        <div
+                            class="p-3 bg-black/5 dark:bg-white/5 flex items-center justify-between border-b border-borderLight dark:border-borderDark">
+                            <span id="mes-r001-summary" class="text-[11px] text-textMuted font-medium">0 FAIL rows
+                                found</span>
                             <div class="relative w-64">
-                                <input type="text" id="mes-r001-result-search" placeholder="Search Results..." class="w-full text-xs px-3 py-1.5 pl-8 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-primary/50 text-textMain dark:text-textDark">
-                                <svg class="w-3.5 h-3.5 text-textMuted absolute left-2.5 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                <input type="text" id="mes-r001-result-search" placeholder="Search Results..."
+                                    class="w-full text-xs px-3 py-1.5 pl-8 rounded-lg border border-borderLight dark:border-borderDark bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-primary/50 text-textMain dark:text-textDark">
+                                <svg class="w-3.5 h-3.5 text-textMuted absolute left-2.5 top-1/2 -translate-y-1/2"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.3-4.3" />
+                                </svg>
                             </div>
                         </div>
-                        <div id="mes-r001-selected-row-info" class="px-4 py-1 text-xs text-primary dark:text-secondary font-medium hidden"></div>
+                        <div id="mes-r001-selected-row-info"
+                            class="px-4 py-1 text-xs text-primary dark:text-secondary font-medium hidden"></div>
                         <div class="p-0 overflow-x-auto quicklog-table-scroll">
                             <style>
-                                table.hide-details .detail-col { display: none; }
+                                table.hide-details .detail-col {
+                                    display: none;
+                                }
                             </style>
-                            <table id="mes-r001-table" class="w-full text-left text-sm hide-details" style="min-width: 800px;">
-                                <thead id="mes-r001-head" class="bg-black/5 dark:bg-white/5 text-textMuted dark:text-gray-400 text-xs">
+                            <table id="mes-r001-table" class="w-full text-left text-sm hide-details"
+                                style="min-width: 800px;">
+                                <thead id="mes-r001-head"
+                                    class="bg-black/5 dark:bg-white/5 text-textMuted dark:text-gray-400 text-xs">
                                     <tr>
-                                        <th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-40">SN</th>
-                                        <th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-32">Terminal</th>
-                                        <th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-24">Result</th>
-                                        <th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-32">Defect Code</th>
-                                        <th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-32 detail-col">WO</th>
-                                        <th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider min-w-[200px] detail-col">Description</th>
-                                        <th class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-24 text-right">Time</th>
+                                        <th
+                                            class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-40">
+                                            SN</th>
+                                        <th
+                                            class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-32">
+                                            Terminal</th>
+                                        <th
+                                            class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-24">
+                                            Result</th>
+                                        <th
+                                            class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-32">
+                                            Defect Code</th>
+                                        <th
+                                            class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-32 detail-col">
+                                            WO</th>
+                                        <th
+                                            class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider min-w-[200px] detail-col">
+                                            Description</th>
+                                        <th
+                                            class="border-b border-borderLight dark:border-borderDark p-3 font-semibold uppercase tracking-wider w-24 text-right">
+                                            Time</th>
                                     </tr>
                                 </thead>
                                 <tbody id="mes-r001-body" class="divide-y divide-borderLight dark:divide-borderDark">
@@ -749,17 +910,7 @@
                     <!-- General Tab -->
                     <div id="settings-tab-general" class="settings-tab-content block space-y-6">
                         <div>
-                            <h3
-                                class="text-sm font-semibold mb-3 border-b border-borderLight dark:border-borderDark pb-2 text-primary dark:text-secondary">
-                                Network & MES API</h3>
                             <div class="grid gap-4">
-                                <label class="block text-sm">
-                                    <span class="text-textMuted dark:text-gray-400 mb-1 block"
-                                        data-i18n="settingsMesApiUrl">MES API URL</span>
-                                    <input type="text" id="settings-api-url"
-                                        class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-borderLight dark:border-borderDark rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm font-mono"
-                                        placeholder="http://10.24.97.22/MES_API/api/MESApi/ApiAll">
-                                </label>
                                 <label class="block text-sm">
                                     <span class="text-textMuted dark:text-gray-400 mb-1 block"
                                         data-i18n="settingsLogRoot">Global Log Root Path</span>

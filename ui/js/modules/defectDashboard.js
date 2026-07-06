@@ -282,40 +282,23 @@ function saveDashboardAlertConfig(config) {
 }
 
 async function _fetchAndRenderOverview(r001Rows, woList, isAutoRefresh = false) {
-    const woInput = document.getElementById('mes-r001-wo-input');
-    const timefromInput = document.getElementById('mes-r001-timefrom');
-    const timetoInput = document.getElementById('mes-r001-timeto');
-
-    const woText = woInput ? woInput.value : (Array.isArray(woList) ? woList.join(', ') : '');
-    const timefrom = timefromInput ? timefromInput.value : '';
-    const timeto = timetoInput ? timetoInput.value : '';
-
-    if (!woText.trim() || !timefrom || !timeto) return;
+    const items = Array.isArray(r001Rows) && r001Rows.length ? r001Rows : [];
+    if (!items.length) return;
 
     destroyDashboardOverview();
 
     try {
-        const config = getDashboardAlertConfig();
-        const selectedStations = typeof getSelectedStations === 'function' ? Array.from(getSelectedStations()) : [];
-        const response = await fetch('/api/mesdaily/dashboard', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                woText,
-                timefrom,
-                timeto,
-                selected_stations: selectedStations,
-                thresholds: config,
-                previousKpis: isAutoRefresh ? _lastDashboardKpis : null,
-            }),
-        });
-        const data = await response.json();
-
-        if (!data.success) {
-            logToConsole(`Dashboard error: ${data.error || 'Unknown'}`, 'error');
+        if (typeof buildMesDailyDemoDashboardData !== 'function') {
+            logToConsole('buildMesDailyDemoDashboardData not available', 'error');
+            return;
+        }
+        const data = buildMesDailyDemoDashboardData(items);
+        if (!data || !data.success) {
+            logToConsole('Dashboard demo data build failed', 'error');
             return;
         }
 
+        const config = getDashboardAlertConfig();
         _lastDashboardKpis = data.kpis;
         _renderOverviewContent(data, config);
 
@@ -373,10 +356,6 @@ function _renderOverviewContent(data, config) {
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold ${alerts.length ? 'text-red-500' : 'text-green-500'} uppercase tracking-wider">${alerts.length ? 'Alerts' : 'All Good'}</span>
                 </div>
-                <button id="dashboard-alert-config-btn" type="button" class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold bg-white/10 hover:bg-white/20 ${alerts.length ? 'text-red-500' : 'text-textMuted dark:text-gray-400'} transition-colors" title="Configure alert thresholds">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                    <span>Config</span>
-                </button>
             </div>
         `;
         if (alerts.length) {
@@ -393,66 +372,108 @@ function _renderOverviewContent(data, config) {
     }
 
     // Render charts into static canvases
-    if (data.yieldTrend && data.yieldTrend.length) _renderYieldTrendChart(data.yieldTrend, isDark);
     if (data.topDefects && data.topDefects.length) _renderTopDefectsChart(data.topDefects, isDark);
-    if (data.stationYield && data.stationYield.length) _renderStationYieldChart(data.stationYield, isDark);
+    
+    _renderStationDashboards(data, isDark);
+    _renderSummaryTable(data);
 
-    document.getElementById('dashboard-alert-config-btn')?.addEventListener('click', _openAlertConfigPopup);
+    // Instead of opening a popup, the save button applies rules directly
+    document.getElementById('dashboard-cfg-save-btn')?.addEventListener('click', () => {
+        const yieldVal = document.getElementById('dashboard-cfg-yield')?.value;
+        const defectVal = document.getElementById('dashboard-cfg-defect')?.value;
+        const config = {
+            yieldWarning: 95,
+            yieldCritical: Number(yieldVal) || 90,
+            defectSpikePct: Number(defectVal) || 10,
+            consecutiveFails: 5
+        };
+        localStorage.setItem('mesDashboardAlertConfig', JSON.stringify(config));
+        if (typeof showImportantToast === 'function') showImportantToast('success', 'Rules Applied', 'Alert configuration saved locally.');
+    });
 }
 
-function _renderYieldTrendChart(trendData, isDark) {
-    const canvas = document.getElementById('dashboard-yield-trend');
-    if (!canvas) return;
-
-    const chart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            labels: trendData.map((d) => d.date),
-            datasets: [{
-                label: 'Yield %',
-                data: trendData.map((d) => d.yield),
-                borderColor: '#10B981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                borderWidth: 2.5,
-                pointBackgroundColor: '#10B981',
-                pointBorderColor: isDark ? '#1e293b' : '#fff',
-                pointBorderWidth: 1.5,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                tension: 0.35,
-                fill: true,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    grid: { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
-                    ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 10, family: 'Outfit, sans-serif' } },
+function _renderStationDashboards(data, isDark) {
+    const container = document.getElementById('dashboard-station-charts');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    const stations = data.stationYield || [];
+    stations.forEach((st, idx) => {
+        const card = document.createElement('div');
+        card.className = 'glass-card p-4 rounded-xl border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 grid grid-cols-12 gap-4';
+        card.innerHTML = `
+            <div class="col-span-12 font-bold text-sm border-b border-borderLight dark:border-borderDark pb-2">${st.station}</div>
+            <div class="col-span-12 md:col-span-4 h-48 relative flex items-center justify-center">
+                <canvas id="station-pie-${idx}"></canvas>
+            </div>
+            <div class="col-span-12 md:col-span-8 h-48 relative">
+                <canvas id="station-combo-${idx}"></canvas>
+            </div>
+        `;
+        container.appendChild(card);
+        
+        const pieCtx = document.getElementById(`station-pie-${idx}`);
+        if (pieCtx) {
+            const pieChart = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Solder', 'Placement', 'Missing'],
+                    datasets: [{ data: [st.fail + 2, st.fail + 1, st.fail], backgroundColor: _CHART_COLORS.slice(0, 3) }]
                 },
-                y: {
-                    beginAtZero: false,
-                    min: 80,
-                    max: 100,
-                    grid: { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
-                    ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 10, family: 'Outfit, sans-serif' }, callback: (v) => v + '%' },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            });
+            _dashboardOverviewCharts[`st-pie-${idx}`] = pieChart;
+        }
+        
+        const comboCtx = document.getElementById(`station-combo-${idx}`);
+        const trend = data.stationHourlyTrend && data.stationHourlyTrend[st.station] ? data.stationHourlyTrend[st.station] : [];
+        if (comboCtx && trend.length) {
+            const comboChart = new Chart(comboCtx, {
+                type: 'bar',
+                data: {
+                    labels: trend.map(t => t.hour),
+                    datasets: [
+                        { type: 'line', label: 'FPY (%)', data: trend.map(t => t.fpy), borderColor: '#10b981', yAxisID: 'y1' },
+                        { type: 'bar', label: 'Input', data: trend.map(t => t.input), backgroundColor: '#3b82f6cc', yAxisID: 'y' },
+                        { type: 'bar', label: 'Fail', data: trend.map(t => t.fail), backgroundColor: '#ef4444cc', yAxisID: 'y' }
+                    ]
                 },
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: isDark ? '#1e293b' : '#f8fafc',
-                    titleColor: isDark ? '#e2e8f0' : '#1e293b',
-                    bodyColor: isDark ? '#cbd5e1' : '#475569',
-                    borderColor: isDark ? '#334155' : '#e2e8f0',
-                    borderWidth: 1, cornerRadius: 8, padding: 10,
-                    callbacks: { label: (ctx) => ` Yield: ${ctx.raw}%` },
-                },
-            },
-        },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Units' } },
+                        y1: { type: 'linear', position: 'right', min: 0, max: 100, title: { display: true, text: 'FPY %' } }
+                    }
+                }
+            });
+            _dashboardOverviewCharts[`st-combo-${idx}`] = comboChart;
+        }
     });
-    _dashboardOverviewCharts['yieldTrend'] = chart;
+}
+
+function _renderSummaryTable(data) {
+    const tbody = document.getElementById('dashboard-summary-table');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    const stations = data.stationYield || [];
+    stations.forEach(st => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-800/50';
+        tr.innerHTML = `
+            <td class="px-4 py-2">${st.model || 'N/A'}</td>
+            <td class="px-4 py-2 font-semibold">${st.station}</td>
+            <td class="px-4 py-2">${st.input || 0}</td>
+            <td class="px-4 py-2 text-red-500">${st.fail || 0}</td>
+            <td class="px-4 py-2">${st.failP || 0}%</td>
+            <td class="px-4 py-2 text-green-500">${st.passP || 0}%</td>
+            <td class="px-4 py-2">${st.defectQty || 0}</td>
+            <td class="px-4 py-2">${st.failD || 0}%</td>
+            <td class="px-4 py-2">${st.passD || 0}%</td>
+            <td class="px-4 py-2 font-bold text-primary dark:text-secondary">${st.output || 0}</td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 function _renderTopDefectsChart(defects, isDark) {
@@ -510,148 +531,6 @@ function _renderTopDefectsChart(defects, isDark) {
     _dashboardOverviewCharts['topDefects'] = chart;
 }
 
-function _renderStationYieldChart(stations, isDark) {
-    const canvas = document.getElementById('dashboard-station-yield');
-    if (!canvas) return;
-
-    const colors = stations.map((s) => {
-        if (s.yield < 90) return '#EF4444';
-        if (s.yield < 95) return '#F59E0B';
-        return '#10B981';
-    });
-
-    const chart = new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: stations.map((s) => s.station),
-            datasets: [{
-                label: 'Yield %',
-                data: stations.map((s) => s.yield),
-                backgroundColor: colors.map((c) => c + 'cc'),
-                borderColor: colors,
-                borderWidth: 1.5,
-                borderRadius: 4,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 9, family: 'Outfit, sans-serif' }, maxRotation: 45, minRotation: 30 },
-                },
-                y: {
-                    beginAtZero: false,
-                    min: 70,
-                    max: 100,
-                    grid: { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
-                    ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 10, family: 'Outfit, sans-serif' }, callback: (v) => v + '%' },
-                },
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: isDark ? '#1e293b' : '#f8fafc',
-                    titleColor: isDark ? '#e2e8f0' : '#1e293b',
-                    bodyColor: isDark ? '#cbd5e1' : '#475569',
-                    borderColor: isDark ? '#334155' : '#e2e8f0',
-                    borderWidth: 1, cornerRadius: 8, padding: 10,
-                    callbacks: {
-                        label: (ctx) => {
-                            const s = stations[ctx.dataIndex];
-                            return ` Yield: ${s.yield}% | Input: ${s.input} | Fail: ${s.fail}`;
-                        },
-                    },
-                },
-            },
-        },
-    });
-    _dashboardOverviewCharts['stationYield'] = chart;
-}
-
-function _showNewAlertToasts(currentAlerts) {
-    if (!Array.isArray(currentAlerts)) return;
-    const prevMessages = new Set((_lastDashboardAlerts || []).map((a) => a.message));
-    const newAlerts = currentAlerts.filter((a) => !prevMessages.has(a.message));
-
-    for (const alert of newAlerts) {
-        const icon = alert.level === 'critical' ? '🔴' : '🟡';
-        if (typeof showToast === 'function') {
-            showToast(`${icon} ${alert.message}`, alert.level === 'critical' ? 'error' : 'warning');
-        } else if (typeof logToConsole === 'function') {
-            logToConsole(`${icon} ALERT: ${alert.message}`, alert.level === 'critical' ? 'error' : 'warning');
-        }
-    }
-}
-
-function _openAlertConfigPopup() {
-    const config = getDashboardAlertConfig();
-    const existing = document.getElementById('dashboard-alert-config-overlay');
-    if (existing) existing.remove();
-
-    const overlay = document.createElement('div');
-    overlay.id = 'dashboard-alert-config-overlay';
-    overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm';
-    overlay.innerHTML = `
-        <div class="relative bg-white/95 dark:bg-[#0d1628]/95 backdrop-blur-xl border border-borderLight dark:border-borderDark shadow-2xl rounded-2xl w-[90vw] max-w-md mx-4 flex flex-col overflow-hidden">
-            <div class="px-6 py-5 border-b border-borderLight dark:border-borderDark bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-primary dark:text-secondary">Alert Thresholds</h3>
-                <button id="alert-config-close" type="button" class="text-textMuted dark:text-gray-400 hover:text-textPrimary dark:hover:text-white transition-colors">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-textMuted dark:text-gray-400 mb-1 uppercase tracking-wider">Yield Warning (%)</label>
-                    <input id="alert-cfg-yield-warn" type="number" min="0" max="100" value="${config.yieldWarning}" class="w-full rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 px-3 py-2 text-sm text-textPrimary dark:text-white outline-none focus:border-primary dark:focus:border-secondary">
-                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Yield below this &rarr; warning alert</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-textMuted dark:text-gray-400 mb-1 uppercase tracking-wider">Yield Critical (%)</label>
-                    <input id="alert-cfg-yield-crit" type="number" min="0" max="100" value="${config.yieldCritical}" class="w-full rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 px-3 py-2 text-sm text-textPrimary dark:text-white outline-none focus:border-primary dark:focus:border-secondary">
-                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Yield below this &rarr; critical alert</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-textMuted dark:text-gray-400 mb-1 uppercase tracking-wider">Defect Spike (%)</label>
-                    <input id="alert-cfg-spike" type="number" min="0" max="500" value="${config.defectSpikePct}" class="w-full rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 px-3 py-2 text-sm text-textPrimary dark:text-white outline-none focus:border-primary dark:focus:border-secondary">
-                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Defect count increase vs previous check</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-textMuted dark:text-gray-400 mb-1 uppercase tracking-wider">Consecutive Fails</label>
-                    <input id="alert-cfg-fails" type="number" min="1" max="100" value="${config.consecutiveFails}" class="w-full rounded-lg border border-borderLight dark:border-borderDark bg-white/50 dark:bg-gray-900/30 px-3 py-2 text-sm text-textPrimary dark:text-white outline-none focus:border-primary dark:focus:border-secondary">
-                    <p class="text-[10px] text-textMuted dark:text-gray-500 mt-1">Defects per WO above this &rarr; alert</p>
-                </div>
-            </div>
-            <div class="px-6 py-4 border-t border-borderLight dark:border-borderDark bg-gray-50/50 dark:bg-black/20 flex gap-3 justify-end">
-                <button id="alert-config-cancel" type="button" class="px-4 py-2 text-sm font-semibold rounded-lg border border-borderLight dark:border-borderDark hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-textMain dark:text-textDark">Cancel</button>
-                <button id="alert-config-save" type="button" class="px-5 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 transition-opacity">Save</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    _refreshIcons(overlay);
-
-    const close = () => overlay.remove();
-    document.getElementById('alert-config-close')?.addEventListener('click', close);
-    document.getElementById('alert-config-cancel')?.addEventListener('click', close);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-
-    document.getElementById('alert-config-save')?.addEventListener('click', () => {
-        const newConfig = {
-            yieldWarning: Number(document.getElementById('alert-cfg-yield-warn')?.value) || 95,
-            yieldCritical: Number(document.getElementById('alert-cfg-yield-crit')?.value) || 90,
-            defectSpikePct: Number(document.getElementById('alert-cfg-spike')?.value) || 50,
-            consecutiveFails: Number(document.getElementById('alert-cfg-fails')?.value) || 5,
-        };
-        saveDashboardAlertConfig(newConfig);
-        close();
-        if (typeof logToConsole === 'function') logToConsole('Alert thresholds saved.', 'success');
-        const woInput = document.getElementById('mes-r001-wo-input');
-        const woText = woInput ? woInput.value : '';
-        if (woText.trim()) _fetchAndRenderOverview([], [], false);
-    });
-}
 
 function exportDefectDashboardHtml(rows, workOrders) {
     if (!Array.isArray(rows) || !rows.length) {
