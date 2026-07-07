@@ -680,8 +680,6 @@ function ensureMesR001Panel() {
         mesPanel.dataset.r001Bound = 'true';
         document.getElementById('mes-r001-search')?.addEventListener('click', searchMesDashboard);
         document.getElementById('mes-r001-clear')?.addEventListener('click', () => clearMesR001Panel(true));
-        document.getElementById('mes-r001-open-log')?.addEventListener('click', openMesR001SelectedLogUiOnly);
-        document.getElementById('mes-r001-export-csv')?.addEventListener('click', exportMesR001CsvUiOnly);
         document.getElementById('mes-r001-wo-input')?.addEventListener('input', () => {
             updateMesR001Summary(mesR001Rows);
             const inputCount = getMesR001InputCount();
@@ -722,7 +720,6 @@ function ensureMesR001Panel() {
             });
             syncDetailsToggle();
         }
-        document.getElementById('mes-r001-download-zip')?.addEventListener('click', downloadMesR001LogsZip);
         // Auto-refresh toggle + interval
         document.getElementById('mes-r001-auto-refresh-toggle')?.addEventListener('click', toggleDashboardAutoRefresh);
         document.getElementById('mes-r001-auto-refresh-interval')?.addEventListener('change', (e) => {
@@ -857,7 +854,6 @@ async function searchMesDashboard() {
     const input = document.getElementById('mes-r001-wo-input');
     const woText = String(input?.value || '').trim();
     const woList = parseMesR001WoInput(woText);
-    const isMock = woList.length === 1 && String(woList[0]).toUpperCase() === 'MOCK';
 
     if (!woList.length) {
         const summary = document.getElementById('mes-r001-summary');
@@ -868,7 +864,7 @@ async function searchMesDashboard() {
     }
 
     const stations = typeof getSelectedStations === 'function' ? Array.from(getSelectedStations()) : [];
-    if (!isMock && !stations.length) {
+    if (!stations.length) {
         const message = 'Select at least one station.';
         const summary = document.getElementById('mes-r001-summary');
         if (summary) summary.textContent = message;
@@ -880,43 +876,35 @@ async function searchMesDashboard() {
     try {
         setMesBentoDashboardState('loading');
         setMesR001SearchLoading(true);
-        setStatus('generating', isMock ? 'Building frontend demo data...' : 'Querying MES Daily API...');
+        setStatus('generating', 'Querying MES Daily API...');
         showProgress();
         mesR001Rows = [];
         mesR001SelectedIndex = -1;
         renderMesR001Rows([]);
 
         let dashboardData;
-        if (isMock) {
-            if (typeof buildMesDailyDemoRows !== 'function') throw new Error('buildMesDailyDemoRows not available');
-            mesR001Rows = buildMesDailyDemoRows(woList);
-            dashboardData = typeof buildMesDailyDemoDashboardData === 'function'
-                ? buildMesDailyDemoDashboardData(mesR001Rows)
-                : { success: true, defectRows: mesR001Rows };
-        } else {
-            if (typeof buildMesDailyApiRequest !== 'function') throw new Error('buildMesDailyApiRequest not available');
-            const requestBody = buildMesDailyApiRequest({
-                woList,
-                stations,
-                dateFrom: document.getElementById('mes-r001-datefrom')?.value || '',
-                hourFrom: document.getElementById('mes-r001-hourfrom')?.value || '',
-                dateTo: document.getElementById('mes-r001-dateto')?.value || '',
-                hourTo: document.getElementById('mes-r001-hourto')?.value || '',
-            });
-            const response = await fetch('/api/mesdaily/query', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody),
-            });
-            const raw = await response.json();
-            if (!response.ok || raw.success === false) throw new Error(raw.message || `MES Daily API HTTP ${response.status}`);
-            dashboardData = normalizeMesDailyApiDashboard(raw);
-            mesR001Rows = dashboardData.defectRows || [];
-        }
+        if (typeof buildMesDailyApiRequest !== 'function') throw new Error('buildMesDailyApiRequest not available');
+        const requestBody = buildMesDailyApiRequest({
+            woList,
+            stations,
+            dateFrom: document.getElementById('mes-r001-datefrom')?.value || '',
+            hourFrom: document.getElementById('mes-r001-hourfrom')?.value || '',
+            dateTo: document.getElementById('mes-r001-dateto')?.value || '',
+            hourTo: document.getElementById('mes-r001-hourto')?.value || '',
+        });
+        const response = await fetch('/api/mesdaily/query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+        });
+        const raw = await response.json();
+        if (!response.ok || raw.success === false) throw new Error(raw.message || `MES Daily API HTTP ${response.status}`);
+        dashboardData = normalizeMesDailyApiDashboard(raw);
+        mesR001Rows = dashboardData.defectRows || [];
 
         renderMesR001Rows(mesR001Rows);
         completeProgress();
-        setStatus('success', isMock ? 'Frontend demo data loaded' : 'MES Daily data loaded');
+        setStatus('success', 'MES Daily data loaded');
         logToConsole(`MES Daily loaded. Rows: <b>${mesR001Rows.length}</b>`, 'success');
         saveMesR001History(woText);
 
@@ -972,128 +960,11 @@ function renderMesR001History() {
     }).join('');
 }
 
-async function downloadMesR001LogsZip() {
-    if (!Array.isArray(mesR001Rows) || !mesR001Rows.length) {
-        logToConsole('No result rows. Search first.', 'warning');
-        showImportantToast('warning', 'No Data', 'Search for defects first before downloading logs.');
-        return;
-    }
-
-    const btn = document.getElementById('mes-r001-download-zip');
-    const originalHtml = btn ? btn.innerHTML : '';
-    try {
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Preparing...</span>`;
-            _refreshIcons(btn);
-        }
-
-        // Simulate a brief delay for UX feedback
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        const total = mesR001Rows.length;
-        const uniqueStations = [...new Set(mesR001Rows.map(r => r.Station).filter(Boolean))];
-        logToConsole(`Demo log status: ${total} rows across ${uniqueStations.length} station(s) — local frontend data, no ZIP download needed.`, 'success');
-
-        // Show demo status icon with tooltip
-        _showMesR001ZipStatus(
-            mesR001Rows.slice(0, 20).map(r => ({ sn: r.Serial || '?', station: r.Station || '?' })),
-            []
-        );
-    } catch (err) {
-        logToConsole(`Logs status failed: ${err.message || err}`, 'error');
-        showImportantToast('error', 'Error', err.message || String(err));
-    } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = originalHtml;
-            _refreshIcons(btn);
-        }
-    }
-}
-
-function _showMesR001ZipStatus(found, missing) {
-    const statusEl = document.getElementById('mes-r001-zip-status');
-    const tooltipEl = document.getElementById('mes-r001-zip-tooltip');
-    if (!statusEl || !tooltipEl) return;
-
-    let text = `✅ Downloaded: ${found.length} files\n`;
-    if (found.length) {
-        found.slice(0, 20).forEach((f) => { text += `  ✓ ${f.sn} | ${f.station}\n`; });
-        if (found.length > 20) text += `  ... and ${found.length - 20} more\n`;
-    }
-    if (missing.length) {
-        text += `\n❌ Missing: ${missing.length} files\n`;
-        missing.slice(0, 20).forEach((m) => { text += `  ✗ ${m.sn} | ${m.station}\n    ${m.reason}\n`; });
-        if (missing.length > 20) text += `  ... and ${missing.length - 20} more\n`;
-    }
-
-    tooltipEl.textContent = text.trim();
-    statusEl.classList.remove('hidden');
-    _refreshIcons(statusEl);
-}
+// Demo zip download logic removed
 
 
 
-async function openMesR001SelectedLogUiOnly() {
-    if (mesR001SelectedIndex < 0 || !mesR001Rows[mesR001SelectedIndex]) {
-        logToConsole(t('quickLogNoRowSelected'), 'warning');
-        return;
-    }
-    const row = mesR001Rows[mesR001SelectedIndex];
-    try {
-        setQuickLogOpenLogLoading(true);
-        logToConsole('Opening local log preview...', 'system');
-
-        // Brief simulated delay for UX
-        await new Promise(resolve => setTimeout(resolve, 200));
-
-        if (typeof buildMesDailyDemoLogText !== 'function') {
-            throw new Error('buildMesDailyDemoLogText not available');
-        }
-
-        const logText = buildMesDailyDemoLogText(row);
-        const path = `MES_Daily_Demo/${row.WorkOrder || 'Unknown'}/${row.Station || 'Unknown'}/${row.Serial || 'Unknown'}.log`;
-
-        logToConsole(`Opened log: <b>${path}</b>`, 'success');
-        showLogContentModal(path, logText);
-    } catch (err) {
-        logToConsole(`Open log failed: ${err.message || err}`, 'error');
-        showImportantToast('error', t('reqFailed'), err.message || String(err));
-    } finally {
-        setQuickLogOpenLogLoading(false);
-    }
-}
-
-function exportMesR001CsvUiOnly() {
-    if (!Array.isArray(mesR001Rows) || !mesR001Rows.length) {
-        logToConsole('No result rows. Search first.', 'warning');
-        showImportantToast('warning', 'No Data', 'Search before exporting CSV.');
-        return;
-    }
-    setMesR001ExportLoading(true);
-    try {
-        if (typeof buildMesDailyDemoCsv !== 'function') {
-            throw new Error('buildMesDailyDemoCsv not available');
-        }
-        const csv = buildMesDailyDemoCsv(mesR001Rows);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `MES_Daily_Demo_${getMesExportDate()}.csv`;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-        logToConsole('Frontend demo CSV exported.', 'success');
-    } catch (err) {
-        logToConsole(`Export CSV failed: ${err.message || err}`, 'error');
-        showImportantToast('error', 'Export Failed', err.message || String(err));
-    } finally {
-        setMesR001ExportLoading(false);
-    }
-}
+// Demo functions removed
 
 function getMesExportDate() {
     const controls = getMesRangeControls();

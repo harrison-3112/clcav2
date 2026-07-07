@@ -18,18 +18,7 @@ function destroyDefectDashboard() {
     }
 }
 
-function renderDefectDashboard(rows, woList, dashboardData) {
-    destroyDefectDashboard();
-
-    if (dashboardData && dashboardData.success) {
-        renderDashboardOverviewFromData(dashboardData);
-        return;
-    }
-
-    if (!Array.isArray(rows) || !rows.length) return;
-    const workOrders = Array.isArray(woList) && woList.length ? woList : [...new Set(rows.map((r) => String(r.WorkOrder || r.WO || '').trim()).filter(Boolean))];
-    _fetchAndRenderOverview(rows, workOrders);
-}
+// renderDefectDashboard removed
 
 function _dashEscape(str) {
     const div = document.createElement('div');
@@ -281,35 +270,7 @@ function saveDashboardAlertConfig(config) {
     } catch (_) { /* ignore */ }
 }
 
-async function _fetchAndRenderOverview(r001Rows, woList, isAutoRefresh = false) {
-    const items = Array.isArray(r001Rows) && r001Rows.length ? r001Rows : [];
-    if (!items.length) return;
-
-    destroyDashboardOverview();
-
-    try {
-        if (typeof buildMesDailyDemoDashboardData !== 'function') {
-            logToConsole('buildMesDailyDemoDashboardData not available', 'error');
-            return;
-        }
-        const data = buildMesDailyDemoDashboardData(items);
-        if (!data || !data.success) {
-            logToConsole('Dashboard demo data build failed', 'error');
-            return;
-        }
-
-        const config = getDashboardAlertConfig();
-        _lastDashboardKpis = data.kpis;
-        _renderOverviewContent(data, config);
-
-        if (isAutoRefresh && Array.isArray(data.alerts)) {
-            _showNewAlertToasts(data.alerts);
-        }
-        _lastDashboardAlerts = data.alerts || [];
-    } catch (err) {
-        logToConsole(`Failed to load dashboard: ${err.message || err}`, 'error');
-    }
-}
+// _fetchAndRenderOverview removed (no demo usage)
 
 function _renderOverviewContent(data, config) {
     const isDark = document.documentElement.classList.contains('dark');
@@ -453,40 +414,60 @@ function _renderStationDashboards(data, isDark) {
         const comboCtx = document.getElementById(`station-combo-${idx}`);
         const failTimeline = data.stationHourlyTrend && data.stationHourlyTrend[st.station] ? data.stationHourlyTrend[st.station] : [];
         if (comboCtx && failTimeline.length) {
+            const ctx2d = comboCtx.getContext ? comboCtx.getContext('2d') : null;
+            let gradient = '#ef4444cc';
+            if (ctx2d) {
+                gradient = ctx2d.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, isDark ? 'rgba(239, 68, 68, 0.9)' : 'rgba(239, 68, 68, 0.7)');
+                gradient.addColorStop(1, isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)');
+            }
+
             const comboChart = new Chart(comboCtx, {
                 type: 'bar',
                 data: {
                     labels: failTimeline.map(t => t.hour),
-                    datasets: [
-                        {
-                            label: 'Fail',
-                            data: failTimeline.map(t => t.fail),
-                            backgroundColor: '#ef4444cc',
-                            borderColor: '#ef4444',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            yAxisID: 'y'
-                        }
-                    ]
+                    datasets: [{
+                        label: 'Fail',
+                        data: failTimeline.map(t => t.fail),
+                        backgroundColor: gradient,
+                        borderColor: '#ef4444',
+                        borderWidth: { top: 2, right: 0, bottom: 0, left: 0 },
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barThickness: 16,
+                        maxBarThickness: 24,
+                        hoverBackgroundColor: '#f87171'
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: { labels: { color: isDark ? '#cbd5e1' : '#475569' } },
+                        legend: { display: false },
                         tooltip: {
-                            callbacks: {
-                                label: (ctx) => `Fail: ${ctx.raw}`
-                            }
+                            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                            titleColor: isDark ? '#f8fafc' : '#0f172a',
+                            bodyColor: isDark ? '#cbd5e1' : '#475569',
+                            borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: { label: (ctx) => `Fail: ${ctx.raw}` }
                         }
                     },
                     scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: "'Inter', sans-serif", size: 11 } },
+                            border: { display: false }
+                        },
                         y: {
-                            type: 'linear',
-                            position: 'left',
                             beginAtZero: true,
-                            title: { display: true, text: 'Fail count' },
-                            ticks: { precision: 0 }
+                            grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                            ticks: { precision: 0, color: isDark ? '#94a3b8' : '#64748b', font: { family: "'Inter', sans-serif", size: 11 }, padding: 8 },
+                            border: { display: false, dash: [4, 4] }
                         }
                     }
                 }
