@@ -52,7 +52,7 @@ $stationDashboards = Get-JsFunctionBody $dash '_renderStationDashboards'
 
 # Backend route/client contract.
 Assert-True ($routes -match "mesdaily\.routes") 'Backend route registry must register mesdaily.routes.'
-Assert-True (($mesRoute -match "\bpost\s*\(") -and ($mesRoute -match "['`"]/api/mesdaily/query['`"]")) 'MES route must expose POST /api/mesdaily/query.'
+Assert-True ($mesRoute -match "\bpost\s*\(\s*['`"]/api/mesdaily/query['`"]") 'MES route must expose POST /api/mesdaily/query.'
 Assert-True ($client -match 'postMesCommand') 'MES command client must expose postMesCommand.'
 Assert-True ($aggregator -match 'buildMesCommandPayloads') 'Aggregator must build command payloads.'
 Assert-True ($aggregator -match 'normalizeMesKeys') 'Aggregator must normalize MES keys with trim().'
@@ -71,7 +71,7 @@ Assert-True ($mes -match 'Select at least one station') 'MES search must block w
 # Dashboard rendering contract.
 Assert-True ($index.IndexOf('id="station-panel"') -gt $index.IndexOf('id="mes-panel"')) 'station-panel should remain after mes-panel in DOM for existing code.'
 Assert-True ($index -match 'INPUT[\s\S]*FPY[\s\S]*OUTPUT[\s\S]*FAIL') 'KPI labels must be ordered INPUT, FPY, OUTPUT, FAIL.'
-Assert-True ($dash -match 'failTimeline') 'Station chart must use failTimeline from VNPTH09DT.'
+Assert-True ($stationDashboards -match 'failTimeline') 'Station chart must use failTimeline from VNPTH09DT.'
 Assert-True ($stationDashboards -notmatch "label:\s*['`"]Input['`"]") 'Station timeline chart must not render hourly Input bars.'
 Assert-True ($stationDashboards -notmatch "label:\s*['`"]FPY \(%\)['`"]") 'Station timeline chart must not render hourly FPY line.'
 Assert-True ($dash -match 'woBreakdown') 'Pareto data must preserve WO breakdown.'
