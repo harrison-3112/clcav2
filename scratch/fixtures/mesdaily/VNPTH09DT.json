@@ -8,7 +8,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060001F",
+      " SERIAL_NUMBER": "MESDT-SN-0001",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -17,7 +17,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/22 13:32:58",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-01",
       " STATUS": "重測通過"
     },
     {
@@ -26,7 +26,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060001I",
+      " SERIAL_NUMBER": "MESDT-SN-0002",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -35,7 +35,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 10:34:09",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-02",
       " STATUS": "重測通過"
     },
     {
@@ -44,7 +44,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060002L",
+      " SERIAL_NUMBER": "MESDT-SN-0003",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -53,7 +53,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 14:42:05",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-03",
       " STATUS": "重測通過"
     },
     {
@@ -62,7 +62,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U260600047",
+      " SERIAL_NUMBER": "MESDT-SN-0004",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -71,7 +71,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 15:12:21",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-04",
       " STATUS": "重測通過"
     },
     {
@@ -80,7 +80,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U260600053",
+      " SERIAL_NUMBER": "MESDT-SN-0005",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -89,7 +89,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 14:16:59",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-05",
       " STATUS": "重測通過"
     },
     {
@@ -98,7 +98,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U260600058",
+      " SERIAL_NUMBER": "MESDT-SN-0006",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -107,7 +107,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 19:33:21",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-06",
       " STATUS": "重測通過"
     },
     {
@@ -116,7 +116,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060005E",
+      " SERIAL_NUMBER": "MESDT-SN-0007",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -125,7 +125,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/18 15:46:47",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-07",
       " STATUS": "重測通過"
     },
     {
@@ -134,7 +134,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060005E",
+      " SERIAL_NUMBER": "MESDT-SN-0008",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -143,7 +143,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/18 15:46:59",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-08",
       " STATUS": "重測通過"
     },
     {
@@ -152,7 +152,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060005E",
+      " SERIAL_NUMBER": "MESDT-SN-0009",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -161,7 +161,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/18 15:47:10",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-09",
       " STATUS": "待維修"
     },
     {
@@ -170,7 +170,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060005P",
+      " SERIAL_NUMBER": "MESDT-SN-0010",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -179,7 +179,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 19:28:54",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-01",
       " STATUS": "重測通過"
     },
     {
@@ -188,7 +188,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U260600068",
+      " SERIAL_NUMBER": "MESDT-SN-0011",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -197,7 +197,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 15:25:57",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-02",
       " STATUS": "重測通過"
     },
     {
@@ -206,7 +206,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060006J",
+      " SERIAL_NUMBER": "MESDT-SN-0012",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -215,7 +215,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:22:33",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-03",
       " STATUS": "重測通過"
     },
     {
@@ -224,7 +224,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060006K",
+      " SERIAL_NUMBER": "MESDT-SN-0013",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -233,7 +233,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:13:33",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-04",
       " STATUS": "重測通過"
     },
     {
@@ -242,7 +242,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060008E",
+      " SERIAL_NUMBER": "MESDT-SN-0014",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -251,7 +251,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 11:50:25",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-05",
       " STATUS": "重測通過"
     },
     {
@@ -260,7 +260,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060008E",
+      " SERIAL_NUMBER": "MESDT-SN-0015",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -269,7 +269,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 11:50:42",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-06",
       " STATUS": "重測通過"
     },
     {
@@ -278,7 +278,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060008U",
+      " SERIAL_NUMBER": "MESDT-SN-0016",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -287,7 +287,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/22 11:40:20",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-07",
       " STATUS": "重測通過"
     },
     {
@@ -296,7 +296,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060009D",
+      " SERIAL_NUMBER": "MESDT-SN-0017",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -305,7 +305,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:21:39",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-08",
       " STATUS": "重測通過"
     },
     {
@@ -314,7 +314,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060009T",
+      " SERIAL_NUMBER": "MESDT-SN-0018",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -323,7 +323,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 18:58:14",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-09",
       " STATUS": "重測通過"
     },
     {
@@ -332,7 +332,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U26060009U",
+      " SERIAL_NUMBER": "MESDT-SN-0019",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -341,7 +341,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 18:43:37",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-01",
       " STATUS": "重測通過"
     },
     {
@@ -350,7 +350,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000B0",
+      " SERIAL_NUMBER": "MESDT-SN-0020",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -359,7 +359,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 18:59:38",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-02",
       " STATUS": "重測通過"
     },
     {
@@ -368,7 +368,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000B3",
+      " SERIAL_NUMBER": "MESDT-SN-0021",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -377,7 +377,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 19:12:29",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-03",
       " STATUS": "重測通過"
     },
     {
@@ -386,7 +386,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000BL",
+      " SERIAL_NUMBER": "MESDT-SN-0022",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -395,7 +395,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 18:38:11",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-04",
       " STATUS": "重測通過"
     },
     {
@@ -404,7 +404,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000BQ",
+      " SERIAL_NUMBER": "MESDT-SN-0023",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -413,7 +413,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 11:17:50",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-05",
       " STATUS": "重測通過"
     },
     {
@@ -422,7 +422,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000BQ",
+      " SERIAL_NUMBER": "MESDT-SN-0024",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -431,7 +431,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 11:18:44",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-06",
       " STATUS": "重測通過"
     },
     {
@@ -440,7 +440,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000C7",
+      " SERIAL_NUMBER": "MESDT-SN-0025",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -449,7 +449,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:20:58",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-07",
       " STATUS": "重測通過"
     },
     {
@@ -458,7 +458,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000C7",
+      " SERIAL_NUMBER": "MESDT-SN-0026",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -467,7 +467,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:21:16",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-08",
       " STATUS": "重測通過"
     },
     {
@@ -476,7 +476,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000C7",
+      " SERIAL_NUMBER": "MESDT-SN-0027",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -485,7 +485,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:23:16",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-09",
       " STATUS": "待維修"
     },
     {
@@ -494,7 +494,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000DK",
+      " SERIAL_NUMBER": "MESDT-SN-0028",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -503,7 +503,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 17:40:11",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-01",
       " STATUS": "重測通過"
     },
     {
@@ -512,7 +512,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000FW",
+      " SERIAL_NUMBER": "MESDT-SN-0029",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -521,7 +521,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:51:53",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-02",
       " STATUS": "重測通過"
     },
     {
@@ -530,7 +530,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000G2",
+      " SERIAL_NUMBER": "MESDT-SN-0030",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -539,7 +539,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:59:40",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-03",
       " STATUS": "重測通過"
     },
     {
@@ -548,7 +548,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000GV",
+      " SERIAL_NUMBER": "MESDT-SN-0031",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -557,7 +557,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 11:25:52",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-04",
       " STATUS": "重測通過"
     },
     {
@@ -566,7 +566,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000GZ",
+      " SERIAL_NUMBER": "MESDT-SN-0032",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -575,7 +575,7 @@
       " DEFECT_CODE": "Check_voltage_Fail",
       " DEFECT_DESC": "Check_voltage_Fail",
       " DEFECT_TIME": "2026/06/22 13:31:24",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-05",
       " STATUS": "重測通過"
     },
     {
@@ -584,7 +584,7 @@
       " PART_NO": "47309-000290D000",
       " WORK_ORDER": "8655145",
       " WO_TYPE": "ZIW2",
-      " SERIAL_NUMBER": "U2606000HO",
+      " SERIAL_NUMBER": "MESDT-SN-0033",
       " CUSTOMER_SN": "N/A",
       " MAC": "",
       " PDLINE_NAME": "BT04-3",
@@ -593,7 +593,7 @@
       " DEFECT_CODE": "USB_test_Fail",
       " DEFECT_DESC": "USB_test_Fail",
       " DEFECT_TIME": "2026/06/17 14:44:57",
-      " EMP_NAME": "阮氏玉",
+      " EMP_NAME": "Operator-06",
       " STATUS": "重測通過"
     }
   ]
