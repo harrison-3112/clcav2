@@ -37,12 +37,10 @@ const {
   LOGGING_CONFIG, 
   MODULES_CONFIG, 
   CLCA_SETTINGS, 
-  MESDAILY_SETTINGS, 
   toPositiveInteger,
   getPublicAppSettings,
   getPublicModuleConfig,
-  getPublicClcaSettings,
-  getPublicMesDailySettings 
+  getPublicClcaSettings
 } = require('./app/backend/server/config');
 
 const { logBackend } = require('./app/backend/server/logger');
@@ -50,7 +48,6 @@ const { logBackend } = require('./app/backend/server/logger');
 logBackend('info', 'Phase 4 remaining config initialized', {
   modules: Object.keys(MODULES_CONFIG.modules || {}),
   clcaSettings: !!CLCA_SETTINGS,
-  mesDailySettings: !!MESDAILY_SETTINGS,
 });
 
 const createApp = require('./app/backend/server/createApp');

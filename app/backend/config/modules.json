@@ -19,10 +19,11 @@
         "cn": "MES 每日"
       },
       "menuTitle": {
-        "en": "MES Daily Report",
-        "cn": "MES 每日报表"
+        "en": "MES Daily UI",
+        "cn": "MES 每日 UI"
       },
-      "endpoint": "/api/generate/mesdaily"
+      "endpoint": "",
+      "uiOnly": true
     },
     "quicklog": {
       "enabled": true,

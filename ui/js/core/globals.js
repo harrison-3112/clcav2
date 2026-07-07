@@ -12,7 +12,7 @@ function dismissLoadingScreen() {
         if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
             window.chrome.webview.postMessage('clca-ui-ready');
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 
@@ -113,71 +113,69 @@ const LANG = {
         feat2Title: 'Modular', feat2Sub: 'Multiple report types',
         feat3Title: 'Reliable', feat3Sub: 'Validated output',
         quickLogNetworkBase: 'Model',
-    mesDailyTabRtyDaily: 'RTY Daily',
-    mesDailyTabDefectDaily: 'Defect Daily',
-    mesR001ResultTitle: 'Search Result',
-    mesTimeTitle: 'TIME',
-    mesR001Title: 'Defect Query',
-    mesR001Subtitle: 'Search MES defects by WO and the MES Daily time range',
-    mesR001WoInput: 'WO Input',
-    mesR001WoPlaceholder: 'Paste WO list here...',
-    mesR001Search: 'Search',
-    mesR001Clear: 'Clear',
-    mesR001OpenLog: 'Open Log',
-    mesR001ExportCsv: 'Export CSV',
-    mesR001SelectedRowLabel: 'No row selected',
-    mesR001SelectedRowFormat: 'Selected: {sn} | {station} | {result}',
-    mesR001Ready: 'Ready to search R001',
-    mesR001NeedWo: 'WO Input is required.',
-    mesR001NoRows: 'No R001 records found.',
-    mesR001Found: 'Found {count} R001 record(s).',
-    quickLogMode: 'Mode',
-    quickLogInput: 'SN / CSN Input',
-    quickLogInputHint: 'Support comma, space, newline, or Excel column paste',
-    quickLogSearch: 'Search',
-    quickLogOpenLog: 'Open Log',
-    quickLogClear: 'Clear',
-    quickLogResult: 'Search Result',
-    quickLogStatusReady: 'Ready to search',
-    quickLogPlaceholder: 'Paste SN list here...',
-    quickLogNoRowSelected: 'Select one row first.',
-    quickLogUiOnlyNotice: 'QuickLog UI ready. Backend connection will be added next.',
-    quickLogSelectedRowLabel: 'No row selected',
-    quickLogSelectedRowFormat: 'Selected: {sn} | {station} | {result}',
-    quickLogResultSearch: 'Search in result',
-    quickLogExportCsv: 'Export CSV',
-    quickLogExportedCount: 'Exported {count} rows to CSV',
-    backToHome: 'Home',
-    mesApiUnreachable: 'Cannot connect to MES server. Please check the MES URL.',
-    settingsTitle: 'Configuration Settings',
-    settingsTabGeneral: 'General',
-    settingsTabModels: 'Models',
-      settingsTabAliases: 'Station Aliases',
-      settingsTabStations: 'Stations',
-      settingsTabPrograms: 'Programs Configuration',
-      settingsAddProgram: 'Add Program',
-      settingsProgramWarning: 'WARNING: Modifying Program paths incorrectly will cause log file reading to fail. Do you really know what you are doing and wish to proceed?',
-      settingsProgramReset: 'Reset to Default',
-    settingsMesApiUrl: 'MES API URL',
-    settingsLogRoot: 'Global Log Root Path',
-    settingsModelsTitle: 'Models Configuration',
-    settingsAddModel: 'Add Model',
-    settingsModelName: 'Model Name',
-    settingsAliasTitle: 'Station Aliases (MES to Network mapping)',
-    settingsAddAlias: 'Add Alias',
-    settingsMesStation: 'MES Station Name',
-    settingsNetFolders: 'Network Folder Names (comma separated)',
-    settingsAction: 'Action',
-    settingsSave: 'Save Settings',
-    settingsCancel: 'Cancel',
-    settingsSaved: 'Settings Saved',
-    settingsSavedMsg: 'Configuration has been updated successfully.',
-    settingsStationsTitle: 'Stations List',
-    settingsAddStation: 'Add Station',
-    settingsStationName: 'Station Name',
-    settingsStationsSaved: 'Stations Saved',
-    settingsStationsSavedMsg: 'Stations list has been updated. Please refresh the page.',
-    success: 'Success'
+        mesDailyTabRtyDaily: 'RTY Daily',
+        mesDailyTabDefectDaily: 'Defect Daily',
+        mesR001ResultTitle: 'Search Result',
+        mesTimeTitle: 'TIME',
+        mesR001Title: 'Defect Query',
+        mesR001Subtitle: 'Search MES defects by WO and the MES Daily time range',
+        mesR001WoInput: 'WO Input',
+        mesR001WoPlaceholder: 'Paste WO list here...',
+        mesR001Search: 'Search',
+        mesR001Clear: 'Clear',
+        mesR001OpenLog: 'Open Log',
+        mesR001ExportCsv: 'Export CSV',
+        mesR001SelectedRowLabel: 'No row selected',
+        mesR001SelectedRowFormat: 'Selected: {sn} | {station} | {result}',
+        mesR001Ready: 'Ready to search R001',
+        mesR001NeedWo: 'WO Input is required.',
+        mesR001NoRows: 'No R001 records found.',
+        mesR001Found: 'Found {count} R001 record(s).',
+        quickLogMode: 'Mode',
+        quickLogInput: 'SN / CSN Input',
+        quickLogInputHint: 'Support comma, space, newline, or Excel column paste',
+        quickLogSearch: 'Search',
+        quickLogOpenLog: 'Open Log',
+        quickLogClear: 'Clear',
+        quickLogResult: 'Search Result',
+        quickLogStatusReady: 'Ready to search',
+        quickLogPlaceholder: 'Paste SN list here...',
+        quickLogNoRowSelected: 'Select one row first.',
+        quickLogUiOnlyNotice: 'QuickLog UI ready. Backend connection will be added next.',
+        quickLogSelectedRowLabel: 'No row selected',
+        quickLogSelectedRowFormat: 'Selected: {sn} | {station} | {result}',
+        quickLogResultSearch: 'Search in result',
+        quickLogExportCsv: 'Export CSV',
+        quickLogExportedCount: 'Exported {count} rows to CSV',
+        backToHome: 'Home',
+        settingsTitle: 'Configuration Settings',
+        settingsTabGeneral: 'General',
+        settingsTabModels: 'Models',
+        settingsTabAliases: 'Station Aliases',
+        settingsTabStations: 'Stations',
+        settingsTabPrograms: 'Programs Configuration',
+        settingsAddProgram: 'Add Program',
+        settingsProgramWarning: 'WARNING: Modifying Program paths incorrectly will cause log file reading to fail. Do you really know what you are doing and wish to proceed?',
+        settingsProgramReset: 'Reset to Default',
+        settingsLogRoot: 'Global Log Root Path',
+        settingsModelsTitle: 'Models Configuration',
+        settingsAddModel: 'Add Model',
+        settingsModelName: 'Model Name',
+        settingsAliasTitle: 'Station Aliases (MES to Network mapping)',
+        settingsAddAlias: 'Add Alias',
+        settingsMesStation: 'MES Station Name',
+        settingsNetFolders: 'Network Folder Names (comma separated)',
+        settingsAction: 'Action',
+        settingsSave: 'Save Settings',
+        settingsCancel: 'Cancel',
+        settingsSaved: 'Settings Saved',
+        settingsSavedMsg: 'Configuration has been updated successfully.',
+        settingsStationsTitle: 'Stations List',
+        settingsAddStation: 'Add Station',
+        settingsStationName: 'Station Name',
+        settingsStationsSaved: 'Stations Saved',
+        settingsStationsSavedMsg: 'Stations list has been updated. Please refresh the page.',
+        success: 'Success'
     },
     cn: {
         appBrand: '模块',
@@ -276,71 +274,69 @@ const LANG = {
         feat2Title: '模块化', feat2Sub: '多种报表类型',
         feat3Title: '可靠', feat3Sub: '经过验证的输出',
         quickLogNetworkBase: '机种',
-    mesDailyTabRtyDaily: 'RTY Daily',
-    mesDailyTabDefectDaily: 'Defect Daily',
-    mesR001ResultTitle: 'Search Result',
-    mesTimeTitle: 'TIME',
-    mesR001Title: 'Defect Query',
-    mesR001Subtitle: '按工单和 MES Daily 时间范围查询 MES 不良',
-    mesR001WoInput: '工单输入',
-    mesR001WoPlaceholder: '请粘贴工单列表...',
-    mesR001Search: '查询',
-    mesR001Clear: '清除',
-    mesR001OpenLog: '打开日志',
-    mesR001ExportCsv: '导出 CSV',
-    mesR001SelectedRowLabel: '未选择行',
-    mesR001SelectedRowFormat: '已选择：{sn} | {station} | {result}',
-    mesR001Ready: '准备查询 R001',
-    mesR001NeedWo: '必须输入工单。',
-    mesR001NoRows: '未找到 R001 记录。',
-    mesR001Found: '找到 {count} 条 R001 记录。',
-    quickLogMode: '模式',
-    quickLogInput: 'SN / CSN 输入',
-    quickLogInputHint: '支持逗号、空格、换行或 Excel 列粘贴',
-    quickLogSearch: '查询',
-    quickLogOpenLog: '打开日志',
-    quickLogClear: '清除',
-    quickLogResult: '查询结果',
-    quickLogStatusReady: '准备查询',
-    quickLogPlaceholder: '请粘贴 SN 列表...',
-    quickLogNoRowSelected: '请先选择一行。',
-    quickLogUiOnlyNotice: 'QuickLog UI 已准备，后端连接下一步添加。',
-    quickLogSelectedRowLabel: '未选择行',
-    quickLogSelectedRowFormat: '已选择：{sn} | {station} | {result}',
-    quickLogResultSearch: '在结果中搜索',
-    quickLogExportCsv: '导出 CSV',
-    quickLogExportedCount: '已导出 {count} 行到 CSV',
-    backToHome: '主页',
-    mesApiUnreachable: '无法连接到 MES 服务器... 请检查 MES 网址...',
-    settingsTitle: '配置设置',
-    settingsTabGeneral: '常规',
-    settingsTabModels: '机种',
-      settingsTabAliases: '站点别名',
-      settingsTabStations: '站点管理',
-      settingsTabPrograms: '配置 Program',
-      settingsAddProgram: '添加 Program',
-      settingsProgramWarning: '警告：错误修改 Program 路径会导致日志文件无法读取。 您确定知道自己在做什么并希望继续吗？',
-      settingsProgramReset: '恢复默认',
-    settingsMesApiUrl: 'MES API 地址',
-    settingsLogRoot: '全局日志根路径',
-    settingsModelsTitle: '机种配置',
-    settingsAddModel: '添加机种',
-    settingsModelName: '机种名称',
-    settingsAliasTitle: '站点别名（MES 到网络文件夹映射）',
-    settingsAddAlias: '添加别名',
-    settingsMesStation: 'MES 站点名称',
-    settingsNetFolders: '网络文件夹名（逗号分隔）',
-    settingsAction: '操作',
-    settingsSave: '保存设置',
-    settingsCancel: '取消',
-    settingsSaved: '设置已保存',
-    settingsSavedMsg: '配置已成功更新。',
-    settingsStationsTitle: '站点列表',
-    settingsAddStation: '添加站点',
-    settingsStationName: '站点名称',
-    settingsStationsSaved: '站点已保存',
-    settingsStationsSavedMsg: '站点列表已更新，请刷新页面。',
-    success: '成功'
+        mesDailyTabRtyDaily: 'RTY Daily',
+        mesDailyTabDefectDaily: 'Defect Daily',
+        mesR001ResultTitle: 'Search Result',
+        mesTimeTitle: 'TIME',
+        mesR001Title: 'Defect Query',
+        mesR001Subtitle: '按工单和 MES Daily 时间范围查询 MES 不良',
+        mesR001WoInput: '工单输入',
+        mesR001WoPlaceholder: '请粘贴工单列表...',
+        mesR001Search: '查询',
+        mesR001Clear: '清除',
+        mesR001OpenLog: '打开日志',
+        mesR001ExportCsv: '导出 CSV',
+        mesR001SelectedRowLabel: '未选择行',
+        mesR001SelectedRowFormat: '已选择：{sn} | {station} | {result}',
+        mesR001Ready: '准备查询 R001',
+        mesR001NeedWo: '必须输入工单。',
+        mesR001NoRows: '未找到 R001 记录。',
+        mesR001Found: '找到 {count} 条 R001 记录。',
+        quickLogMode: '模式',
+        quickLogInput: 'SN / CSN 输入',
+        quickLogInputHint: '支持逗号、空格、换行或 Excel 列粘贴',
+        quickLogSearch: '查询',
+        quickLogOpenLog: '打开日志',
+        quickLogClear: '清除',
+        quickLogResult: '查询结果',
+        quickLogStatusReady: '准备查询',
+        quickLogPlaceholder: '请粘贴 SN 列表...',
+        quickLogNoRowSelected: '请先选择一行。',
+        quickLogUiOnlyNotice: 'QuickLog UI 已准备，后端连接下一步添加。',
+        quickLogSelectedRowLabel: '未选择行',
+        quickLogSelectedRowFormat: '已选择：{sn} | {station} | {result}',
+        quickLogResultSearch: '在结果中搜索',
+        quickLogExportCsv: '导出 CSV',
+        quickLogExportedCount: '已导出 {count} 行到 CSV',
+        backToHome: '主页',
+        settingsTitle: '配置设置',
+        settingsTabGeneral: '常规',
+        settingsTabModels: '机种',
+        settingsTabAliases: '站点别名',
+        settingsTabStations: '站点管理',
+        settingsTabPrograms: '配置 Program',
+        settingsAddProgram: '添加 Program',
+        settingsProgramWarning: '警告：错误修改 Program 路径会导致日志文件无法读取。 您确定知道自己在做什么并希望继续吗？',
+        settingsProgramReset: '恢复默认',
+        settingsLogRoot: '全局日志根路径',
+        settingsModelsTitle: '机种配置',
+        settingsAddModel: '添加机种',
+        settingsModelName: '机种名称',
+        settingsAliasTitle: '站点别名（MES 到网络文件夹映射）',
+        settingsAddAlias: '添加别名',
+        settingsMesStation: 'MES 站点名称',
+        settingsNetFolders: '网络文件夹名（逗号分隔）',
+        settingsAction: '操作',
+        settingsSave: '保存设置',
+        settingsCancel: '取消',
+        settingsSaved: '设置已保存',
+        settingsSavedMsg: '配置已成功更新。',
+        settingsStationsTitle: '站点列表',
+        settingsAddStation: '添加站点',
+        settingsStationName: '站点名称',
+        settingsStationsSaved: '站点已保存',
+        settingsStationsSavedMsg: '站点列表已更新，请刷新页面。',
+        success: '成功'
     }
 };
 
@@ -356,14 +352,6 @@ let CLCA_SETTINGS = {
     merge: { requireMergeForMultipleFiles: true, defaultMergeEnabled: false },
     csnMapping: { defaultEnabled: false },
     stationRules: { 'Leak Test01': { leaveSnCodeBlank: true, leaveDescriptionBlank: true, disableCustomerSnMapping: true } }
-};
-
-let MESDAILY_SETTINGS = {
-    defaultHour: 15,
-    defaultOutputPrefix: 'MES Data',
-    resetStateOnOpen: true,
-    autoOutputNameFromToDate: true,
-    dateTagFormat: 'MM.DD'
 };
 
 function getDefaultUiLanguage() { return (APP_SETTINGS.ui && LANG[APP_SETTINGS.ui.defaultLanguage]) ? APP_SETTINGS.ui.defaultLanguage : 'en'; }
@@ -395,7 +383,7 @@ async function loadAppSettings() {
         const response = await fetch('/api/app/settings', { method: 'GET', cache: 'no-store' });
         const data = await response.json();
         if (response.ok && data.success && data.settings) applyAppSettings(data.settings);
-    } catch (_) {}
+    } catch (_) { }
 }
 
 function mergeLocalizedConfig(target = {}, source = {}) { return (!source || typeof source !== 'object') ? target : { ...target, ...source }; }
@@ -420,7 +408,7 @@ async function loadAppModules() {
         const response = await fetch('/api/app/modules', { method: 'GET', cache: 'no-store' });
         const data = await response.json();
         if (response.ok && data.success) applyModuleConfig(data);
-    } catch (_) {}
+    } catch (_) { }
 }
 
 function getEnabledModules() { return Object.values(MODULES).filter((mod) => mod && mod.enabled !== false); }
@@ -438,15 +426,10 @@ function applyClcaSettings(settings = {}) {
 
 async function loadReportSettings() {
     try {
-        const [clcaRes, mesRes] = await Promise.all([
-            fetch('/api/app/clca-settings', { method: 'GET', cache: 'no-store' }),
-            fetch('/api/app/mesdaily-settings', { method: 'GET', cache: 'no-store' }),
-        ]);
+        const clcaRes = await fetch('/api/app/clca-settings', { method: 'GET', cache: 'no-store' });
         const clcaData = await clcaRes.json();
-        const mesData = await mesRes.json();
         if (clcaRes.ok && clcaData.success && clcaData.settings) applyClcaSettings(clcaData.settings);
-        if (mesRes.ok && mesData.success && mesData.settings) applyMesDailySettings(mesData.settings);
-    } catch (_) {}
+    } catch (_) { }
 }
 
 function isClcaMultiFileMergeRequired() {
@@ -562,101 +545,101 @@ let QUICKLOG_MODE_OPTIONS = ['PROD']; // Future: load all MODE values from selec
 
 
 let QUICKLOG_LOCAL_STATIONS_CONFIG = {
-  "enabled": true,
-  "message": {
-    "en": "Log file dont exist on local folder",
-    "cn": "本地文件夹中不存在该日志文件"
-  },
-  "models": {
-    "VO0301": {
-      "allowedStations": [
-        "PCB_INPUT01",
-        "SMT_TOP_MOUNT",
-        "SMT_TOP_AOI_BF",
-        "SMT_TOP_AOI_AF",
-        "SMT_BOT_MOUNT",
-        "SMT_BOT_AOI_BF",
-        "SMT_BOT_AOI_AF",
-        "DIP_TU01",
-        "DIP_INPUT",
-        "DIP_PCBA_TEST01",
-        "DIP_PCBA_TEST02",
-        "DIP_PCBA_TEST03",
-        "PCBA01",
-        "PCBA02",
-        "PCBA03",
-        "FPC01",
-        "FPC02",
-        "FPC03",
-        "FATP_FT_01",
-        "FATP_FT_02",
-        "FATP_FT_03",
-        "FATP_FT_04",
-        "FATP_FT_05",
-        "FATP_FT_06",
-        "FT01",
-        "FT02",
-        "FT03",
-        "FT04",
-        "FT05",
-        "FT06",
-        "FT_Check"
-      ],
-      "aliases": {
-        "PCB_INPUT": "PCB_INPUT01",
-        "PCB_INPUT01": "PCB_INPUT01",
-        "SMT BOT MOUNT": "SMT_BOT_MOUNT",
-        "SMT_BOT_MOUNT": "SMT_BOT_MOUNT",
-        "SMT_BOT_AOI_BF REFLOW": "SMT_BOT_AOI_BF",
-        "SMT_BOT_AOI_BF REFLOW01": "SMT_BOT_AOI_BF",
-        "SMT_BOT_AOI_BF": "SMT_BOT_AOI_BF",
-        "SMT_TOP_MOUNT": "SMT_TOP_MOUNT",
-        "SMT_TOP_AOI_BF": "SMT_TOP_AOI_BF",
-        "DIP_INPUT": "DIP_INPUT",
-        "DIP_TU01": "DIP_TU01",
-        "DIP_PCBA TEST01": "DIP_PCBA_TEST01",
-        "DIP_PCBA TEST02": "DIP_PCBA_TEST02",
-        "DIP_PCBA TEST03": "DIP_PCBA_TEST03",
-        "DIP_PCBA_01": "PCBA01",
-        "DIP_PCBA_02": "PCBA02",
-        "DIP_PCBA_03": "PCBA03",
-        "PCBA01": "PCBA01",
-        "PCBA02": "PCBA02",
-        "PCBA03": "PCBA03",
-        "FPC01": "FPC01",
-        "FPC02": "FPC02",
-        "FPC03": "FPC03",
-        "FATP FT 01": "FATP_FT_01",
-        "FATP FT 02": "FATP_FT_02",
-        "FATP FT 03": "FATP_FT_03",
-        "FATP FT 04": "FATP_FT_04",
-        "FATP FT 05": "FATP_FT_05",
-        "FATP FT 06": "FATP_FT_06",
-        "FATP_FT_01": "FATP_FT_01",
-        "FATP_FT_02": "FATP_FT_02",
-        "FATP_FT_03": "FATP_FT_03",
-        "FATP_FT_04": "FATP_FT_04",
-        "FATP_FT_05": "FATP_FT_05",
-        "FATP_FT_06": "FATP_FT_06",
-        "FT01": "FATP_FT_01",
-        "FT02": "FATP_FT_02",
-        "FT03": "FATP_FT_03",
-        "FT04": "FATP_FT_04",
-        "FT05": "FATP_FT_05",
-        "FT06": "FATP_FT_06",
-        "FATP_CHECK": "FT_Check",
-        "FT_CHECK": "FT_Check",
-        "REPAIR": null,
-        "REPAIR01": null
-      }
+    "enabled": true,
+    "message": {
+        "en": "Log file dont exist on local folder",
+        "cn": "本地文件夹中不存在该日志文件"
     },
-    "EO0302": {
-      "inheritFrom": "VO0301"
-    },
-    "EO0303": {
-      "inheritFrom": "VO0301"
+    "models": {
+        "VO0301": {
+            "allowedStations": [
+                "PCB_INPUT01",
+                "SMT_TOP_MOUNT",
+                "SMT_TOP_AOI_BF",
+                "SMT_TOP_AOI_AF",
+                "SMT_BOT_MOUNT",
+                "SMT_BOT_AOI_BF",
+                "SMT_BOT_AOI_AF",
+                "DIP_TU01",
+                "DIP_INPUT",
+                "DIP_PCBA_TEST01",
+                "DIP_PCBA_TEST02",
+                "DIP_PCBA_TEST03",
+                "PCBA01",
+                "PCBA02",
+                "PCBA03",
+                "FPC01",
+                "FPC02",
+                "FPC03",
+                "FATP_FT_01",
+                "FATP_FT_02",
+                "FATP_FT_03",
+                "FATP_FT_04",
+                "FATP_FT_05",
+                "FATP_FT_06",
+                "FT01",
+                "FT02",
+                "FT03",
+                "FT04",
+                "FT05",
+                "FT06",
+                "FT_Check"
+            ],
+            "aliases": {
+                "PCB_INPUT": "PCB_INPUT01",
+                "PCB_INPUT01": "PCB_INPUT01",
+                "SMT BOT MOUNT": "SMT_BOT_MOUNT",
+                "SMT_BOT_MOUNT": "SMT_BOT_MOUNT",
+                "SMT_BOT_AOI_BF REFLOW": "SMT_BOT_AOI_BF",
+                "SMT_BOT_AOI_BF REFLOW01": "SMT_BOT_AOI_BF",
+                "SMT_BOT_AOI_BF": "SMT_BOT_AOI_BF",
+                "SMT_TOP_MOUNT": "SMT_TOP_MOUNT",
+                "SMT_TOP_AOI_BF": "SMT_TOP_AOI_BF",
+                "DIP_INPUT": "DIP_INPUT",
+                "DIP_TU01": "DIP_TU01",
+                "DIP_PCBA TEST01": "DIP_PCBA_TEST01",
+                "DIP_PCBA TEST02": "DIP_PCBA_TEST02",
+                "DIP_PCBA TEST03": "DIP_PCBA_TEST03",
+                "DIP_PCBA_01": "PCBA01",
+                "DIP_PCBA_02": "PCBA02",
+                "DIP_PCBA_03": "PCBA03",
+                "PCBA01": "PCBA01",
+                "PCBA02": "PCBA02",
+                "PCBA03": "PCBA03",
+                "FPC01": "FPC01",
+                "FPC02": "FPC02",
+                "FPC03": "FPC03",
+                "FATP FT 01": "FATP_FT_01",
+                "FATP FT 02": "FATP_FT_02",
+                "FATP FT 03": "FATP_FT_03",
+                "FATP FT 04": "FATP_FT_04",
+                "FATP FT 05": "FATP_FT_05",
+                "FATP FT 06": "FATP_FT_06",
+                "FATP_FT_01": "FATP_FT_01",
+                "FATP_FT_02": "FATP_FT_02",
+                "FATP_FT_03": "FATP_FT_03",
+                "FATP_FT_04": "FATP_FT_04",
+                "FATP_FT_05": "FATP_FT_05",
+                "FATP_FT_06": "FATP_FT_06",
+                "FT01": "FATP_FT_01",
+                "FT02": "FATP_FT_02",
+                "FT03": "FATP_FT_03",
+                "FT04": "FATP_FT_04",
+                "FT05": "FATP_FT_05",
+                "FT06": "FATP_FT_06",
+                "FATP_CHECK": "FT_Check",
+                "FT_CHECK": "FT_Check",
+                "REPAIR": null,
+                "REPAIR01": null
+            }
+        },
+        "EO0302": {
+            "inheritFrom": "VO0301"
+        },
+        "EO0303": {
+            "inheritFrom": "VO0301"
+        }
     }
-  }
 };
 
 function resolveQuickLogLocalStation(modelName, stationName) {
@@ -706,7 +689,7 @@ async function loadQuickLogLocalStationsConfig() {
                 QUICKLOG_LOCAL_STATIONS_CONFIG = data;
                 break;
             }
-        } catch (_) {}
+        } catch (_) { }
     }
     return QUICKLOG_LOCAL_STATIONS_CONFIG;
 }
@@ -801,18 +784,18 @@ async function loadQuickLogPrograms() {
             logPath: String(p.logPath || '').trim(),
             csvPath: String(p.csvPath || '').trim(),
         })).filter((p) => p.name);
-        
+
         if (!QUICKLOG_PROGRAMS.length) {
             QUICKLOG_PROGRAMS = [{ name: 'MFGX', logPath: '{Root}\\{Model}\\SYNC LOCAL DATA\\{Station}\\Log\\{Model}\\{Mode}\\{Station}\\{Fixture}\\{Date}\\{Result}', csvPath: '{Root}\\{Model}\\SYNC LOCAL DATA\\{Station}\\CSV\\{Model}\\{Mode}\\{Station}\\{Fixture}' }];
         }
-        
+
         // Ensure the active program is still valid, fallback if deleted
         let current = getGlobalActiveProgramName();
         if (!QUICKLOG_PROGRAMS.some((p) => p.name === current)) {
             current = QUICKLOG_PROGRAMS[0].name;
             setGlobalActiveProgram(current);
         }
-        
+
         if (typeof refreshQuickLogProgramDropdown === 'function') {
             refreshQuickLogProgramDropdown(current);
             if (typeof setQuickLogProgramValue === 'function') setQuickLogProgramValue(current);
@@ -916,4 +899,3 @@ function filterQuickLogResultsBySearchText(rows = []) {
 
 
 // Initialization moved to main.js
-

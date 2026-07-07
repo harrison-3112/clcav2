@@ -1,7 +1,0 @@
-{
-  "defaultHour": 15,
-  "defaultOutputPrefix": "MES Data",
-  "resetStateOnOpen": true,
-  "autoOutputNameFromToDate": true,
-  "dateTagFormat": "MM.DD"
-}

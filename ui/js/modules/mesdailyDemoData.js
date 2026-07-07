@@ -242,12 +242,20 @@ function buildMesDailyDemoLogText(row) {
 function buildMesDailyDemoCsv(rows) {
     if (!Array.isArray(rows) || !rows.length) return '';
 
-    const headers = ['WorkOrder', 'DefectCode', 'Description', 'Station', 'defectTime', 'Model', 'Serial'];
-    const lines = [headers.join(',')];
+    const columns = [
+        ['SN', (r) => r.SN || r.SerialNumber || r.Serial || ''],
+        ['Terminal', (r) => r.Terminal || r.Station || ''],
+        ['Result', (r) => r.Result || 'FAIL'],
+        ['DefectCode', (r) => r.DefectCode || ''],
+        ['WO', (r) => r.WO || r.WorkOrder || ''],
+        ['Description', (r) => r.Description || ''],
+        ['Time', (r) => r.Time || r.defectTime || ''],
+    ];
+    const lines = [columns.map(([header]) => header).join(',')];
 
     for (const r of rows) {
-        lines.push(headers.map(h => {
-            const v = String(r[h] ?? '');
+        lines.push(columns.map(([, read]) => {
+            const v = String(read(r) ?? '');
             // Escape CSV fields containing comma, quote, or newline
             if (v.includes(',') || v.includes('"') || v.includes('\n')) {
                 return '"' + v.replace(/"/g, '""') + '"';

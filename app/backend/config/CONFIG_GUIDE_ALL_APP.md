@@ -14,7 +14,6 @@ Tài liệu này hướng dẫn chỉnh từng file config trong app CloudMetric
 - `config/logging.json`
 - `config/modules.json`
 - `config/clca.settings.json`
-- `config/mesdaily.settings.json`
 - `config/stations.json` nếu có sẵn trong app
 
 ---
@@ -259,39 +258,7 @@ Với `Leak Test01`:
 
 ---
 
-## 6. `config/mesdaily.settings.json`
-
-### Mục đích
-
-Chuẩn bị config MES Daily default time/output behavior.
-
-### Ví dụ
-
-```json
-{
-  "defaultHour": 15,
-  "defaultOutputPrefix": "MES Data",
-  "resetStateOnOpen": true,
-  "autoOutputNameFromToDate": true,
-  "dateTagFormat": "MM.DD"
-}
-```
-
-### Chỉnh giờ mặc định
-
-```json
-"defaultHour": 8
-```
-
-### Chỉnh prefix output
-
-```json
-"defaultOutputPrefix": "MES Daily"
-```
-
----
-
-## 7. `config/stations.json`
+## 6. `config/stations.json`
 
 ### Mục đích
 

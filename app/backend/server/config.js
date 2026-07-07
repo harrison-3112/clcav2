@@ -5,7 +5,6 @@ const APP_SETTINGS_CONFIG_PATH = path.resolve(__dirname, '../../../config', 'app
 const LOGGING_CONFIG_PATH = path.resolve(__dirname, '../../../config', 'logging.json');
 const MODULES_CONFIG_PATH = path.resolve(__dirname, '../../../config', 'modules.json');
 const CLCA_SETTINGS_CONFIG_PATH = path.resolve(__dirname, '../../../config', 'clca.settings.json');
-const MESDAILY_SETTINGS_CONFIG_PATH = path.resolve(__dirname, '../../../config', 'mesdaily.settings.json');
 
 const DEFAULT_APP_SETTINGS = {
   server: { host: '0.0.0.0', port: 5000 },
@@ -23,7 +22,7 @@ const DEFAULT_LOGGING_CONFIG = {
 const DEFAULT_MODULES_CONFIG = {
   modules: {
     clca: { enabled: true, title: { en: 'CLCA Gen', cn: 'CLCA Gen' }, menuTitle: { en: 'CLCA Generator', cn: 'CLCA 生成器' }, endpoint: '/api/generate' },
-    mesdaily: { enabled: true, title: { en: 'MES Daily', cn: 'MES 每日' }, menuTitle: { en: 'MES Daily Report', cn: 'MES 每日报表' }, endpoint: '/api/generate/mesdaily' },
+    mesdaily: { enabled: true, title: { en: 'MES Daily', cn: 'MES 每日' }, menuTitle: { en: 'MES Daily UI', cn: 'MES 每日 UI' }, endpoint: '', uiOnly: true },
     quicklog: { enabled: true, title: { en: 'QuickLog', cn: 'QuickLog' }, menuTitle: { en: 'QuickLog', cn: 'QuickLog' }, endpoint: '/api/quicklog/search' },
   }
 };
@@ -35,14 +34,6 @@ const DEFAULT_CLCA_SETTINGS = {
   stationRules: {
     'Leak Test01': { leaveSnCodeBlank: true, leaveDescriptionBlank: true, disableCustomerSnMapping: true },
   },
-};
-
-const DEFAULT_MESDAILY_SETTINGS = {
-  defaultHour: 15,
-  defaultOutputPrefix: 'MES Data',
-  resetStateOnOpen: true,
-  autoOutputNameFromToDate: true,
-  dateTagFormat: 'MM.DD',
 };
 
 function isPlainObject(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
@@ -70,7 +61,6 @@ const APP_SETTINGS = loadJsonConfig(APP_SETTINGS_CONFIG_PATH, DEFAULT_APP_SETTIN
 const LOGGING_CONFIG = loadJsonConfig(LOGGING_CONFIG_PATH, DEFAULT_LOGGING_CONFIG, 'logging.json');
 const MODULES_CONFIG = loadJsonConfig(MODULES_CONFIG_PATH, DEFAULT_MODULES_CONFIG, 'modules.json');
 const CLCA_SETTINGS = loadJsonConfig(CLCA_SETTINGS_CONFIG_PATH, DEFAULT_CLCA_SETTINGS, 'clca.settings.json');
-const MESDAILY_SETTINGS = loadJsonConfig(MESDAILY_SETTINGS_CONFIG_PATH, DEFAULT_MESDAILY_SETTINGS, 'mesdaily.settings.json');
 
 function toPositiveInteger(value, fallback) {
   const n = Number(value); return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
@@ -81,7 +71,6 @@ function getPublicAppSettings() {
 }
 function getPublicModuleConfig() { return MODULES_CONFIG; }
 function getPublicClcaSettings() { return CLCA_SETTINGS; }
-function getPublicMesDailySettings() { return MESDAILY_SETTINGS; }
 
 function saveJsonConfig(filePath, data, currentObj) {
   try {
@@ -104,10 +93,6 @@ function saveClcaSettings(newSettings) {
   const merged = deepMergeConfig(CLCA_SETTINGS, newSettings);
   return saveJsonConfig(CLCA_SETTINGS_CONFIG_PATH, merged, CLCA_SETTINGS);
 }
-function saveMesDailySettings(newSettings) {
-  const merged = deepMergeConfig(MESDAILY_SETTINGS, newSettings);
-  return saveJsonConfig(MESDAILY_SETTINGS_CONFIG_PATH, merged, MESDAILY_SETTINGS);
-}
 function saveModulesConfig(newConfig) {
   const merged = deepMergeConfig(MODULES_CONFIG, newConfig);
   return saveJsonConfig(MODULES_CONFIG_PATH, merged, MODULES_CONFIG);
@@ -118,14 +103,11 @@ module.exports = {
   LOGGING_CONFIG,
   MODULES_CONFIG,
   CLCA_SETTINGS,
-  MESDAILY_SETTINGS,
   toPositiveInteger,
   getPublicAppSettings,
   getPublicModuleConfig,
   getPublicClcaSettings,
-  getPublicMesDailySettings,
   saveAppSettings,
   saveClcaSettings,
-  saveMesDailySettings,
   saveModulesConfig
 };

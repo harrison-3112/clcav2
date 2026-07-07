@@ -25,15 +25,15 @@ const MODULES = {
         cardAccent: 'yield',
         cardIcon: 'calendar_month',
         icon: 'calendar-days',
-        menuTitle: { en: 'MES Daily', cn: 'MES Daily' },
+        menuTitle: { en: 'MES Daily UI', cn: 'MES Daily UI' },
         title: { en: 'MES Daily', cn: 'MES Daily' },
-        summary: { en: 'Generate daily MES report', cn: '生成每日 MES 报表' },
-        endpoint: '/api/generate/mesdaily',
+        summary: { en: 'Frontend dashboard workbench', cn: '前端仪表板工作台' },
         outputKey: 'mesdaily_last_output_path',
         stationKey: 'mesdaily_last_stations',
-        defaultOutputName: 'MES_Daily_Report.xlsx',
+        defaultOutputName: 'MES_Daily_Demo.csv',
         needsStations: true,
-        fields: []
+        fields: [],
+        uiOnly: true
     },
 
 

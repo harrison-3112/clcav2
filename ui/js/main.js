@@ -12,10 +12,8 @@ function updateModuleUiVisibility() {
 
     const mesPanel = document.getElementById('mes-panel');
     const resultPanel = document.getElementById('mes-r001-result-panel');
-    const dashboard = document.getElementById('mes-r001-dashboard');
     if (mesPanel) mesPanel.classList.toggle('hidden', activeModule !== 'mesdaily');
     if (resultPanel) resultPanel.classList.toggle('hidden', activeModule !== 'mesdaily');
-    if (dashboard) dashboard.classList.toggle('hidden', dashboard.dataset.hasContent !== 'true' || activeModule !== 'mesdaily');
     if (fileCards) fileCards.classList.toggle('hidden', activeModule === 'mesdaily');
     if (activeModule === 'mesdaily') { ensureMesTimeRange(); ensureMesDailyFeatureTabs(); ensureMesR001Panel(); initMesR001TimePickers(); syncUnifiedMesTimeRange(); }
     applyMesMergeModeUi();

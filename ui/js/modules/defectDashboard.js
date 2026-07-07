@@ -321,10 +321,14 @@ function _renderOverviewContent(data, config) {
         const elOutput = document.getElementById('dashboard-kpi-output');
         const elDefects = document.getElementById('dashboard-kpi-defects');
         const elFpy = document.getElementById('dashboard-kpi-fpy');
-        if (elYield) elYield.textContent = `${k.totalYield}%`;
-        if (elOutput) elOutput.textContent = String(k.output);
-        if (elDefects) elDefects.textContent = String(k.defects);
-        if (elFpy) elFpy.textContent = `${k.fpy}%`;
+        const totalYield = k.totalYield ?? k.yield ?? '-';
+        const totalOutput = k.output ?? k.totalOutput ?? '-';
+        const totalDefects = k.defects ?? k.totalDefects ?? '-';
+        const fpy = k.fpy ?? k.firstPassYield ?? '-';
+        if (elYield) elYield.textContent = totalYield === '-' ? '-%' : `${totalYield}%`;
+        if (elOutput) elOutput.textContent = String(totalOutput);
+        if (elDefects) elDefects.textContent = String(totalDefects);
+        if (elFpy) elFpy.textContent = fpy === '-' ? '-%' : `${fpy}%`;
     }
 
     // Render RTY Preview table (stationYield)
@@ -362,7 +366,7 @@ function _renderOverviewContent(data, config) {
             alertsHtml += alerts.map((a) => `
                 <div class="mb-1.5 text-[10px] flex items-start gap-1.5 ${a.level === 'critical' ? 'text-red-500' : 'text-yellow-500'}">
                     <span>${a.level === 'critical' ? '🔴' : '🟡'}</span>
-                    <span>${_dashEscape(a.message)}</span>
+                    <span>${_dashEscape(a.message || a.msg || '')}</span>
                 </div>
             `).join('');
         } else {
