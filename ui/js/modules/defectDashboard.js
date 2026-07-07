@@ -317,18 +317,26 @@ function _renderOverviewContent(data, config) {
 
     // Update KPI cards (static HTML elements)
     if (k) {
-        const elYield = document.getElementById('dashboard-kpi-yield');
-        const elOutput = document.getElementById('dashboard-kpi-output');
-        const elDefects = document.getElementById('dashboard-kpi-defects');
+        const elInput = document.getElementById('dashboard-kpi-input');
         const elFpy = document.getElementById('dashboard-kpi-fpy');
-        const totalYield = k.totalYield ?? k.yield ?? '-';
-        const totalOutput = k.output ?? k.totalOutput ?? '-';
-        const totalDefects = k.defects ?? k.totalDefects ?? '-';
-        const fpy = k.fpy ?? k.firstPassYield ?? '-';
-        if (elYield) elYield.textContent = totalYield === '-' ? '-%' : `${totalYield}%`;
-        if (elOutput) elOutput.textContent = String(totalOutput);
-        if (elDefects) elDefects.textContent = String(totalDefects);
-        if (elFpy) elFpy.textContent = fpy === '-' ? '-%' : `${fpy}%`;
+        const elOutput = document.getElementById('dashboard-kpi-output');
+        const elFail = document.getElementById('dashboard-kpi-fail');
+        const input = k.input ?? k.totalInput ?? '-';
+        const fpy = k.fpy ?? k.firstPassYield ?? k.totalYield ?? k.yield ?? '-';
+        const output = k.output ?? k.totalOutput ?? '-';
+        const fail = k.fail ?? k.defects ?? k.totalDefects ?? '-';
+        if (elInput) elInput.textContent = String(input);
+        if (elFpy) {
+            elFpy.textContent = fpy === '-' ? '-%' : `${fpy}%`;
+            elFpy.classList.toggle('text-red-600', Number(fpy) < 90);
+            elFpy.classList.toggle('dark:text-red-400', Number(fpy) < 90);
+            elFpy.classList.toggle('text-yellow-600', Number(fpy) >= 90 && Number(fpy) < 95);
+            elFpy.classList.toggle('dark:text-yellow-400', Number(fpy) >= 90 && Number(fpy) < 95);
+            elFpy.classList.toggle('text-green-600', Number(fpy) >= 95);
+            elFpy.classList.toggle('dark:text-green-400', Number(fpy) >= 95);
+        }
+        if (elOutput) elOutput.textContent = String(output);
+        if (elFail) elFail.textContent = String(fail);
     }
 
     // Render RTY Preview table (stationYield)
@@ -459,22 +467,36 @@ function _renderSummaryTable(data) {
     const tbody = document.getElementById('dashboard-summary-table');
     if (!tbody) return;
     tbody.innerHTML = '';
-    
-    const stations = data.stationYield || [];
-    stations.forEach(st => {
+
+    const rows = Array.isArray(data.summaryRows) && data.summaryRows.length
+        ? data.summaryRows
+        : (data.stationYield || []).map(st => ({
+            model: st.model || 'N/A',
+            processName: st.station,
+            input: st.input || 0,
+            fail: st.fail || 0,
+            failP: st.failP || 0,
+            passP: st.passP || st.fpy || st.yield || 0,
+            defectQty: st.defectQty || st.fail || 0,
+            failD: st.failD || st.failP || 0,
+            passD: st.passD || st.passP || 0,
+            output: st.output || Math.max(0, (st.input || 0) - (st.fail || 0)),
+        }));
+
+    rows.forEach(row => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-800/50';
         tr.innerHTML = `
-            <td class="px-4 py-2">${st.model || 'N/A'}</td>
-            <td class="px-4 py-2 font-semibold">${st.station}</td>
-            <td class="px-4 py-2">${st.input || 0}</td>
-            <td class="px-4 py-2 text-red-500">${st.fail || 0}</td>
-            <td class="px-4 py-2">${st.failP || 0}%</td>
-            <td class="px-4 py-2 text-green-500">${st.passP || 0}%</td>
-            <td class="px-4 py-2">${st.defectQty || 0}</td>
-            <td class="px-4 py-2">${st.failD || 0}%</td>
-            <td class="px-4 py-2">${st.passD || 0}%</td>
-            <td class="px-4 py-2 font-bold text-primary dark:text-secondary">${st.output || 0}</td>
+            <td class="px-4 py-2">${_dashEscape(row.model || 'N/A')}</td>
+            <td class="px-4 py-2 font-semibold">${_dashEscape(row.processName || row.station || 'N/A')}</td>
+            <td class="px-4 py-2">${row.input || 0}</td>
+            <td class="px-4 py-2 text-red-500">${row.fail || 0}</td>
+            <td class="px-4 py-2">${row.failP || 0}%</td>
+            <td class="px-4 py-2 text-green-500">${row.passP || 0}%</td>
+            <td class="px-4 py-2">${row.defectQty || 0}</td>
+            <td class="px-4 py-2">${row.failD || 0}%</td>
+            <td class="px-4 py-2">${row.passD || 0}%</td>
+            <td class="px-4 py-2 font-semibold text-textMain dark:text-textDark">${row.output || 0}</td>
         `;
         tbody.appendChild(tr);
     });
