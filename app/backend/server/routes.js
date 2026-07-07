@@ -7,6 +7,7 @@ const {
 } = require('./config');
 
 const createClcaRoutes = require('../routes/clca.routes');
+const createMesDailyRoutes = require('../routes/mesdaily.routes');
 const createQuickLogRoutes = require('../routes/quicklog.routes');
 const createLogZipRoutes = require('../routes/logzip.routes');
 
@@ -35,6 +36,7 @@ function setupRoutes(app, routeContext) {
 
   // Modular routing
   app.use(createClcaRoutes(routeContext));
+  app.use(createMesDailyRoutes(routeContext));
   app.use(createQuickLogRoutes(routeContext));
   app.use(createLogZipRoutes(routeContext));
 }
