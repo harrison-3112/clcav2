@@ -27,7 +27,8 @@ async function postMesCommand(config, payload) {
     try {
       data = text ? JSON.parse(text) : null;
     } catch (error) {
-      throw new Error(`MES Daily API returned non-JSON response: ${text.slice(0, 200)}`);
+      const contentType = response.headers && response.headers.get ? response.headers.get('content-type') : '';
+      throw new Error(`MES Daily API returned non-JSON response (HTTP ${response.status}, content-type: ${contentType || 'unknown'}).`);
     }
 
     if (!response.ok) {
