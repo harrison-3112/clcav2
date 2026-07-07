@@ -853,32 +853,92 @@ async function searchMesDashboard() {
     ensureMesR001Panel();
     ensureMesR001TimeRange();
     syncMesR001HiddenRange();
+
     const input = document.getElementById('mes-r001-wo-input');
     const woText = String(input?.value || '').trim();
-    const inputCount = parseMesR001WoInput(woText).length;
-    if (!inputCount) { const summary = document.getElementById('mes-r001-summary'); if (summary) summary.textContent = t('mesR001NeedWo'); logToConsole(t('mesR001NeedWo'), 'warning'); showImportantToast('warning', t('reqFailed'), t('mesR001NeedWo')); return; }
+    const woList = parseMesR001WoInput(woText);
+    const isMock = woList.length === 1 && String(woList[0]).toUpperCase() === 'MOCK';
+
+    if (!woList.length) {
+        const summary = document.getElementById('mes-r001-summary');
+        if (summary) summary.textContent = t('mesR001NeedWo');
+        logToConsole(t('mesR001NeedWo'), 'warning');
+        showImportantToast('warning', t('reqFailed'), t('mesR001NeedWo'));
+        return;
+    }
+
+    const stations = typeof getSelectedStations === 'function' ? Array.from(getSelectedStations()) : [];
+    if (!isMock && !stations.length) {
+        const message = 'Select at least one station.';
+        const summary = document.getElementById('mes-r001-summary');
+        if (summary) summary.textContent = message;
+        logToConsole(message, 'warning');
+        showImportantToast('warning', t('reqFailed'), message);
+        return;
+    }
+
     try {
-        setMesBentoDashboardState('loading'); setMesR001SearchLoading(true); setStatus('generating', 'Building frontend demo data...'); showProgress(); mesR001Rows = []; mesR001SelectedIndex = -1; renderMesR001Rows([]);
-        if (typeof buildMesDailyDemoRows !== 'function') throw new Error('buildMesDailyDemoRows not available');
-        mesR001Rows = buildMesDailyDemoRows(parseMesR001WoInput(woText));
-        renderMesR001Rows(mesR001Rows); completeProgress(); setStatus('success', 'Frontend demo data loaded'); logToConsole(`MES Daily frontend demo loaded. Rows: <b>${mesR001Rows.length}</b>`, 'success');
-        saveMesR001History(woText);
-        if (typeof buildMesDailyDemoDashboardData === 'function' && typeof renderDashboardOverviewFromData === 'function') {
-            const dd = buildMesDailyDemoDashboardData(mesR001Rows);
-            renderDashboardOverviewFromData({ ...dd, defectRows: mesR001Rows });
+        setMesBentoDashboardState('loading');
+        setMesR001SearchLoading(true);
+        setStatus('generating', isMock ? 'Building frontend demo data...' : 'Querying MES Daily API...');
+        showProgress();
+        mesR001Rows = [];
+        mesR001SelectedIndex = -1;
+        renderMesR001Rows([]);
+
+        let dashboardData;
+        if (isMock) {
+            if (typeof buildMesDailyDemoRows !== 'function') throw new Error('buildMesDailyDemoRows not available');
+            mesR001Rows = buildMesDailyDemoRows(woList);
+            dashboardData = typeof buildMesDailyDemoDashboardData === 'function'
+                ? buildMesDailyDemoDashboardData(mesR001Rows)
+                : { success: true, defectRows: mesR001Rows };
+        } else {
+            if (typeof buildMesDailyApiRequest !== 'function') throw new Error('buildMesDailyApiRequest not available');
+            const requestBody = buildMesDailyApiRequest({
+                woList,
+                stations,
+                dateFrom: document.getElementById('mes-r001-datefrom')?.value || '',
+                hourFrom: document.getElementById('mes-r001-hourfrom')?.value || '',
+                dateTo: document.getElementById('mes-r001-dateto')?.value || '',
+                hourTo: document.getElementById('mes-r001-hourto')?.value || '',
+            });
+            const response = await fetch('/api/mesdaily/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody),
+            });
+            const raw = await response.json();
+            if (!response.ok || raw.success === false) throw new Error(raw.message || `MES Daily API HTTP ${response.status}`);
+            dashboardData = normalizeMesDailyApiDashboard(raw);
+            mesR001Rows = dashboardData.defectRows || [];
         }
+
+        renderMesR001Rows(mesR001Rows);
+        completeProgress();
+        setStatus('success', isMock ? 'Frontend demo data loaded' : 'MES Daily data loaded');
+        logToConsole(`MES Daily loaded. Rows: <b>${mesR001Rows.length}</b>`, 'success');
+        saveMesR001History(woText);
+
+        if (typeof renderDashboardOverviewFromData === 'function') {
+            renderDashboardOverviewFromData({ ...dashboardData, defectRows: mesR001Rows });
+        }
+
         setMesBentoDashboardState('ready');
-        // Show data sections after successful fetch
         document.getElementById('mes-bento-dashboard')?.classList.remove('hidden');
         document.getElementById('mes-defect-records-section')?.classList.remove('hidden');
     } catch (error) {
-        setMesBentoDashboardState('error', error.message || String(error)); resetProgress();
+        setMesBentoDashboardState('error', error.message || String(error));
+        resetProgress();
         const message = error.message || String(error);
         mesR001Rows = []; mesR001SelectedIndex = -1; renderMesR001Rows([]);
         setStatus('error', t('reqFailed'));
         logToConsole(`Dashboard search failed: ${message}`, 'error');
         showImportantToast('error', t('reqFailed'), message);
-    } finally { setMesR001SearchLoading(false); resetProgress(); }
+    } finally {
+        setMesR001SearchLoading(false);
+        resetProgress();
+    }
 }
 
 // Keep alias for backward compatibility (auto-refresh, event bindings)
