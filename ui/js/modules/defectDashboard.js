@@ -424,13 +424,26 @@ function _renderStationDashboards(data, isDark) {
         `;
         container.appendChild(card);
         
+        const stationDefects = (data.defectRows || [])
+            .filter(row => String(row.Station || row.Terminal || '') === String(st.station))
+            .reduce((acc, row) => {
+                const code = row.DefectCode || 'UNKNOWN';
+                acc[code] = (acc[code] || 0) + 1;
+                return acc;
+            }, {});
+        const pieLabels = Object.keys(stationDefects).slice(0, 5);
+        const pieValues = pieLabels.map(label => stationDefects[label]);
+
         const pieCtx = document.getElementById(`station-pie-${idx}`);
         if (pieCtx) {
             const pieChart = new Chart(pieCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Solder', 'Placement', 'Missing'],
-                    datasets: [{ data: [st.fail + 2, st.fail + 1, st.fail], backgroundColor: _CHART_COLORS.slice(0, 3) }]
+                    labels: pieLabels.length ? pieLabels : ['No defects'],
+                    datasets: [{
+                        data: pieValues.length ? pieValues : [1],
+                        backgroundColor: pieValues.length ? _CHART_COLORS.slice(0, pieValues.length) : ['#94a3b8']
+                    }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
             });
@@ -438,23 +451,43 @@ function _renderStationDashboards(data, isDark) {
         }
         
         const comboCtx = document.getElementById(`station-combo-${idx}`);
-        const trend = data.stationHourlyTrend && data.stationHourlyTrend[st.station] ? data.stationHourlyTrend[st.station] : [];
-        if (comboCtx && trend.length) {
+        const failTimeline = data.stationHourlyTrend && data.stationHourlyTrend[st.station] ? data.stationHourlyTrend[st.station] : [];
+        if (comboCtx && failTimeline.length) {
             const comboChart = new Chart(comboCtx, {
                 type: 'bar',
                 data: {
-                    labels: trend.map(t => t.hour),
+                    labels: failTimeline.map(t => t.hour),
                     datasets: [
-                        { type: 'line', label: 'FPY (%)', data: trend.map(t => t.fpy), borderColor: '#10b981', yAxisID: 'y1' },
-                        { type: 'bar', label: 'Input', data: trend.map(t => t.input), backgroundColor: '#3b82f6cc', yAxisID: 'y' },
-                        { type: 'bar', label: 'Fail', data: trend.map(t => t.fail), backgroundColor: '#ef4444cc', yAxisID: 'y' }
+                        {
+                            label: 'Fail',
+                            data: failTimeline.map(t => t.fail),
+                            backgroundColor: '#ef4444cc',
+                            borderColor: '#ef4444',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            yAxisID: 'y'
+                        }
                     ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: isDark ? '#cbd5e1' : '#475569' } },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `Fail: ${ctx.raw}`
+                            }
+                        }
+                    },
                     scales: {
-                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Units' } },
-                        y1: { type: 'linear', position: 'right', min: 0, max: 100, title: { display: true, text: 'FPY %' } }
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            beginAtZero: true,
+                            title: { display: true, text: 'Fail count' },
+                            ticks: { precision: 0 }
+                        }
                     }
                 }
             });
@@ -483,20 +516,20 @@ function _renderSummaryTable(data) {
             output: st.output || Math.max(0, (st.input || 0) - (st.fail || 0)),
         }));
 
-    rows.forEach(row => {
+    rows.forEach(st => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-800/50';
         tr.innerHTML = `
-            <td class="px-4 py-2">${_dashEscape(row.model || 'N/A')}</td>
-            <td class="px-4 py-2 font-semibold">${_dashEscape(row.processName || row.station || 'N/A')}</td>
-            <td class="px-4 py-2">${row.input || 0}</td>
-            <td class="px-4 py-2 text-red-500">${row.fail || 0}</td>
-            <td class="px-4 py-2">${row.failP || 0}%</td>
-            <td class="px-4 py-2 text-green-500">${row.passP || 0}%</td>
-            <td class="px-4 py-2">${row.defectQty || 0}</td>
-            <td class="px-4 py-2">${row.failD || 0}%</td>
-            <td class="px-4 py-2">${row.passD || 0}%</td>
-            <td class="px-4 py-2 font-semibold text-textMain dark:text-textDark">${row.output || 0}</td>
+            <td class="px-4 py-2">${_dashEscape(st.model || 'N/A')}</td>
+            <td class="px-4 py-2 font-semibold">${_dashEscape(st.processName || st.station || 'N/A')}</td>
+            <td class="px-4 py-2">${st.input || 0}</td>
+            <td class="px-4 py-2 text-red-500">${st.fail || 0}</td>
+            <td class="px-4 py-2">${st.failP || 0}%</td>
+            <td class="px-4 py-2 text-green-500">${st.passP || 0}%</td>
+            <td class="px-4 py-2">${st.defectQty || 0}</td>
+            <td class="px-4 py-2">${st.failD || 0}%</td>
+            <td class="px-4 py-2">${st.passD || 0}%</td>
+            <td class="px-4 py-2 font-semibold text-textMain dark:text-textDark">${st.output || 0}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -549,6 +582,15 @@ function _renderTopDefectsChart(defects, isDark) {
                             return d.desc ? `${d.code}: ${d.desc}` : d.code;
                         },
                         label: (ctx) => ` Count: ${ctx.raw} (${defects[ctx.dataIndex].pct}%)`,
+                        afterLabel: (context) => {
+                            const item = defects[context.dataIndex];
+                            if (!item || !item.woBreakdown) return '';
+                            return Object.entries(item.woBreakdown)
+                                .sort((a, b) => b[1] - a[1])
+                                .slice(0, 5)
+                                .map(([wo, count]) => `${wo}: ${count}`)
+                                .join('\n');
+                        }
                     },
                 },
             },
