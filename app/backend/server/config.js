@@ -12,6 +12,11 @@ const DEFAULT_APP_SETTINGS = {
   ui: { defaultLanguage: 'en', defaultTheme: 'system' },
   quicklog: { openLogCacheMax: 500, logTimeToleranceSeconds: 5, returnCheckedPathsOnFail: true, deriveLogPathFromSourceFile: true },
   browseSave: { timeoutMs: 12000 },
+  mesdailyApi: {
+    url: '',
+    timeoutMs: 30000,
+    maxConcurrent: 3
+  }
 };
 
 const DEFAULT_LOGGING_CONFIG = {
@@ -72,6 +77,15 @@ function getPublicAppSettings() {
 function getPublicModuleConfig() { return MODULES_CONFIG; }
 function getPublicClcaSettings() { return CLCA_SETTINGS; }
 
+function getMesDailyApiConfig() {
+  const cfg = APP_SETTINGS.mesdailyApi || {};
+  return {
+    url: String(process.env.MESDAILY_API_URL || cfg.url || '').trim(),
+    timeoutMs: toPositiveInteger(process.env.MESDAILY_API_TIMEOUT_MS || cfg.timeoutMs, 30000),
+    maxConcurrent: toPositiveInteger(process.env.MESDAILY_API_MAX_CONCURRENT || cfg.maxConcurrent, 3),
+  };
+}
+
 function saveJsonConfig(filePath, data, currentObj) {
   try {
     const dir = path.dirname(filePath);
@@ -107,6 +121,7 @@ module.exports = {
   getPublicAppSettings,
   getPublicModuleConfig,
   getPublicClcaSettings,
+  getMesDailyApiConfig,
   saveAppSettings,
   saveClcaSettings,
   saveModulesConfig
