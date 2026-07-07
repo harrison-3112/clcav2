@@ -1,7 +1,8 @@
 function updateModuleUiVisibility() {
     const module = MODULES[activeModule];
+    if (typeof placeStationPanelForActiveModule === 'function') placeStationPanelForActiveModule();
     if (stationPanel) {
-        stationPanel.classList.toggle('hidden', !module.needsStations || activeModule === 'mesdaily');
+        stationPanel.classList.toggle('hidden', !module.needsStations);
         const titleEl = stationPanel.querySelector('h2');
         if (titleEl) {
             titleEl.textContent = activeModule === 'mesdaily' ? t('station') : t('stations');

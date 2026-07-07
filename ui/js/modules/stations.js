@@ -6,6 +6,19 @@ const stationPanel = document.getElementById('station-panel');
 
 let stationPresets = {};
 
+function placeStationPanelForActiveModule() {
+    if (!stationPanel) return;
+    const mesDashboard = document.getElementById('mes-bento-dashboard');
+    const sharedAnchor = document.getElementById('station-panel-shared-anchor');
+    if (activeModule === 'mesdaily' && mesDashboard && mesDashboard.parentElement) {
+        mesDashboard.parentElement.insertBefore(stationPanel, mesDashboard);
+        return;
+    }
+    if (sharedAnchor && sharedAnchor.parentElement && sharedAnchor.nextElementSibling !== stationPanel) {
+        sharedAnchor.parentElement.insertBefore(stationPanel, sharedAnchor.nextElementSibling);
+    }
+}
+
 function sortStationsByPresetOrder(stations, presets) {
     const source = Array.isArray(stations) ? stations : [];
     const presetMap = (presets && typeof presets === 'object') ? presets : {};
